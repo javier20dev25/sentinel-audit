@@ -175,10 +175,15 @@ function auditVerdict(envs, candidates) {
   const applicable = envs.filter((e) => !e.notApplicable);
   const notApplicable = envs.filter((e) => e.notApplicable);
   const required = applicable.filter((e) => e.status !== STATUS_SKIPPED);
-  const degraded = applicable.filter((e) => e.status === 'PARTIAL' || e.status === 'ERROR' || e.status === 'UNSUPPORTED');
-  const hardFailed = applicable.filter((e) => e.status === 'ERROR' || e.status === 'UNSUPPORTED');
+  const skipped = applicable.filter((e) => e.status === STATUS_SKIPPED);
+  // A tool that never ran is not coverage. It was excluded from `degraded` here
+  // once and the run reported CLEAN_WITH_FULL_COVERAGE with a skipped OSV: the
+  // tool's own note said "COVERAGE GAP and not a clean result" and the
+  // aggregate never read it. Skipped is therefore a hard coverage failure.
+  const degraded = applicable.filter((e) => e.status === 'PARTIAL' || e.status === 'ERROR' || e.status === 'UNSUPPORTED' || e.status === STATUS_SKIPPED);
+  const hardFailed = applicable.filter((e) => e.status === 'ERROR' || e.status === 'UNSUPPORTED' || e.status === STATUS_SKIPPED);
   const limited = applicable.filter((e) => e.status === 'PARTIAL');
-  const notClean = applicable.filter((e) => e.verdict.endsWith('LIMITED_COVERAGE') || e.status === 'PARTIAL');
+  const notClean = applicable.filter((e) => e.verdict.endsWith('LIMITED_COVERAGE') || e.status === 'PARTIAL' || e.status === STATUS_SKIPPED);
 
   // Two orthogonal facts, kept as two fields on purpose. Collapsing them is how a
   // report ends up calling a run with dead tools "clean", or calling a run with
@@ -194,6 +199,7 @@ function auditVerdict(envs, candidates) {
     requiredTools: required.length,
     notApplicableTools: notApplicable.map((e) => e.tool),
     degradedTools: degraded.map((e) => ({ tool: e.tool, status: e.status, verdict: e.verdict, reason: (e.coverage.errors || [])[0] || e.error || (e.notes || [])[0] || null })),
+    skippedTools: skipped.map((e) => ({ tool: e.tool, reason: e.error || (e.notes || [])[0] || 'no reason recorded' })),
     notCleanTools: notClean.map((e) => e.tool),
     candidateCount: candidates.length,
     statement: verdict === 'CANDIDATES_FOUND'
