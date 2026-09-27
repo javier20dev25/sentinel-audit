@@ -15,6 +15,56 @@ const { STATUS, envelope, run, expand, dirBytes, gitOut, snippet } = require('..
 const abs = (root, p) => path.resolve(root, String(p || '').replace(/\\/g, '/'));
 
 // ---------------------------------------------------------------- sentinel
+const SENTINEL_CLIP = 80;
+const SENTINEL_BREADTH_KINDS = new Set(['import', 'require', 'string', 'comment', 'observation']);
+const SENTINEL_BEHAVIOR_KINDS = new Set(['exec', 'write', 'download']);
+
+const clipVal = (v) => String(v === undefined || v === null ? '' : v).replace(/\s+/g, ' ').slice(0, SENTINEL_CLIP);
+
+/**
+ * The vendored engine emits its payload on named fields (value, source, target,
+ * resolved, api, arg, args, sink, specifiers, payloadLiteral) and never on
+ * message/detail/title. Reading only those three therefore discards 100% of the
+ * engine's evidence and yields an empty detail for every observation.
+ */
+function sentinelDetail(o) {
+  const parts = [];
+  if (o.api) parts.push(`api=${clipVal(o.api)}`);
+  if (o.sink) parts.push(`sink=${clipVal(o.sink)}`);
+  if (o.arg !== undefined && o.arg !== null && o.arg !== '') parts.push(`arg=${clipVal(o.arg)}`);
+  if (Array.isArray(o.args) && o.args.length) parts.push(`args=${o.args.map(clipVal).join(' ')}`);
+  if (o.source) parts.push(`source=${clipVal(o.source)}`);
+  if (o.target) parts.push(`target=${clipVal(o.target)}`);
+  if (o.resolved) parts.push(`resolved=${clipVal(o.resolved)}`);
+  if (Array.isArray(o.specifiers) && o.specifiers.length) parts.push(`imports=${o.specifiers.map(clipVal).join(',')}`);
+  if (o.payloadLiteral) parts.push(`payload=${clipVal(o.payloadLiteral)}`);
+  if (o.value) parts.push(`value=${clipVal(o.value)}`);
+  if (o.dynamic) parts.push('dynamic=true');
+  return parts.join(' ').slice(0, 400);
+}
+
+/** The engine reports a source line as a number in `loc` for some emitters and as a value snippet in others. */
+function sentinelLine(o) {
+  if (Number.isInteger(o.line) && o.line > 0) return o.line;
+  if (Number.isInteger(o.loc) && o.loc > 0) return o.loc;
+  return null;
+}
+
+/**
+ * A breadth observation becomes a candidate only when it names a concrete
+ * security-relevant behaviour and carries evidence for it. Module-graph and
+ * string-literal observations never qualify on their own, however many there
+ * are: they are the reason the old pipeline escalated whole repositories.
+ */
+function sentinelClass(o, detail, file) {
+  const kind = String(o.kind || o.type || 'observation');
+  if (!SENTINEL_BEHAVIOR_KINDS.has(kind)) return 'OBSERVATION_ONLY';
+  if (SENTINEL_BREADTH_KINDS.has(kind)) return 'OBSERVATION_ONLY';
+  if (!detail || !file) return 'OBSERVATION_ONLY';
+  const evidenced = o.api || o.sink || o.arg || (Array.isArray(o.args) && o.args.length);
+  return evidenced ? 'ACTIONABLE_SIGNAL' : 'OBSERVATION_ONLY';
+}
+
 /** Vendored Sentinel defensive engine. Breadth signal, never a verdict. */
 function sentinel(root, ctx) {
   const cli = ctx.tools.sentinelPurple.cli;
@@ -25,16 +75,38 @@ function sentinel(root, ctx) {
   if (!j) {
     return envelope('sentinel', { status: STATUS.ERROR, cost: r.cost, error: 'sentinel produced no parseable output', notes: [String(r.stderr).slice(0, 300)] });
   }
+  // The engine's own JSON is the primary evidence: every mapped field below is a
+  // translation of it, and a translation that is wrong or lossy can only be
+  // caught against the source. Persist it before mapping so a zero-signal run
+  // is distinguishable from a run whose output was never captured.
+  const rawPath = path.join(ctx.work, 'sentinel.json');
+  try { fs.writeFileSync(rawPath, JSON.stringify(j, null, 2)); } catch (e) { /* evidence persistence is best-effort, never fatal */ }
   const obs = j.observations || j.findings || [];
+  const mapped = obs.map((o) => {
+    const file = abs(root, o.file || o.filePath || o.path);
+    const detail = sentinelDetail(o);
+    return {
+      tool: 'sentinel',
+      rule: o.rule || o.kind || o.type || 'observation',
+      kind: o.kind || o.type || 'observation',
+      file, line: sentinelLine(o), detail,
+      signalClass: sentinelClass(o, detail, file),
+      observedApi: o.api || null, observedSink: o.sink || null,
+      observedArg: o.arg === undefined ? null : clipVal(o.arg),
+      observedSource: o.source || o.target || null, observedValue: o.value || null,
+    };
+  });
+  const actionable = mapped.filter((f) => f.signalClass === 'ACTIONABLE_SIGNAL').length;
   return envelope('sentinel', {
-    findings: obs.map((o) => ({
-      tool: 'sentinel', kind: o.kind || o.type || 'observation',
-      file: abs(root, o.file || o.filePath || o.path), line: o.line || null,
-      detail: String(o.message || o.detail || o.title || '').slice(0, 160),
-    })),
+    findings: mapped,
+    signalCounts: { total: mapped.length, actionable, observationOnly: mapped.length - actionable },
     coverage: { filesSeen: invCount(ctx), filesEligible: invCount(ctx), filesParsed: invCount(ctx), analysisCompleted: true },
     cost: r.cost,
-    notes: ['breadth signal only; never adjudicate exploitability from this'],
+    notes: [
+      'breadth signal only; never adjudicate exploitability from this',
+      'signalClass separates ACTIONABLE_SIGNAL from OBSERVATION_ONLY before any lens escalates',
+    ],
+    rawArtifact: rawPath,
   });
 }
 const invCount = (ctx) => (ctx.inv ? ctx.inv.sourceFiles : 0);
@@ -204,12 +276,23 @@ function semgrep(root, ctx, opts = {}) {
 
 // ---------------------------------------------------------------- bandit
 /** Python sink-side. THE parse-error rule lives here. */
-function bandit(root, ctx) {
+function bandit(root, ctx, opts = {}) {
   const bin = expand(ctx.tools.bandit.bin);
   if (!fs.existsSync(bin)) return envelope('bandit', { status: STATUS.UNSUPPORTED, error: 'bandit binary missing' });
   if (!(ctx.inv.byLang.python || 0)) return envelope('bandit', { status: STATUS.SKIPPED, notApplicable: true, notes: ['no python source in target: bandit not applicable'], coverage: { filesSeen: 0, filesEligible: 0, filesParsed: 0, analysisCompleted: true } });
+  // Bandit is the noisiest lens in the set: `-r root` over a mature Python repo
+  // reports tens of thousands of low-severity items, which buries the promoted
+  // signals instead of testing them. Scope it to the promoted files so the
+  // count means something, and keep only Python: handing a language-specific
+  // tool a file it cannot parse yields a parse error that reads like coverage.
+  const langOk = (f) => /\.(py|pyi)$/i.test(f);
+  const promoted = (opts.scope && opts.scope.length ? opts.scope : [root]).filter(langOk);
+  if (!promoted.length) {
+    return envelope('bandit', { status: STATUS.SKIPPED, notApplicable: true, notes: ['no promoted python file: bandit has nothing to verify in Etapa B'], coverage: { filesSeen: 0, filesEligible: 0, filesParsed: 0, analysisCompleted: true } });
+  }
+  const scopes = promoted.slice(0, opts.maxTargets || 50);
   const out = path.join(ctx.work, 'bandit.json');
-  const r = run(bin, ['-r', root, '-f', 'json', '-o', out, '-q'], { timeoutMs: ctx.budget('bandit') });
+  const r = run(bin, ['-f', 'json', '-o', out, '-q', ...scopes], { timeoutMs: ctx.budget('bandit') });
   if (!fs.existsSync(out)) return envelope('bandit', { status: STATUS.ERROR, cost: r.cost, error: 'bandit produced no output' });
   const j = JSON.parse(fs.readFileSync(out, 'utf8'));
   const results = j.results || [];
@@ -241,7 +324,7 @@ function bandit(root, ctx) {
 
 // ---------------------------------------------------------------- shellcheck
 /** Lint only. Explicitly not a taint detector. */
-function shellcheck(root, ctx) {
+function shellcheck(root, ctx, opts = {}) {
   const bin = expand(ctx.tools.shellcheck.bin);
   if (!fs.existsSync(bin)) return envelope('shellcheck', { status: STATUS.UNSUPPORTED, error: 'shellcheck binary missing' });
   if (!(ctx.inv.byLang.shell || 0)) return envelope('shellcheck', { status: STATUS.SKIPPED, notApplicable: true, notes: ['no shell source in target: shellcheck not applicable'], coverage: { filesSeen: 0, filesEligible: 0, filesParsed: 0, analysisCompleted: true } });
@@ -257,11 +340,19 @@ function shellcheck(root, ctx) {
     }
   };
   walk(root, 0);
+  // Restrict to promoted files. Lint findings on unreviewed shell scripts are
+  // breadth, not deep verification, and on a repo that merely ships a Dockerfile
+  // they arrive in the dozens while saying nothing about the promoted signal.
+  const scope = opts.scope && opts.scope.length ? new Set(opts.scope.map((s) => path.resolve(s))) : null;
+  const scoped = (scope ? files.filter((f) => scope.has(path.resolve(f))) : files).slice(0, opts.maxTargets || 50);
+  if (!scoped.length) {
+    return envelope('shellcheck', { status: STATUS.SKIPPED, notApplicable: true, notes: ['no promoted shell file: shellcheck has nothing to verify in Etapa B'], coverage: { filesSeen: 0, filesEligible: 0, filesParsed: 0, analysisCompleted: true } });
+  }
   const findings = [];
   let cost = { wallClockMs: 0, timedOut: false };
   const CHUNK = 20;
-  for (let i = 0; i < files.length; i += CHUNK) {
-    const batch = files.slice(i, i + CHUNK);
+  for (let i = 0; i < scoped.length; i += CHUNK) {
+    const batch = scoped.slice(i, i + CHUNK);
     const r = run(bin, ['-f', 'json', '-S', ctx.tools.shellcheck.severity, ...batch], { timeoutMs: 120000 });
     cost.wallClockMs += r.cost.wallClockMs;
     let parsed = null;
@@ -311,4 +402,4 @@ function osv(root, ctx) {
   return envelope('osv', { findings, cost: r.cost, rawArtifact: out, coverage: { filesSeen: ctx.inv.totalFiles, filesEligible: ctx.inv.totalFiles, filesParsed: ctx.inv.totalFiles, analysisCompleted: true } });
 }
 
-module.exports = { sentinel, purple, codeql, semgrep, bandit, shellcheck, trivy, osv };
+module.exports = { sentinel, purple, codeql, semgrep, bandit, shellcheck, trivy, osv, sentinelDetail, sentinelLine, sentinelClass };

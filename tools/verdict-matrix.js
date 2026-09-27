@@ -172,5 +172,81 @@ console.log('\npurple opt-out is not a coverage failure');
   check('purple opt-out cannot hide an open candidate', auditVerdict([...base, optedOut], openCandidates([c])).verdict, 'CANDIDATES_FOUND');
 }
 
+console.log('\nSentinel-first: observation vs candidate vs confirmed');
+{
+  const { signalClassOf, correlate } = require('../correlate');
+  const policies = require('../config/policies.json');
+  const root = 'C:/repo';
+  const senEnv = (findings) => ({
+    tool: 'sentinel', status: 'SUCCESS', notApplicable: false, coverage: { filesSeen: 10, filesEligible: 10, filesParsed: 10, analysisCompleted: true, errors: [] },
+    notes: [], error: null, findings,
+  });
+  const auth = (tool, extra) => ({ tool, status: 'SUCCESS', notApplicable: false, coverage: { filesSeen: 10, filesEligible: 10, filesParsed: 10, analysisCompleted: true, errors: [] }, notes: [], error: null, findings: [{ tool, rule: 'r1', file: root + '/src/a.js', line: 10, detail: 'evidence', ...extra }] });
+
+  check('breadth kind defaults to OBSERVATION_ONLY', signalClassOf('sentinel', { kind: 'import', detail: 'x' }), 'OBSERVATION_ONLY');
+  check('authority kind defaults to ACTIONABLE_SIGNAL', signalClassOf('codeql', { kind: 'dataflow', detail: 'x' }), 'ACTIONABLE_SIGNAL');
+  check('hypothesis lens defaults to OBSERVATION_ONLY', signalClassOf('purple', { kind: 'attack_path', detail: 'x' }), 'OBSERVATION_ONLY');
+  check('empty detail forces OBSERVATION_ONLY even from an authority', signalClassOf('codeql', { kind: 'dataflow', detail: '' }), 'OBSERVATION_ONLY');
+  check('missing detail forces OBSERVATION_ONLY', signalClassOf('semgrep', { rule: 'r', detail: undefined }), 'OBSERVATION_ONLY');
+  check('declared ACTIONABLE_SIGNAL is respected', signalClassOf('sentinel', { kind: 'exec', detail: 'api=eval', signalClass: 'ACTIONABLE_SIGNAL' }), 'ACTIONABLE_SIGNAL');
+
+  const breadthOnly = correlate(root, [senEnv([
+    { tool: 'sentinel', kind: 'import', rule: 'import', file: root + '/src/a.js', line: 1, detail: 'source=lodash', signalClass: 'OBSERVATION_ONLY' },
+    { tool: 'sentinel', kind: 'string', rule: 'string', file: root + '/src/b.js', line: 2, detail: 'value=https://x', signalClass: 'OBSERVATION_ONLY' },
+  ])], policies);
+  check('breadth-only Sentinel produces 0 candidates', breadthOnly.candidates.length, 0);
+  check('breadth-only Sentinel produces 2 observations', breadthOnly.observations.length, 2);
+  check('breadth observation is labeled OBSERVATION_ONLY', breadthOnly.observations[0].signalClass, 'OBSERVATION_ONLY');
+  check('breadth observation counts 0 actionable', breadthOnly.observations[0].actionableSignals, 0);
+
+  const actionable = correlate(root, [senEnv([
+    { tool: 'sentinel', kind: 'exec', rule: 'exec', file: root + '/src/c.js', line: 5, detail: 'api=eval arg=req.query.x sink=eval', signalClass: 'ACTIONABLE_SIGNAL' },
+  ])], policies);
+  check('Sentinel alone never becomes a candidate', actionable.candidates.length, 0);
+  check('actionable Sentinel signal is still only an observation', actionable.observations.length, 1);
+  check('actionable observation counts 1 actionable', actionable.observations[0].actionableSignals, 1);
+
+  const withAuthority = correlate(root, [
+    senEnv([{ tool: 'sentinel', kind: 'import', rule: 'import', file: root + '/src/a.js', line: 10, detail: 'source=x', signalClass: 'OBSERVATION_ONLY' }]),
+    auth('codeql'),
+  ], policies);
+  check('authority + breadth at same site is a candidate', withAuthority.candidates.length, 1);
+  check('candidate records its actionable signal count', withAuthority.candidates[0].actionableSignals, 1);
+  check('candidate records its breadth-only count', withAuthority.candidates[0].breadthOnlySignals, 1);
+  check('breadth signal is visibly not actionable in the candidate', withAuthority.candidates[0].signals.find((s) => s.tool === 'sentinel').signalClass, 'OBSERVATION_ONLY');
+
+  const silentAuthority = correlate(root, [auth('codeql', { detail: '' })], policies);
+  check('authority with empty detail cannot corroborate', silentAuthority.candidates.length, 0);
+  check('and becomes an observation instead', silentAuthority.observations.length, 1);
+}
+
+console.log('\nNO_ACTIONABLE_SENTINEL_FINDINGS is not a clean claim');
+{
+  const ran = (t, sc) => ({ tool: t, status: 'SUCCESS', verdict: 'NO_SIGNALS_FULL_COVERAGE', notApplicable: false, signalCounts: sc || null, coverage: { filesSeen: 10, filesEligible: 10, filesParsed: 10, analysisCompleted: true, errors: [] }, notes: [], error: null, findings: [] });
+  const closed = (t) => ({ tool: t, status: 'SKIPPED', verdict: 'NOT_APPLICABLE', notApplicable: true, coverage: { filesSeen: 0, filesEligible: 0, filesParsed: 0, analysisCompleted: true, errors: [] }, notes: ['NO_ACTIONABLE_SENTINEL_FINDINGS'], error: null, findings: [] });
+  const LENSES = ['codeql', 'semgrep', 'bandit', 'shellcheck', 'purple'];
+
+  const v = auditVerdict([ran('sentinel', { total: 120, actionable: 0, observationOnly: 120 }), ...LENSES.map(closed), ran('trivy'), ran('osv')], openCandidates([]));
+  check('closed Etapa B yields the sentinel-first verdict', v.verdict, 'NO_ACTIONABLE_SENTINEL_FINDINGS');
+  check('it never claims clean', v.canClaimClean, false);
+  check('it is marked not-a-security-claim', v.securityClaim, 'NOT_A_SECURITY_CLAIM');
+  check('analysis state is still FULL', v.analysisState, 'FULL');
+  check('statement says it is not SECURE', /NOT equivalent to SECURE/.test(v.statement), true);
+  check('statement says no deep analysis ran', /no deep dataflow analysis/.test(v.statement), true);
+
+  const withActionable = auditVerdict([ran('sentinel', { total: 120, actionable: 3, observationOnly: 117 }), ...LENSES.map(closed), ran('trivy')], openCandidates([]));
+  check('a nonzero actionable count never yields the sentinel-first verdict', withActionable.verdict, 'CLEAN_WITH_FULL_COVERAGE');
+  check('and a real Etapa A hit keeps the clean claim available', withActionable.canClaimClean, true);
+
+  const degraded = auditVerdict([ran('sentinel', { total: 5, actionable: 0, observationOnly: 5 }), ...LENSES.map(closed), { tool: 'trivy', status: 'ERROR', verdict: 'TOOL_ERROR', notApplicable: false, coverage: { filesSeen: 0, filesEligible: 0, filesParsed: 0, analysisCompleted: false, errors: ['boom'] }, notes: [], error: 'boom', findings: [] }], openCandidates([]));
+  check('a dead SCA tool outranks the sentinel-first verdict', degraded.verdict, 'PARTIAL_ANALYSIS');
+
+  const c = candidate('PLAUSIBLE_SECURITY_ISSUE');
+  check('an open candidate outranks the sentinel-first verdict', auditVerdict([ran('sentinel', { total: 5, actionable: 0, observationOnly: 5 }), ...LENSES.map(closed), ran('trivy')], openCandidates([c])).verdict, 'CANDIDATES_FOUND');
+
+  const allRan = auditVerdict([ran('sentinel', { total: 5, actionable: 0, observationOnly: 5 }), ran('codeql'), ran('semgrep'), ran('purple'), ran('trivy')], openCandidates([]));
+  check('sentinel-first verdict cannot fire when Etapa B actually ran', allRan.verdict, 'CLEAN_WITH_FULL_COVERAGE');
+}
+
 console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : failures + ' CHECK(S) FAILED'}`);
 process.exit(failures === 0 ? 0 : 1);

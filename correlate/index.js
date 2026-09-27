@@ -30,6 +30,37 @@ const AUTHORITY = {
 const SUFFICIENT_TO_CORROBORATE = new Set(['codeql', 'bandit', 'semgrep']);
 
 /**
+ * First-class signal class. A breadth lens produces volume, not severity, and
+ * volume must never be promotable to a candidate on its own. Tools that do not
+ * declare a class are treated by their standing: a pattern/dataflow/sink
+ * authority is actionable by construction, a breadth or hypothesis lens is not.
+ */
+const DEFAULT_SIGNAL_CLASS = {
+  sentinel: 'OBSERVATION_ONLY',
+  purple: 'OBSERVATION_ONLY',
+  shellcheck: 'OBSERVATION_ONLY',
+  codeql: 'ACTIONABLE_SIGNAL',
+  semgrep: 'ACTIONABLE_SIGNAL',
+  bandit: 'ACTIONABLE_SIGNAL',
+  trivy: 'ACTIONABLE_SIGNAL',
+  osv: 'ACTIONABLE_SIGNAL',
+};
+
+const isObservationClass = (c) => String(c || '').toUpperCase() !== 'ACTIONABLE_SIGNAL';
+
+/**
+ * An empty detail is never evidence. This guard is central and unconditional so
+ * that no tool, present or future, can promote a signal that carries no
+ * explanation into an actionable one.
+ */
+const signalClassOf = (tool, f) => {
+  if (f.detail === '' || f.detail === undefined || f.detail === null) return 'OBSERVATION_ONLY';
+  if (f.signalClass) return f.signalClass;
+  return DEFAULT_SIGNAL_CLASS[tool] || 'ACTIONABLE_SIGNAL';
+};
+
+
+/**
  * Dispositions that answer the question "is there a security issue here?" with a
  * definitive no. Only these may stop a candidate from blocking a clean claim.
  *
@@ -78,6 +109,7 @@ function dedup(root, envelopes, policies) {
     if (!buckets.has(key)) buckets.set(key, []);
     buckets.get(key).push({
       tool: e.tool, rule: f.rule || f.kind, line: f.line, detail: f.detail,
+      signalClass: signalClassOf(e.tool, f),
       verdictFromTool: f.verdictFromTool, sha256: f.sha256 || null,
       snippet: f.snippet || null,
       source: f.source || null, sink: f.sink || null,
@@ -116,6 +148,7 @@ const nonProduction = (root, envelopes, policies) => {
 const signalView = (s) => ({
   tool: s.tool, authority: AUTHORITY[s.tool], rule: s.rule, line: s.line,
   file: s.file || null,
+  signalClass: s.signalClass || 'ACTIONABLE_SIGNAL',
   verdictFromTool: s.verdictFromTool || null,
   detail: s.detail,
   // Evidence that must survive so a reviewer never has to re-clone the target.
@@ -134,7 +167,12 @@ function correlate(root, envelopes, policies) {
   let n = 0;
   for (const [key, signals] of groups) {
     const tools = [...new Set(signals.map((s) => s.tool))];
-    const authorities = tools.filter((t) => SUFFICIENT_TO_CORROBORATE.has(t));
+    // A tool only corroborates if the signal it contributed survived the actionability
+    // gate. An authority that emitted an empty detail has stated nothing, so counting
+    // it here would launder a silent tool into a confidence word.
+    const authorities = tools.filter((t) => SUFFICIENT_TO_CORROBORATE.has(t)
+      && signals.some((s) => s.tool === t && !isObservationClass(s.signalClass)));
+    const actionableSignals = signals.filter((s) => !isObservationClass(s.signalClass));
     const file = signals[0].file || key.split('|')[1];
     const line = signals.find((s) => s.line) ? signals.find((s) => s.line).line : null;
     const purpleSaysEntailed = signals.some((s) => s.verdictFromTool === 'ENTAILED');
@@ -145,10 +183,13 @@ function correlate(root, envelopes, policies) {
       observations.push({
         observationId: 'OBS-' + String(observations.length + 1).padStart(4, '0'),
         file, line, tools,
+        signalClass: 'OBSERVATION_ONLY',
+        signalCount: signals.length,
+        actionableSignals: actionableSignals.length,
         signals: signals.map(signalView),
         purpleEntailed: purpleSaysEntailed,
         state: STATE.TRIAGED,
-        status: 'BREADTH_SIGNAL_ONLY_NOT_A_CANDIDATE',
+        status: actionableSignals.length ? 'BREADTH_SIGNAL_ONLY_NOT_A_CANDIDATE' : 'BREADTH_SIGNAL_NO_EVIDENCE',
         note: 'no dataflow or pattern authority corroborated this; it is a lead, not a finding',
       });
       continue;
@@ -160,6 +201,9 @@ function correlate(root, envelopes, policies) {
       file, line,
       signals: signals.map(signalView),
       tools,
+      signalCount: signals.length,
+      actionableSignals: actionableSignals.length,
+      breadthOnlySignals: signals.length - actionableSignals.length,
       corroboratingAuthorities: authorities,
       confidence,
       state: STATE.CORROBORATED,
@@ -240,13 +284,27 @@ function auditVerdict(envs, candidates) {
   // report ends up calling a run with dead tools "clean", or calling a run with
   // 12 real candidates "degraded" and burying the candidates.
   const analysisState = hardFailed.length ? 'PARTIAL_ANALYSIS' : limited.length ? 'LIMITED_COVERAGE' : 'FULL';
-  const canClaimClean = degraded.length === 0 && candidates.length === 0;
-  const verdict = candidates.length > 0 ? 'CANDIDATES_FOUND' : hardFailed.length ? 'PARTIAL_ANALYSIS' : limited.length ? 'CLEAN_WITH_LIMITATIONS' : 'CLEAN_WITH_FULL_COVERAGE';
+
+  // NO_ACTIONABLE_SENTINEL_FINDINGS is a real terminal state and is NOT a clean
+  // claim. It means discovery ran, produced breadth, and the breadth contained
+  // nothing that earned an expensive lens. That is a statement about Sentinel's
+  // output, not about the target's security, so it can never set canClaimClean.
+  const senEnv = applicable.find((e) => e.tool === 'sentinel');
+  const etapaBClosed = !!senEnv && !hardFailed.length && !limited.length
+    && SOURCE_LENSES.every((t) => notApplicable.some((e) => e.tool === t))
+    && !(senEnv.signalCounts && senEnv.signalCounts.actionable > 0);
+
+  const canClaimClean = degraded.length === 0 && candidates.length === 0 && !etapaBClosed;
+  const verdict = candidates.length > 0 ? 'CANDIDATES_FOUND'
+    : etapaBClosed ? 'NO_ACTIONABLE_SENTINEL_FINDINGS'
+      : hardFailed.length ? 'PARTIAL_ANALYSIS'
+        : limited.length ? 'CLEAN_WITH_LIMITATIONS' : 'CLEAN_WITH_FULL_COVERAGE';
 
   return {
     verdict,
     analysisState,
     canClaimClean,
+    securityClaim: etapaBClosed ? 'NOT_A_SECURITY_CLAIM' : null,
     requiredTools: required.length,
     notApplicableTools: notApplicable.map((e) => e.tool),
     degradedTools: degraded.map((e) => ({ tool: e.tool, status: e.status, verdict: e.verdict, reason: (e.coverage.errors || [])[0] || e.error || (e.notes || [])[0] || null })),
@@ -255,14 +313,17 @@ function auditVerdict(envs, candidates) {
     candidateCount: candidates.length,
     statement: verdict === 'CANDIDATES_FOUND'
       ? `${candidates.length} candidate(s) require human adjudication. ${degraded.length ? degraded.length + ' tool(s) also degraded, so absence of further findings is not evidence of absence.' : 'Tool coverage was complete.'}`
-      : hardFailed.length
-        ? `${hardFailed.length} of ${applicable.length} applicable tools did not run to completion (${hardFailed.map((e) => e.tool + '=' + e.status).join(', ')}). Absence of findings is NOT evidence of absence.`
-        : limited.length
-          ? `All ${applicable.length} applicable tools completed, but ${limited.length} had limited coverage (${limited.map((e) => e.tool).join(', ')}). Absence of findings is NOT evidence of absence.`
-          : `All ${required.length} applicable tools completed with full coverage.` +
-            (notApplicable.length ? ` ${notApplicable.length} not applicable to this target (${notApplicable.map((e) => e.tool).join(', ')}), excluded from the claim.` : ''),
+      : etapaBClosed
+        ? `Sentinel (Etapa A) completed with full coverage and produced 0 ACTIONABLE_SIGNAL, so Etapa B was not opened. This is NOT a security claim and NOT equivalent to SECURE: breadth lenses do not prove absence of issues, and no deep dataflow analysis was performed on this target.`
+        : hardFailed.length
+          ? `${hardFailed.length} of ${applicable.length} applicable tools did not run to completion (${hardFailed.map((e) => e.tool + '=' + e.status).join(', ')}). Absence of findings is NOT evidence of absence.`
+          : limited.length
+            ? `All ${applicable.length} applicable tools completed, but ${limited.length} had limited coverage (${limited.map((e) => e.tool).join(', ')}). Absence of findings is NOT evidence of absence.`
+            : `All ${required.length} applicable tools completed with full coverage.` +
+              (notApplicable.length ? ` ${notApplicable.length} not applicable to this target (${notApplicable.map((e) => e.tool).join(', ')}), excluded from the claim.` : ''),
   };
 }
 const STATUS_SKIPPED = 'SKIPPED';
+const SOURCE_LENSES = ['codeql', 'semgrep', 'bandit', 'shellcheck', 'purple'];
 
-module.exports = { STATE, AUTHORITY, PRIORITY, REVIEW, RESOLVED_NO_ISSUE, openCandidates, correlate, adjudicate, auditVerdict, scopeOf, rel, dedup, nonProduction };
+module.exports = { STATE, AUTHORITY, PRIORITY, REVIEW, RESOLVED_NO_ISSUE, openCandidates, correlate, adjudicate, auditVerdict, scopeOf, rel, dedup, nonProduction, signalClassOf, isObservationClass, DEFAULT_SIGNAL_CLASS };

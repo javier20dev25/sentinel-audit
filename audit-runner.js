@@ -9,9 +9,14 @@
  *
  * Commands:
  *   preflight <repo...>        cheap readiness check, no analysis
- *   audit <repo>               full incremental pipeline
+ *   audit <repo>               two-stage pipeline: Etapa A discovery, Etapa B on demand
  *   report <expedienteDir>     render the markdown report
  *   doctor                     tool health + version table
+ *
+ * Etapa A is Sentinel, always. Etapa B (CodeQL, Semgrep, Bandit, ShellCheck) opens
+ * only when Etapa A produced an ACTIONABLE_SIGNAL, and its result lands as
+ * NO_ACTIONABLE_SENTINEL_FINDINGS, which is not a clean claim and not SECURE.
+ * --force-etapa-b runs the verifiers anyway, for a target under manual review.
  */
 const fs = require('fs');
 const path = require('path');
@@ -98,7 +103,7 @@ async function main() {
   }
 
   if (cmd === 'audit') {
-    if (!targets.length) { console.error('usage: audit <repo> [--name x] [--skip-specialists] [--skip-purple] [--purple-full]'); process.exit(2); }
+    if (!targets.length) { console.error('usage: audit <repo> [--name x] [--force-etapa-b] [--skip-specialists] [--skip-purple] [--purple-full]'); process.exit(2); }
     const repo = targets[0];
     console.log(`${c.bold}Sentinel Audit Runner${c.off}  ${repo}`);
     const res = audit(repo, {
@@ -106,6 +111,7 @@ async function main() {
       skipSpecialists: has('skip-specialists'),
       skipPurple: has('skip-purple'),
       purpleFull: has('purple-full'),
+      forceEtapaB: has('force-etapa-b'),
       maxScopeFiles: Number(flag('max-scope-files', 40)),
       keepDb: has('keep-db'),
     });

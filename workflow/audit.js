@@ -8,10 +8,34 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { STATUS, loadConfig, run, gitOut, dirBytes } = require('../lib/core');
+const { STATUS, loadConfig, run, which, expand, gitOut, dirBytes } = require('../lib/core');
 const A = require('../adapters');
 const { correlate, auditVerdict, openCandidates, STATE, adjudicate } = require('../correlate');
 const { preflight } = require('./preflight');
+
+/**
+ * A finding is only reproducible if you know which tool produced it. Every
+ * envelope carries the resolved version, and the vendored engine is identified
+ * by its commit rather than a version string it does not publish.
+ */
+function toolVersion(name, tools) {
+  if (name === 'sentinel' || name === 'purple') {
+    const sp = tools.sentinelPurple;
+    if (!sp || !fs.existsSync(sp.repo)) return null;
+    const head = gitOut(sp.repo, 'rev-parse', 'HEAD');
+    if (!head || !String(head).trim()) return null;
+    const dirty = !!gitOut(sp.repo, 'status', '--porcelain');
+    return `engine@${String(head).trim()}${dirty ? '+dirty' : ''}`;
+  }
+  const cfg = tools[name];
+  if (!cfg || !cfg.bin) return null;
+  // The configured path may carry %LOCALAPPDATA%/%USERPROFILE%, so it has to be
+  // expanded before it is spawned. Passing the raw template silently yields a
+  // null version for every tool that is not a bare PATH lookup.
+  const bin = expand(cfg.bin);
+  const w = which(bin);
+  return w.available ? (w.version || 'unknown') : null;
+}
 
 function makeCtx(repoRoot, inv, pre, workDir, opts = {}) {
   const { tools, policies } = loadConfig();
@@ -75,48 +99,62 @@ function audit(repoPath, opts = {}) {
   }
 
   const ctx = makeCtx(root, pre.inv, pre, workDir, opts);
+  const TOOL_NAMES = ['sentinel', 'purple', 'codeql', 'semgrep', 'bandit', 'shellcheck', 'trivy', 'osv'];
+  const versions = {};
+  for (const n of TOOL_NAMES) versions[n] = toolVersion(n, ctx.tools);
+  expediente.toolVersions = versions;
 
   // ---- track 1: cheap breadth. Sentinel first, always. ----
   const sen = A.sentinel(root, ctx); ctx.charge('sentinel', sen.cost.wallClockMs);
+  sen.version = versions.sentinel;
   expediente.tools.sentinel = sen;
 
-  // ---- shortlist from Sentinel; fall back to production files if it is silent ----
-  let shortlist = [...new Set(sen.findings.map((f) => f.file).filter(Boolean))];
-  let shortlistOrigin = 'sentinel';
+  // ---- Etapa A -> Etapa B gate ----
+  // Only an ACTIONABLE_SIGNAL may open a file to an expensive lens. A lone
+  // `import` or string-literal observation is inventory, not a lead, and using
+  // it as a shortlist is what previously dragged entire repositories into
+  // CodeQL and reported the resulting volume as unverified security issues.
+  const actionableFindings = sen.findings.filter((f) => f.signalClass === 'ACTIONABLE_SIGNAL');
+  let shortlist = [...new Set(actionableFindings.map((f) => f.file).filter(Boolean))];
+  let shortlistOrigin = 'sentinel:actionable-signal';
   if (!shortlist.length) {
-    shortlistOrigin = 'fallback:no-sentinel-signal';
-    const take = opts.maxScopeFiles || 40;
-    const walk = (d, depth) => {
-      if (shortlist.length >= take || depth > 10) return;
-      let ents; try { ents = fs.readdirSync(d, { withFileTypes: true }); } catch (e) { return; }
-      for (const e of ents) {
-        if (shortlist.length >= take) return;
-        if (['node_modules', '.git', 'dist', 'build', '.next', 'vendor', 'test', 'tests', '__tests__', 'examples'].includes(e.name)) continue;
-        const f = path.join(d, e.name);
-        if (e.isDirectory()) walk(f, depth + 1);
-        else if (/\.(ts|tsx|js|jsx|mjs|cjs|py|go|java|rb|php)$/.test(e.name)) shortlist.push(f);
-      }
-    };
-    walk(root, 0);
+    shortlistOrigin = 'none:no-actionable-sentinel-signal';
   }
-  expediente.shortlist = { origin: shortlistOrigin, count: shortlist.length };
+  expediente.shortlist = {
+    origin: shortlistOrigin,
+    count: shortlist.length,
+    // The promoted file list, relative to the target. Without it a reader can
+    // see that two files were promoted but not which, so "promoted to Etapa B"
+    // cannot be checked against "rejected before Etapa B".
+    files: shortlist.map((f) => path.relative(root, f).split(path.sep).join('/')),
+    sentinelTotal: sen.findings.length,
+    sentinelActionable: actionableFindings.length,
+    sentinelObservationOnly: sen.findings.length - actionableFindings.length,
+  };
 
   // ---- track 2: attack hypothesis, focused ----
-  // Purple is opt-out and, when opted out, is recorded as notApplicable rather
-  // than SKIPPED. SKIPPED is a coverage failure and would force
-  // PARTIAL_ANALYSIS on every target, which would be a false claim: Purple is an
-  // attack-hypothesis lens, it is not in SUFFICIENT_TO_CORROBORATE, and its own
-  // measured true-positive rate is 0. Declaring it "not applicable" states the
-  // decision in the expediente instead of hiding it.
-  const pur = opts.skipPurple ? notApplicableLike('purple', 'purple deliberately excluded by --skip-purple: attack-hypothesis lens, not a coverage requirement')
-    : A.purple(root, ctx, { scope: opts.purpleFull ? null : shortlist });
+  // Purple is archived: it is not in the default path and is not a coverage
+  // requirement. It is recorded as notApplicable so the decision is stated in the
+  // expediente rather than hidden, and so it never forces PARTIAL_ANALYSIS.
+  // An empty shortlist must never be passed through as "no scope": A.purple
+  // treats an empty scope list as null and would then walk the entire repository.
+  const purpleScope = opts.purpleFull ? null : shortlist;
+  const purpleWouldScanRoot = opts.purpleFull || !shortlist.length;
+  const pur = (opts.skipPurple || !opts.purpleFull && purpleWouldScanRoot)
+    ? notApplicableLike('purple', opts.skipPurple
+      ? 'purple deliberately excluded by --skip-purple: attack-hypothesis lens, not a coverage requirement'
+      : 'purple archived and no ACTIONABLE_SIGNAL produced a scope; refusing to fall back to a whole-repository walk')
+    : A.purple(root, ctx, { scope: purpleScope });
   ctx.charge('purple', pur.cost.wallClockMs);
+  pur.version = versions.purple;
   expediente.tools.purple = pur;
 
   // ---- track 3: the verifiers ----
   const envs = [sen, pur];
   const push = (name, fn, o) => {
-    const e = fn(root, ctx, o); ctx.charge(name, e.cost.wallClockMs); envs.push(e); expediente.tools[name] = e;
+    const e = fn(root, ctx, o); ctx.charge(name, e.cost.wallClockMs);
+    e.version = e.version || versions[name] || null;
+    envs.push(e); expediente.tools[name] = e;
     process.stderr.write(`   ${name.padEnd(12)} ${e.status.padEnd(11)} ${String(e.findingCount).padStart(5)} signals  ${e.verdict}\n`);
     return e;
   };
@@ -128,11 +166,16 @@ function audit(repoPath, opts = {}) {
     // Skips every source analyser, but NOT SCA: the cheap track still runs, and
     // each skip is recorded as SKIPPED so the verdict stays honest.
     for (const t of ['codeql', 'semgrep', 'bandit', 'shellcheck']) push(t, () => emptyLike(t));
+  } else if (!shortlist.length && !opts.forceEtapaB) {
+    // Etapa B stays closed. notApplicable, never SKIPPED: no lens was withheld
+    // from a signal that existed, so this is a decision and not a coverage gap.
+    const why = 'NO_ACTIONABLE_SENTINEL_FINDINGS: Etapa A produced no ACTIONABLE_SIGNAL, so Etapa B was not opened';
+    for (const t of ['codeql', 'semgrep', 'bandit', 'shellcheck']) push(t, () => notApplicableLike(t, why));
   } else {
     push('codeql', A.codeql, { language: pre.inv.mainLanguage, ram: pre.cost.requiredRamMB });
     push('semgrep', A.semgrep, { scope: opts.purpleFull ? null : shortlist, maxTargets: opts.maxScopeFiles || 25 });
-    push('bandit', A.bandit);
-    push('shellcheck', A.shellcheck);
+    push('bandit', A.bandit, { scope: opts.purpleFull ? null : shortlist, maxTargets: opts.maxScopeFiles || 50 });
+    push('shellcheck', A.shellcheck, { scope: opts.purpleFull ? null : shortlist, maxTargets: opts.maxScopeFiles || 50 });
   }
   // ---- track 4: cheap parallel SCA/secrets ----
   push('trivy', A.trivy);
@@ -147,7 +190,14 @@ function audit(repoPath, opts = {}) {
   }
   expediente.candidates = candidates;
   expediente.observations = observations;
-  expediente.nonProductionSignals = nonProductionSignals.slice(0, 200);
+  const NONPROD_CAP = 200;
+  expediente.nonProductionTotal = nonProductionSignals.length;
+  expediente.nonProductionTruncated = nonProductionSignals.length > NONPROD_CAP;
+  expediente.nonProductionSignals = nonProductionSignals.slice(0, NONPROD_CAP);
+  if (expediente.nonProductionTruncated) {
+    expediente.nonProductionFullArtifact = path.join(workDir, 'non-production-signals.json');
+    fs.writeFileSync(expediente.nonProductionFullArtifact, JSON.stringify(nonProductionSignals, null, 2));
+  }
   expediente.auditVerdict = auditVerdict(envs, openCandidates(candidates));
   expediente.finishedAt = new Date().toISOString();
   expediente.totalWallClockMs = Date.now() - t0;
