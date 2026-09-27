@@ -152,14 +152,20 @@ async function main() {
     if (disp && !policies.dispositions.includes(disp)) {
       console.error(`unknown disposition "${disp}". allowed: ${policies.dispositions.join(', ')}`); process.exit(2);
     }
-    adjudicate(cand, { disposition: disp, state: 'MANUALLY_VERIFIED', severity: flag('severity'), rationale: flag('rationale'), groundTruth: flag('ground-truth') });
-    e.adjudications = (e.adjudications || []).concat([{ candidateId: cand.candidateId, at: new Date().toISOString(), by: 'human', disposition: cand.disposition, severity: cand.severity, rationale: cand.rationale }]);
+    const PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
+    const prio = String(flag('priority') || '').trim().toUpperCase();
+    if (prio && !PRIORITIES.includes(prio)) {
+      console.error(`${c.red}--priority must be one of ${PRIORITIES.join(', ')} (investigation priority, not severity)${c.off}`);
+      process.exit(2);
+    }
+    adjudicate(cand, { disposition: disp, state: 'MANUALLY_VERIFIED', severity: flag('severity'), priority: prio || null, rationale: flag('rationale'), groundTruth: flag('ground-truth') });
+    e.adjudications = (e.adjudications || []).concat([{ candidateId: cand.candidateId, at: new Date().toISOString(), by: 'human', disposition: cand.disposition, severity: cand.severity, investigationPriority: cand.investigationPriority || null, rationale: cand.rationale }]);
     const av = auditVerdict(Object.values(e.tools).map((t) => ({ ...t, tool: t.tool })), openCandidates(e.candidates));
     e.auditVerdict = av;
     fs.writeFileSync(file, JSON.stringify(e, null, 2));
     const report = renderReport(e);
     console.log(`${c.cyn}${cand.candidateId}${c.off} -> ${c.bold}${cand.disposition}${c.off}${cand.severity ? ' (' + cand.severity + ')' : ''}`);
-    console.log(`  fingerprint ${cand.fingerprint}  reportable=${cand.reportable}`);
+    console.log(`  fingerprint ${cand.fingerprint}  reportable=${cand.reportable}${cand.investigationPriority ? '  investigation=' + cand.investigationPriority : ''}`);
     console.log(`  rationale: ${cand.rationale || '(none recorded)'}`);
     console.log(`  audit verdict now: ${V(av.verdict)}   analysis=${V(av.analysisState)}   canClaimClean=${av.canClaimClean}`);
     console.log(`  report: ${report}`);

@@ -171,6 +171,18 @@ function correlate(root, envelopes, policies) {
   return { candidates, observations, nonProductionSignals: nonProduction(root, envelopes, policies) };
 }
 
+/**
+ * Investigation priority, set by the analyst. This is NOT vulnerability
+ * severity and must never be read as one: it answers "how soon should a human
+ * look at this", not "how bad is this". A confirmed misconfiguration can be
+ * P3, and an unproven hypothesis on a hot path can be P0.
+ *
+ * It is deliberately absent from every verdict computation below. A candidate
+ * keeps a run open because of its disposition, never because of its priority,
+ * so priority can never be used to quietly close or promote a finding.
+ */
+const PRIORITY = { P0: 'P0', P1: 'P1', P2: 'P2', P3: 'P3' };
+
 /** Apply an analyst decision. The runner never makes this call itself. */
 function adjudicate(candidate, decision) {
   const d = decision || {};
@@ -180,6 +192,7 @@ function adjudicate(candidate, decision) {
   candidate.classification = d.classification || null;
   candidate.groundTruth = d.groundTruth || null;
   candidate.impact = d.impact || null;
+  candidate.investigationPriority = d.priority || null;
   candidate.rationale = d.rationale || null;
   candidate.reportable = candidate.disposition === 'CONFIRMED_SECURITY_ISSUE' || candidate.disposition === 'STRONG_SECURITY_CANDIDATE';
   candidate.fingerprint = crypto.createHash('sha256').update(candidate.file + ':' + (candidate.line || 0)).digest('hex').slice(0, 16);
@@ -233,4 +246,4 @@ function auditVerdict(envs, candidates) {
 }
 const STATUS_SKIPPED = 'SKIPPED';
 
-module.exports = { STATE, AUTHORITY, RESOLVED_NO_ISSUE, openCandidates, correlate, adjudicate, auditVerdict, scopeOf, rel, dedup, nonProduction };
+module.exports = { STATE, AUTHORITY, PRIORITY, RESOLVED_NO_ISSUE, openCandidates, correlate, adjudicate, auditVerdict, scopeOf, rel, dedup, nonProduction };

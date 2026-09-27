@@ -10,7 +10,7 @@
  *
  * Run: node tools/verdict-matrix.js
  */
-const { openCandidates, RESOLVED_NO_ISSUE, adjudicate, auditVerdict } = require('../correlate');
+const { openCandidates, RESOLVED_NO_ISSUE, PRIORITY, adjudicate, auditVerdict } = require('../correlate');
 
 const HEALTHY = [
   { tool: 'codeql', status: 'RAN', verdict: 'FULL_COVERAGE', coverage: { errors: [] }, notes: [], error: null },
@@ -88,6 +88,32 @@ for (const d of ['CONFIRMED_SECURITY_ISSUE', 'STRONG_SECURITY_CANDIDATE', 'PLAUS
 
 console.log('\ndegraded tool still blocks clean regardless of candidates');
 check('degraded + all-safe candidates', auditVerdict([SKIPPED_OSV], openCandidates([(() => { const c = candidate('BENIGN'); adjudicate(c, { disposition: 'BENIGN' }); return c; })()])).canClaimClean, false);
+
+console.log('\ninvestigation priority is verdict-neutral and never severity');
+{
+  // Same disposition, every priority: the verdict must not move.
+  for (const disp of ['CONFIRMED_SECURITY_ISSUE', 'PLAUSIBLE_SECURITY_ISSUE', 'BENIGN', 'UNRESOLVED']) {
+    const seen = new Set();
+    for (const p of ['', 'P0', 'P1', 'P2', 'P3']) {
+      const c = candidate(disp);
+      adjudicate(c, { disposition: disp, priority: p || null });
+      const v = auditVerdict(HEALTHY, openCandidates([c]));
+      seen.add(`${v.verdict}|${v.canClaimClean}|${c.reportable}`);
+    }
+    check(`${disp}: identical verdict across P0-P3 and unset`, seen.size, 1);
+  }
+  // Priority must not leak into the reportable flag either.
+  const p0 = candidate('BENIGN'); adjudicate(p0, { disposition: 'BENIGN', priority: 'P0' });
+  const p3 = candidate('BENIGN'); adjudicate(p3, { disposition: 'BENIGN', priority: 'P3' });
+  check('P0 vs P3 same reportable', p0.reportable, p3.reportable);
+  // P0 on a no-issue disposition must not resurrect it as open.
+  check('P0 + BENIGN stays closed', openCandidates([p0]).length, 0);
+  check('P0 stored on candidate', p0.investigationPriority, 'P0');
+  check('priority unset stays null', candidate('BENIGN').investigationPriority, undefined);
+  const c2 = candidate('BENIGN'); adjudicate(c2, { disposition: 'BENIGN' });
+  check('adjudicate without priority leaves it null', c2.investigationPriority, null);
+  check('PRIORITY vocabulary', Object.keys(PRIORITY).sort().join(','), 'P0,P1,P2,P3');
+}
 
 console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : failures + ' CHECK(S) FAILED'}`);
 process.exit(failures === 0 ? 0 : 1);

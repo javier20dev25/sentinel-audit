@@ -3,6 +3,46 @@
 All notable changes to the audit runner. Every entry is a freeze tag; nothing
 in this repository is released without one.
 
+## v1.4 - `audit-runner-v1.4-freeze`
+
+Added: investigation priority, as a field the analyst sets and no verdict reads.
+
+The first three-repository campaign run produced 75 candidates, none
+corroborated by more than one tool, all from CodeQL alone. The bottleneck is
+therefore adjudication, not scanning, and every candidate being equal weight is
+what makes that bottleneck expensive.
+
+`--priority P0|P1|P2|P3` records how soon a human should look at something. It
+is explicitly not severity and is stored as `investigationPriority` beside the
+disposition rather than in a side file, because a second source of truth is how
+the v1.2 and v1.3 verdict bugs happened.
+
+- `correlate/index.js`: `PRIORITY` vocabulary, stored on the candidate, and
+  recorded in the adjudication log.
+- `audit-runner.js`: `--priority`, validated against the vocabulary and rejected
+  with exit 2 otherwise.
+- `reports/expediente.js`: priority and disposition appear in the candidate
+  table, so the work queue is visible in the primary artifact.
+
+Two properties are enforced by `tools/verdict-matrix.js` rather than by
+convention:
+
+1. Priority is verdict-neutral. For every disposition, the verdict,
+   `canClaimClean` and `reportable` are identical across P0, P1, P2, P3 and
+   unset. A priority can never close a finding or promote one.
+2. Priority is not severity. `P0 + BENIGN` stays closed, and P0 on a no-issue
+   disposition does not resurrect it.
+
+Also fixed while triaging: the candidate table printed `path.basename`, which
+collapsed all sixteen Vite playground worker fixtures onto `worker.js:1` and hid
+that they were fixtures at all. Locations now keep enough path to tell two
+findings apart, which is what makes `playground/...` visible to a reviewer.
+
+The 25 untriaged Vite candidates were left at their default disposition and
+default state. They are not marked UNRESOLVED, because "nobody has read this
+yet" is not an analyst decision and recording it as one would let a backlog
+drain on paper while nothing was actually reviewed.
+
 ## v1.3 - `audit-runner-v1.3-freeze`
 
 Fixed: an adjudicated candidate could vanish and leave a false clean claim.
