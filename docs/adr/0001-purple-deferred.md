@@ -91,9 +91,19 @@ Reaching the bar is a reason to unfreeze, not a reason to assume it.
 
 ## Note on scope
 
-This ADR changes the pipeline's roster, not its code. `adapters/index.js`
-still contains a Purple adapter and the runner still supports
-`--skip-specialists`. Making Purple non-default is a deliberate, separate
-change that has **not** been made, because the runner is frozen at `v1.2` and
-the standing instruction is no further changes until a real audit justifies
-one. That gap is deliberate and recorded here rather than quietly closed.
+This ADR originally changed the pipeline's roster without changing its code:
+`adapters/index.js` still had a Purple adapter, and excluding Purple meant
+`--skip-specialists`, which records a tool as `SKIPPED`. That is a coverage
+failure, so deliberately leaving Purple out was indistinguishable from a tool
+that broke, and it would have forced `PARTIAL_ANALYSIS` on every target.
+
+As of `v1.5` the gap is closed on the runner side. `--skip-purple` records
+Purple as `NOT_APPLICABLE`, which keeps it out of `required` and `degraded` in
+`auditVerdict` and states the decision in the expediente. A genuinely skipped
+tool still degrades; that distinction is asserted in
+`tools/verdict-matrix.js` rather than left to convention.
+
+`adapters/index.js` still contains the Purple adapter and it remains runnable.
+The exclusion is opt-in and recorded, not silent. Sentinel and Purple are
+unmodified by this change.
+

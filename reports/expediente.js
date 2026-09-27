@@ -72,17 +72,21 @@ function renderReport(e) {
   if (!e.candidates.length) {
     w('None. Note what that does and does not mean: see §1 before reading this as clean.');
   } else {
-    w('| ID | Priority | Disposition | Confidence | State | Tools | Location |');
-    w('|---|---|---|---|---|---|---|');
-    // Enough path to tell two findings apart. A bare basename collapsed all
-    // sixteen playground worker fixtures onto "worker.js:1", which hid that they
-    // were fixtures at all.
+    w('| ID | Review | Priority | Disposition | Confidence | State | Tools | Location |');
+    w('|---|---|---|---|---|---|---|---|');
+    // Show the stored repo-relative path in full. Truncating it to a few
+    // segments or reducing it to a basename is what made sixteen
+    // playground/ssr/server.js fixtures collapse onto one indistinguishable
+    // "server.js" row, and it also swallowed the packages/ prefix that
+    // separates vite's own source from its playgrounds.
+    const root = e.repo || e.repository;
     const loc = (f) => {
-      const parts = String(f).split(/[\\/]/).filter((p) => p && !/^[A-Za-z]:$/.test(p));
-      const rel = parts.length > 3 ? parts.slice(-3).join('/') : parts.join('/');
-      return rel.replace(/^(repos|clone|src)\//, '');
+      let s = String(f || '').replace(/\\/g, '/');
+      const r = String(root || '').replace(/\\/g, '/');
+      if (r && s.toLowerCase().startsWith(r.toLowerCase())) s = s.slice(r.length);
+      return s.replace(/^\/+/, '') || '(unknown)';
     };
-    for (const c2 of e.candidates) w(`| ${c2.candidateId} | ${c2.investigationPriority || '-'} | ${c2.disposition || '-'} | ${c2.confidence} | ${c2.state} | ${c2.tools.join('+')} | \`${loc(c2.file)}:${c2.line || '?'}\` |`);
+    for (const c2 of e.candidates) w(`| ${c2.candidateId} | ${c2.reviewState || (c2.state === 'MANUALLY_VERIFIED' ? 'REVIEWED' : 'UNREVIEWED')} | ${c2.investigationPriority || '-'} | ${c2.disposition || '-'} | ${c2.confidence} | ${c2.state} | ${c2.tools.join('+')} | \`${loc(c2.file)}:${c2.line || '?'}\` |`);
     w('');
     for (const c2 of e.candidates) {
       w(`### ${c2.candidateId} — \`${c2.file}:${c2.line || '?'}\``);

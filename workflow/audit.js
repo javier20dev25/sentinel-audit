@@ -102,7 +102,14 @@ function audit(repoPath, opts = {}) {
   expediente.shortlist = { origin: shortlistOrigin, count: shortlist.length };
 
   // ---- track 2: attack hypothesis, focused ----
-  const pur = A.purple(root, ctx, { scope: opts.purpleFull ? null : shortlist });
+  // Purple is opt-out and, when opted out, is recorded as notApplicable rather
+  // than SKIPPED. SKIPPED is a coverage failure and would force
+  // PARTIAL_ANALYSIS on every target, which would be a false claim: Purple is an
+  // attack-hypothesis lens, it is not in SUFFICIENT_TO_CORROBORATE, and its own
+  // measured true-positive rate is 0. Declaring it "not applicable" states the
+  // decision in the expediente instead of hiding it.
+  const pur = opts.skipPurple ? notApplicableLike('purple', 'purple deliberately excluded by --skip-purple: attack-hypothesis lens, not a coverage requirement')
+    : A.purple(root, ctx, { scope: opts.purpleFull ? null : shortlist });
   ctx.charge('purple', pur.cost.wallClockMs);
   expediente.tools.purple = pur;
 
@@ -149,6 +156,19 @@ function audit(repoPath, opts = {}) {
   fs.writeFileSync(path.join(workDir, 'expediente.json'), JSON.stringify(expediente, null, 2));
   return { expediente, workDir, pre, shortlist };
 }
+
+/**
+ * A tool that was deliberately not used, as distinct from one that failed.
+ * `notApplicable` is what keeps it out of `required` and `degraded` in
+ * auditVerdict, so opting out states the decision in the expediente instead of
+ * silently degrading the run. Same shape the bandit and shellcheck adapters
+ * already return when a target has no Python or no shell.
+ */
+const notApplicableLike = (tool, note) => ({
+  tool, status: STATUS.SKIPPED, verdict: 'NOT_APPLICABLE', findings: [], findingCount: 0, notApplicable: true,
+  coverage: { filesSeen: 0, filesEligible: 0, filesParsed: 0, analysisCompleted: true, errors: [] },
+  cost: { wallClockMs: 0, timedOut: false }, notes: [note], error: null, rawArtifact: null,
+});
 
 const emptyLike = (tool) => ({
   tool, status: STATUS.SKIPPED, verdict: 'SKIPPED', findings: [], findingCount: 0, notApplicable: false,

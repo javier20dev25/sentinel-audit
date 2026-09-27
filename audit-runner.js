@@ -98,12 +98,13 @@ async function main() {
   }
 
   if (cmd === 'audit') {
-    if (!targets.length) { console.error('usage: audit <repo> [--name x] [--skip-specialists] [--purple-full]'); process.exit(2); }
+    if (!targets.length) { console.error('usage: audit <repo> [--name x] [--skip-specialists] [--skip-purple] [--purple-full]'); process.exit(2); }
     const repo = targets[0];
     console.log(`${c.bold}Sentinel Audit Runner${c.off}  ${repo}`);
     const res = audit(repo, {
       name: typeof flag('name') === 'string' ? flag('name') : undefined,
       skipSpecialists: has('skip-specialists'),
+      skipPurple: has('skip-purple'),
       purpleFull: has('purple-full'),
       maxScopeFiles: Number(flag('max-scope-files', 40)),
       keepDb: has('keep-db'),

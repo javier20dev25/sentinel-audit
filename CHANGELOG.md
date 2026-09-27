@@ -3,6 +3,54 @@
 All notable changes to the audit runner. Every entry is a freeze tag; nothing
 in this repository is released without one.
 
+## v1.5 - `audit-runner-v1.5-freeze`
+
+Added: review state, and a real opt-out for Purple. Fixed: candidate locations
+printed a path that could not be traced back to a file.
+
+Adjudicating 32 of 57 Vite candidates produced a number that was wrong in an
+interesting way: 25 candidates left. The report could not distinguish "an
+analyst read this and kept the hypothesis" from "nobody has read this yet",
+because a candidate's default disposition is `PLAUSIBLE_SECURITY_ISSUE`, which
+is a real analytic conclusion. A backlog that looks triaged but is not is worse
+than a large one, because it stops being counted.
+
+**Review state** is orthogonal to disposition:
+
+    PLAUSIBLE + UNREVIEWED  the tool produced it, no human has adjudicated it
+    PLAUSIBLE + REVIEWED    an analyst looked and decided the hypothesis stands
+
+`correlate/index.js` gains the `REVIEW` vocabulary; `correlate` stamps new
+candidates `UNREVIEWED` and `adjudicate` stamps `REVIEWED`. It is workflow
+bookkeeping only. It is not an input to any verdict, it does not change
+`reportable`, and it never rewrites a disposition. The verdict matrix asserts
+that for all five dispositions the verdict, `canClaimClean` and `reportable` are
+identical across `UNREVIEWED` and `REVIEWED`, so the field cannot covertly decide
+anything.
+
+`--skip-purple` records Purple as `NOT_APPLICABLE` rather than `SKIPPED`.
+`SKIPPED` is a coverage failure, so excluding Purple as a deliberate decision
+would have forced `PARTIAL_ANALYSIS` on every target and made opt-out
+indistinguishable from a tool that broke. Purple is an attack-hypothesis lens,
+it is not in `SUFFICIENT_TO_CORROBORATE`, and its own measured true-positive
+rate is 0. A genuinely skipped tool still degrades, and an opt-out still cannot
+mask an open candidate; both are asserted. Sentinel and Purple themselves are
+untouched.
+
+Locations in the candidate table are now the stored repo-relative path in full.
+Truncating to a few segments, or reducing to a basename, is what collapsed
+sixteen Vite fixtures onto one indistinguishable `server.js` row. The
+`packages/` prefix that separates Vite's own source from its playgrounds was
+being swallowed. The runner was not losing the path: `candidate.file` was
+always correct, and the loss was in the triage extract.
+
+Verification for this freeze:
+
+- `tools/verdict-matrix.js`: 78 checks, all passing.
+- Determinism on `encode/httpx` at `b5addb64f016`, audited twice under separate
+  run names: byte-identical evidence after removing volatile fields, 24
+  candidates, 200 non-production signals, `CANDIDATES_FOUND` / `FULL`.
+
 ## v1.4 - `audit-runner-v1.4-freeze`
 
 Added: investigation priority, as a field the analyst sets and no verdict reads.

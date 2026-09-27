@@ -163,6 +163,7 @@ function correlate(root, envelopes, policies) {
       corroboratingAuthorities: authorities,
       confidence,
       state: STATE.CORROBORATED,
+      reviewState: REVIEW.UNREVIEWED,
       disposition: 'PLAUSIBLE_SECURITY_ISSUE',
       status: 'MANUAL_VERIFICATION_REQUIRED',
       note: 'confidence reflects how many independent authorities saw this, nothing more',
@@ -183,10 +184,28 @@ function correlate(root, envelopes, policies) {
  */
 const PRIORITY = { P0: 'P0', P1: 'P1', P2: 'P2', P3: 'P3' };
 
+/**
+ * Review state, kept separate from disposition on purpose.
+ *
+ * A candidate's default disposition is PLAUSIBLE_SECURITY_ISSUE, which is a real
+ * analytic conclusion, so leaving untouched candidates there made "nobody has
+ * read this yet" indistinguishable from "an analyst read this and kept the
+ * hypothesis". That conflation is how a backlog drains on paper while nothing
+ * was actually reviewed.
+ *
+ *   PLAUSIBLE + UNREVIEWED  the tool produced it, no human has adjudicated it
+ *   PLAUSIBLE + REVIEWED    an analyst looked and decided the hypothesis stands
+ *
+ * This is workflow bookkeeping only. It is not part of any verdict, it does not
+ * change `reportable`, and it never changes a disposition.
+ */
+const REVIEW = { UNREVIEWED: 'UNREVIEWED', REVIEWED: 'REVIEWED' };
+
 /** Apply an analyst decision. The runner never makes this call itself. */
 function adjudicate(candidate, decision) {
   const d = decision || {};
   candidate.state = d.state || STATE.MANUALLY_VERIFIED;
+  candidate.reviewState = REVIEW.REVIEWED;
   candidate.disposition = d.disposition || candidate.disposition;
   candidate.severity = d.severity || null;
   candidate.classification = d.classification || null;
@@ -246,4 +265,4 @@ function auditVerdict(envs, candidates) {
 }
 const STATUS_SKIPPED = 'SKIPPED';
 
-module.exports = { STATE, AUTHORITY, PRIORITY, RESOLVED_NO_ISSUE, openCandidates, correlate, adjudicate, auditVerdict, scopeOf, rel, dedup, nonProduction };
+module.exports = { STATE, AUTHORITY, PRIORITY, REVIEW, RESOLVED_NO_ISSUE, openCandidates, correlate, adjudicate, auditVerdict, scopeOf, rel, dedup, nonProduction };
