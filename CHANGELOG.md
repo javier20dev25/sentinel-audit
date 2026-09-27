@@ -1,9 +1,54 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to the audit runner. Every entry is a freeze tag; nothing
 in this repository is released without one.
 
-## v1.2 — `audit-runner-v1.2-freeze` (`16b1dab`)
+## v1.3 - `audit-runner-v1.3-freeze`
+
+Fixed: an adjudicated candidate could vanish and leave a false clean claim.
+
+Found by the first real campaign run, on `axios/axios` @ `961241f6c197`. After
+three candidates were adjudicated, the run reported `CLEAN_WITH_FULL_COVERAGE`
+with `canClaimClean: true` while `SAR-0001` sat in the file still adjudicated
+`PLAUSIBLE_SECURITY_ISSUE`. A target was badged clean over a live hypothesis.
+
+Two defects, one cause: three hand-maintained notions of "resolved" that did
+not agree.
+
+1. `correlate/index.js` set `reportable = disposition === CONFIRMED ||
+   STRONG`, so every other disposition became `reportable: false`.
+2. The `adjudicate` path then filtered candidates with
+   `reportable !== false && !disposition.match(/^(BENIGN|...)$/)`. Because
+   `PLAUSIBLE` is already `reportable: false`, the first clause discarded it and
+   the safe-list could never rescue it. That second clause was dead code.
+3. The fresh-audit path in `workflow/audit.js` passed candidates unfiltered.
+
+So the two paths that compute a verdict disagreed, and only the adjudication
+path was wrong, which is why fresh audits looked correct and hid the bug.
+
+`reportable` answers "is this worth sending to a maintainer?". It was being
+asked to answer "is this still open?", and those are different questions.
+"Not reportable yet" is not "no issue".
+
+Changes:
+
+- Added `RESOLVED_NO_ISSUE`, the six dispositions that definitively answer
+  "no issue", and `openCandidates()` as the single definition of the open set.
+- Both verdict paths now call `openCandidates()`.
+- `tools/verdict-matrix.js` proves the verdict for all eleven dispositions,
+  the unadjudicated default, agreement between both paths, and that a skipped
+  tool still blocks a clean claim. 45 assertions, no network, no target code.
+
+Net effect on recorded history: one verdict changes. The differential across
+every stored expediente shows `SAR-0001` as the only delta, so a clean result
+can no longer be produced by adjudicating a candidate to anything other than a
+definitive no.
+
+Still true after this change: the runner never adjudicates, and `PLAUSIBLE`
+stays `reportable: false`. A plausible candidate now blocks a clean claim
+instead of being erased, and a human still decides whether to disclose it.
+
+## v1.2 â€” `audit-runner-v1.2-freeze` (`16b1dab`)
 
 Fixed: the disclosure channel could name the wrong destination.
 
@@ -38,7 +83,7 @@ Verified on all four targets carrying a policy, no regressions: `fastify`
 `nest` (`support@nestjs.com`, unchanged), `next.js` and `rpcenum` (no channel,
 unchanged). Determinism re-checked on `fastify`: two runs byte-identical.
 
-## v1.1 — `audit-runner-v1.1-freeze` (`ab60f15`)
+## v1.1 â€” `audit-runner-v1.1-freeze` (`ab60f15`)
 
 Fixed: a skipped tool was reported as a clean run.
 
@@ -65,7 +110,7 @@ reason surfaced. `nestjs/nest` shows no regression, no skips,
 `CANDIDATES_FOUND` then `CLEAN_WITH_FULL_COVERAGE` after adjudicating
 `SAR-0001`. Determinism holds.
 
-## v1 — `audit-runner-v1-freeze` (`3819cc0`)
+## v1 â€” `audit-runner-v1-freeze` (`3819cc0`)
 
 Initial freeze. **Known wrong in two ways**, described in v1.1 and v1.2 above.
 Retained deliberately: a freeze that gets quietly rewritten is worse than one

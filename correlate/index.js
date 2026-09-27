@@ -29,6 +29,25 @@ const AUTHORITY = {
 /** A finding only becomes a hypothesis if a real authority saw it. */
 const SUFFICIENT_TO_CORROBORATE = new Set(['codeql', 'bandit', 'semgrep']);
 
+/**
+ * Dispositions that answer the question "is there a security issue here?" with a
+ * definitive no. Only these may stop a candidate from blocking a clean claim.
+ *
+ * Everything else, including CONFIRMED, STRONG, PLAUSIBLE, UNRESOLVED and
+ * STATIC_ONLY_LIMITATION, keeps the audit open on purpose: "not reportable yet"
+ * is not the same claim as "no issue", and collapsing the two is how a target
+ * ends up badged clean while a live hypothesis is still sitting in the file.
+ */
+const RESOLVED_NO_ISSUE = new Set([
+  'BENIGN', 'FALSE_POSITIVE', 'OUT_OF_SCOPE', 'TOOLING_INTENT',
+  'ALREADY_MITIGATED', 'DUPLICATE',
+]);
+
+/** Candidates that still block a clean claim. Single definition, used by every caller. */
+function openCandidates(candidates) {
+  return (candidates || []).filter((x) => !RESOLVED_NO_ISSUE.has(String(x.disposition || '').trim().toUpperCase()));
+}
+
 const rel = (root, p) => {
   const s = path.resolve(String(p || '')).replace(/\\/g, '/');
   const r = path.resolve(root).replace(/\\/g, '/');
@@ -214,4 +233,4 @@ function auditVerdict(envs, candidates) {
 }
 const STATUS_SKIPPED = 'SKIPPED';
 
-module.exports = { STATE, AUTHORITY, correlate, adjudicate, auditVerdict, scopeOf, rel, dedup, nonProduction };
+module.exports = { STATE, AUTHORITY, RESOLVED_NO_ISSUE, openCandidates, correlate, adjudicate, auditVerdict, scopeOf, rel, dedup, nonProduction };

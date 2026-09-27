@@ -19,7 +19,7 @@ const { loadConfig, run, expand } = require('./lib/core');
 const { preflight, checkToolHealth } = require('./workflow/preflight');
 const { audit } = require('./workflow/audit');
 const { renderReport } = require('./reports/expediente');
-const { adjudicate, auditVerdict } = require('./correlate');
+const { adjudicate, auditVerdict, openCandidates } = require('./correlate');
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
@@ -154,7 +154,7 @@ async function main() {
     }
     adjudicate(cand, { disposition: disp, state: 'MANUALLY_VERIFIED', severity: flag('severity'), rationale: flag('rationale'), groundTruth: flag('ground-truth') });
     e.adjudications = (e.adjudications || []).concat([{ candidateId: cand.candidateId, at: new Date().toISOString(), by: 'human', disposition: cand.disposition, severity: cand.severity, rationale: cand.rationale }]);
-    const av = auditVerdict(Object.values(e.tools).map((t) => ({ ...t, tool: t.tool })), (e.candidates || []).filter((x) => x.reportable !== false && !x.disposition.match(/^(BENIGN|FALSE_POSITIVE|OUT_OF_SCOPE|TOOLING_INTENT|ALREADY_MITIGATED|DUPLICATE)$/)));
+    const av = auditVerdict(Object.values(e.tools).map((t) => ({ ...t, tool: t.tool })), openCandidates(e.candidates));
     e.auditVerdict = av;
     fs.writeFileSync(file, JSON.stringify(e, null, 2));
     const report = renderReport(e);

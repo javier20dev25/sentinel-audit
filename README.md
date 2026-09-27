@@ -185,5 +185,6 @@ adapters/index.js      one adapter per tool
 correlate/index.js     dedup, candidates, adjudication, audit verdict
 reports/expediente.js  Markdown report
 tools/determinism.js   the determinism assertion
+tools/verdict-matrix.js  which dispositions may claim clean
 out/                   run output, gitignored
 ```

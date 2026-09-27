@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const { STATUS, loadConfig, run, gitOut, dirBytes } = require('../lib/core');
 const A = require('../adapters');
-const { correlate, auditVerdict, STATE, adjudicate } = require('../correlate');
+const { correlate, auditVerdict, openCandidates, STATE, adjudicate } = require('../correlate');
 const { preflight } = require('./preflight');
 
 function makeCtx(repoRoot, inv, pre, workDir, opts = {}) {
@@ -141,7 +141,7 @@ function audit(repoPath, opts = {}) {
   expediente.candidates = candidates;
   expediente.observations = observations;
   expediente.nonProductionSignals = nonProductionSignals.slice(0, 200);
-  expediente.auditVerdict = auditVerdict(envs, candidates);
+  expediente.auditVerdict = auditVerdict(envs, openCandidates(candidates));
   expediente.finishedAt = new Date().toISOString();
   expediente.totalWallClockMs = Date.now() - t0;
   expediente.artifactBytes = dirBytes(workDir);
