@@ -31,7 +31,14 @@ function renderReport(e) {
   w(e.auditVerdict.statement);
   w('');
   w(`- Can this audit claim "clean"? **${yn(e.auditVerdict.canClaimClean)}**`);
-  if (e.preflight.disclosure) w(`- Disclosure channel: **${e.preflight.disclosure.verdict}**${e.preflight.disclosure.contacts.length ? ` (${e.preflight.disclosure.contacts.join(', ')})` : ''} — source of truth: \`${e.preflight.disclosure.sourceOfTruth}\``);
+  if (e.preflight.disclosure) {
+    const dj = e.preflight.disclosure;
+    w(`- Disclosure channel: **${dj.verdict}** — source of truth: \`${dj.sourceOfTruth}\``);
+    if (dj.channels && dj.channels.length) for (const c of dj.channels) w(`  - **route to use:** \`${c}\``);
+    if (dj.contacts && dj.contacts.length) w(`  - monitored inbox: ${dj.contacts.join(', ')}`);
+    if (dj.secondaryContacts && dj.secondaryContacts.length) w(`  - fallback only, do not lead with: ${dj.secondaryContacts.join(', ')}`);
+    if (dj.retiredChannels && dj.retiredChannels.length) w(`  - retired by policy, not usable: ${dj.retiredChannels.join(', ')}`);
+  }
   if (e.preflight.license) w(`- License: ${e.preflight.license.present ? `\`${e.preflight.license.file}\` (${e.preflight.license.sourceOfTruth})` : `**absent** (${e.preflight.license.sourceOfTruth})`}`);
   if (e.preflight.trackedFileCount != null) w(`- Tracked files: ${e.preflight.trackedFileCount}`);
   if (e.preflight.requiredRamMB) w(`- RAM required: ${e.preflight.requiredRamMB}MB${e.preflight.largeRepo ? ' (large repo)' : ''}`);

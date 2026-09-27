@@ -34,21 +34,70 @@ function detectDisclosure(root, inv, policies, tracked) {
   }
 
   const EMAIL = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi;
+  // A private report endpoint named by the policy is the strongest possible
+  // signal, and it is a URL rather than a keyword. Fastify routes every report
+  // through GitHub advisories and never mentions security@ in that sentence.
+  const PRIVATE_REPORT = /https?:\/\/[^\s)\]>'"]*security\/advisories(?:\/new)?[^\s)\]>'"]*/gi;
+  // Substring matching scored "Fastify's HackerOne program is closed" as a live
+  // HackerOne channel. A channel that the policy itself retires must never count
+  // as vetted, or a disclosure gets aimed at a program that will reject it.
+  const CLOSED = /\b(?:is|are|has been|have been|was|were)\s+(?:now\s+)?(?:closed|discontinued|defunct|sunset|retired)\b|\bno longer (?:accepting|available|active|supported)\b|\bdoes not support any reporting\b|\bnot accepting (?:new )?(?:reports|submissions)\b|\bprogram is closed\b/i;
+
+  /** Attribute each contact to its nearest preceding markdown heading. */
+  const contactSections = (txt) => {
+    const out = [];
+    let heading = '';
+    for (const raw of txt.split(/\r?\n/)) {
+      const h = raw.match(/^\s{0,3}#{1,6}\s+(.*)$/);
+      if (h) { heading = h[1].trim(); continue; }
+      for (const m of raw.matchAll(EMAIL)) out.push({ email: m[0], heading });
+    }
+    return out;
+  };
+  const SECONDARY = /secondary|escalat|fallback|backup|if you (?:do not|don't|cannot|can't)|cna\b/i;
+
   const score = (txt) => {
     const low = txt.toLowerCase();
-    const signals = d.privateVettingSignals.filter((s) => low.includes(s));
-    const emails = [...new Set(txt.match(EMAIL) || [])];
+    const signals = [];
+    const inactiveSignals = [];
+    for (const s of d.privateVettingSignals) {
+      let from = 0;
+      while (from < low.length) {
+        const at = low.indexOf(s, from);
+        if (at < 0) break;
+        // Judge the sentence the keyword sits in, not the whole document: a
+        // closure notice in one section must not retire a live channel in another.
+        const sentence = low.slice(Math.max(0, low.lastIndexOf('.', at) + 1), (low.indexOf('.', at) + 1 || low.length) + 1);
+        (CLOSED.test(sentence) ? inactiveSignals : signals).push(s);
+        from = at + s.length;
+      }
+    }
+    const contacts = contactSections(txt);
+    const channels = [...new Set(txt.match(PRIVATE_REPORT) || [])];
+    const primary = contacts.filter((c) => !SECONDARY.test(c.heading));
+    const secondary = contacts.filter((c) => SECONDARY.test(c.heading));
     // A monitored security inbox is a vetted channel. "security@" is not the only
     // shape it takes: nestjs ships support@nestjs.com, and a narrow list would have
     // downgraded a real, monitored disclosure route to "no vetting".
-    const emailVetted = d.emailAddressCountsAsVetted && emails.length > 0;
-    return { signals, emails, vetted: signals.length > 0 || emailVetted, emailVetted };
+    const emailVetted = d.emailAddressCountsAsVetted && primary.length > 0;
+    return {
+      signals, inactiveSignals, channels,
+      contacts: primary.map((c) => c.email),
+      secondaryContacts: secondary.map((c) => c.email),
+      vetted: signals.length > 0 || channels.length > 0 || emailVetted,
+      emailVetted,
+    };
   };
 
   const found = wanted.map(({ rel, full, tracked }) => {
     const txt = fs.existsSync(full) ? fs.readFileSync(full, 'utf8').slice(0, 8000) : '';
     const s = score(txt);
-    return { file: rel, tracked, bytes: txt.length, vetted: s.vetted, signals: s.signals, contacts: s.emails, channel: s.vetted ? 'VETTED' : 'UNSPECIFIED' };
+    return {
+      file: rel, tracked, bytes: txt.length, vetted: s.vetted, signals: s.signals,
+      inactiveSignals: s.inactiveSignals, channels: s.channels,
+      contacts: s.contacts, secondaryContacts: s.secondaryContacts,
+      channel: s.vetted ? 'VETTED' : 'UNSPECIFIED',
+    };
   });
 
   if (!found.length) {
@@ -57,7 +106,7 @@ function detectDisclosure(root, inv, policies, tracked) {
       if (!fs.existsSync(p)) continue;
       const txt = fs.readFileSync(p, 'utf8').slice(0, 8000);
       const s = score(txt);
-      if (s.vetted) { found.push({ file: rel, bytes: txt.length, vetted: true, signals: s.signals, contacts: s.emails, channel: 'EMBEDDED' }); break; }
+      if (s.vetted) { found.push({ file: rel, bytes: txt.length, vetted: true, signals: s.signals, inactiveSignals: s.inactiveSignals, channels: s.channels, contacts: s.contacts, secondaryContacts: s.secondaryContacts, channel: 'EMBEDDED' }); break; }
     }
   }
   const vetted = found.some((f) => f.vetted);
@@ -66,7 +115,13 @@ function detectDisclosure(root, inv, policies, tracked) {
     vetted,
     sourceOfTruth,
     files: found.map((f) => f.file),
+    // The channel a disclosure must actually go to, and the routes that are only
+    // a fallback. Conflating them is how a CNA escalation address gets mistaken
+    // for the maintainer's inbox.
+    channels: [...new Set(found.flatMap((f) => f.channels || []))],
     contacts: [...new Set(found.flatMap((f) => f.contacts))],
+    secondaryContacts: [...new Set(found.flatMap((f) => f.secondaryContacts || []))],
+    retiredChannels: [...new Set(found.flatMap((f) => f.inactiveSignals || []))],
     evidence: found,
     verdict: !found.length ? 'NO_DISCLOSURE_CHANNEL' : vetted ? 'DISCLOSURE_READY' : 'DISCLOSURE_POLICY_NO_VETTING',
   };
