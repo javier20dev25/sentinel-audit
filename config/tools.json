@@ -1,0 +1,27 @@
+{
+  "_comment": "Tool locations and query suites. Sentinel-purple is a pinned input, never modified by the runner.",
+  "sentinelPurple": {
+    "cli": "C:\\Users\\sleyt\\sentinel-purple\\bin\\purple.js",
+    "repo": "C:\\Users\\sleyt\\sentinel-purple",
+    "modes": {
+      "defensive": "commensal",
+      "offensive": "red",
+      "expediente": "report"
+    }
+  },
+  "codeql": {
+    "bin": "%LOCALAPPDATA%\\opencode\\tools\\codeql\\codeql.exe",
+    "ramDefault": 4096,
+    "ramMonorepo": 8192,
+    "suites": {
+      "javascript": "%USERPROFILE%\\.codeql\\packages\\codeql\\javascript-queries\\2.4.6\\codeql-suites\\javascript-security-extended.qls",
+      "typescript": "%USERPROFILE%\\.codeql\\packages\\codeql\\javascript-queries\\2.4.6\\codeql-suites\\javascript-security-extended.qls",
+      "python": "%USERPROFILE%\\.codeql\\packages\\codeql\\python-queries\\1.8.11\\codeql-suites\\python-security-extended.qls"
+    }
+  },
+  "semgrep": { "bin": "semgrep", "configs": ["p/security-audit", "p/secrets"] },
+  "bandit": { "bin": "%LOCALAPPDATA%\\opencode\\tools\\bandit-env\\Scripts\\bandit.exe" },
+  "shellcheck": { "bin": "%LOCALAPPDATA%\\opencode\\tools\\bandit-env\\Scripts\\shellcheck.exe", "severity": "warning" },
+  "trivy": { "bin": "%LOCALAPPDATA%\\opencode\\tools\\trivy.exe", "scanners": "vuln,secret,misconfig" },
+  "osv": { "bin": "%LOCALAPPDATA%\\opencode\\tools\\osv-scanner.exe" }
+}

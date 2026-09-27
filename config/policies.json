@@ -1,0 +1,75 @@
+{
+  "_comment": "Audit Readiness v1 policy. Everything the runner is allowed to decide lives here, not in code.",
+
+  "budget": {
+    "_comment": "Cost gate. A tool that exceeds its share is marked PARTIAL, never silently allowed to run all night.",
+    "totalWallClockMinutes": 90,
+    "perToolMinutes": {
+      "codeql": 45,
+      "semgrep": 15,
+      "trivy": 10,
+      "osv": 10,
+      "bandit": 5,
+      "shellcheck": 5,
+      "purple": 20,
+      "sentinel": 10
+    },
+    "_commentLargeRepoBasis": "The large-repo threshold is measured on ANALYZABLE SOURCE FILES, never on production files. Evidence: next.js has 3301 production but 25154 source files and CodeQL still died on the default heap until --ram=8192.",
+    "codeqlLargeRepoFiles": 20000,
+    "codeqlLargeRepoRam": 8192,
+    "codeqlDefaultRam": 4096
+  },
+
+  "coverage": {
+    "_comment": "A target with no parseable source is not clean. These are the counters that make that visible.",
+    "skipDirs": ["node_modules", ".git", "dist", "build", ".next", "vendor", "coverage", "__pycache__", "venv", ".venv"],
+    "maxFileBytes": 524288,
+    "testPathHints": ["/test/", "/tests/", "/__tests__/", ".test.", ".spec.", "/e2e/", "/spec/"],
+    "nonProductionPathHints": ["/example", "/examples/", "/sample", "/samples/", "/integration", "/demo", "/benchmark", "/bench", "/evals/", "/fixture", "/compiled/", "/vendor/"]
+  },
+
+  "disclosure": {
+    "_comment": "Gate D. No channel means no report is possible no matter how good the analysis is. A monitored security inbox IS a vetted channel, and it is not spelled 'security@': nestjs ships support@nestjs.com. Over-narrow signal lists silently downgrade real disclosure channels to 'no vetting', which is how a previous campaign wrongly reported 0 of 12 targets as having SECURITY.md.",
+    "policyFiles": ["SECURITY.md", "security.md", ".github/SECURITY.md", "docs/SECURITY.md"],
+    "policyFileMatchCaseInsensitive": true,
+    "privateVettingSignals": ["private-vulnerability-reporting", "hackerone", "bugcrowd", "huntr.dev", "yeswehack", "responsible disclosure", "do not report", "do not disclose", "report to", "security@"],
+    "emailAddressCountsAsVetted": true,
+    "absentVerdict": "LOW_PRIORITY",
+    "absentStillAuditable": true
+  },
+
+  "readiness": {
+    "_comment": "Preflight verdict. AUDIT_READY | AUDIT_LIMITED | SKIP",
+    "requireDisclosureForReady": true,
+    "minSourceFiles": 20,
+    "supportedLanguages": ["javascript", "typescript", "python", "go", "java", "csharp", "cpp"],
+    "auditLimitedWhen": ["no disclosure channel", "no lockfile for SCA", "single-tool coverage only", "partial budget"]
+  },
+
+  "correlation": {
+    "_comment": "Deterministic join only. No model, no guessing.",
+    "lineProximity": 3,
+    "pathMustMatch": true
+  },
+
+  "stateMachine": ["DETECTED", "TRIAGED", "CORROBORATED", "DISPUTED", "MANUALLY_VERIFIED", "REPORTABLE", "NON_REPORTABLE"],
+  "dispositions": [
+    "CONFIRMED_SECURITY_ISSUE", "STRONG_SECURITY_CANDIDATE", "PLAUSIBLE_SECURITY_ISSUE",
+    "BENIGN", "TOOLING_INTENT", "FALSE_POSITIVE", "DUPLICATE", "ALREADY_MITIGATED",
+    "OUT_OF_SCOPE", "UNRESOLVED", "STATIC_ONLY_LIMITATION", "TOOL_UNAVAILABLE", "BLOCKED_BY_POLICY"
+  ],
+  "fixTypes": ["SECURITY_FIX", "BUG_FIX", "HARDENING", "QUALITY"],
+
+  "publication": {
+    "_comment": "Human keeps control. The runner prepares; it never sends.",
+    "gitPush": "FORBIDDEN",
+    "createPullRequest": "FORBIDDEN",
+    "createIssue": "FORBIDDEN",
+    "securityReport": "FORBIDDEN",
+    "email": "FORBIDDEN",
+    "comment": "FORBIDDEN",
+    "uploadThirdPartyCode": "FORBIDDEN",
+    "dynamicAnalysis": "FORBIDDEN",
+    "runTargetBuild": "FORBIDDEN"
+  }
+}
