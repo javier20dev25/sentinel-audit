@@ -123,7 +123,7 @@ async function audit(repoPath, opts = {}) {
     sentinelActionable: actionableFindings.length,
     sentinelObservationOnly: sen.findings.length - actionableFindings.length,
   };
-  const routePlan = buildRoutePlan(actionableFindings);
+  const routePlan = buildRoutePlan(actionableFindings, sen.status);
   expediente.signalRouting = routePlan;
 
   // ---- signal-routed specialist checks ----
@@ -215,8 +215,9 @@ const emptyLike = (tool) => ({
 
 module.exports = { audit, makeCtx };
 
-function buildRoutePlan(findings) {
+function buildRoutePlan(findings, sentinelStatus) {
   const actionable = Array.isArray(findings) ? findings.filter((f) => f.signalClass === 'ACTIONABLE_SIGNAL') : [];
+  const engineIncomplete = sentinelStatus === 'ERROR';
   const categories = [...new Set(actionable.map((f) => f.category).filter(Boolean))].sort();
   const files = [...new Set(actionable.map((f) => f.file).filter(Boolean))].sort();
   const tools = new Set();
@@ -232,11 +233,15 @@ function buildRoutePlan(findings) {
   }
   const orderedTools = ['codeql', 'semgrep', 'bandit', 'shellcheck', 'trivy', 'osv'].filter((t) => tools.has(t));
   return {
-    decision: actionable.length ? (orderedTools.length ? 'AMPLIFY' : 'OBSERVE') : 'NO_ACTIONABLE_SENTINEL_FINDINGS',
-    reason: actionable.length
-      ? `Sentinel Cloud emitted ${actionable.length} actionable signal(s) in ${categories.join(', ') || 'unrouted categories'}`
-      : 'Etapa A emitted no actionable Sentinel Cloud signal; no secondary tools are justified',
-    signalCount: actionable.length, categories, files, tools: orderedTools,
+    decision: engineIncomplete
+      ? 'SENTINEL_ENGINE_INCOMPLETE'
+      : actionable.length ? (orderedTools.length ? 'AMPLIFY' : 'OBSERVE') : 'NO_ACTIONABLE_SENTINEL_FINDINGS',
+    reason: engineIncomplete
+      ? `Sentinel Cloud did not complete (status ${sentinelStatus}); Etapa A produced no usable signal set and absence of findings is not evidence of absence`
+      : actionable.length
+        ? `Sentinel Cloud emitted ${actionable.length} actionable signal(s) in ${categories.join(', ') || 'unrouted categories'}`
+        : 'Etapa A emitted no actionable Sentinel Cloud signal; no secondary tools are justified',
+    engineIncomplete, signalCount: actionable.length, categories, files, tools: orderedTools,
   };
 }
 
