@@ -1,10 +1,9 @@
 'use strict';
 /**
- * The pipeline: preflight -> Sentinel (breadth) -> focused Purple -> specialists.
+ * The pipeline: preflight -> local Sentinel Cloud engine -> signal-routed specialists.
  *
  * The incremental shape is the point. Sentinel runs first and produces a
- * shortlist; Purple and the expensive verifiers are focused on that shortlist
- * instead of walking an entire monorepo. SCA runs as a cheap parallel track.
+ * shortlist; only specialists justified by signal type and language are opened.
  */
 const fs = require('fs');
 const path = require('path');
@@ -18,15 +17,8 @@ const { preflight } = require('./preflight');
  * envelope carries the resolved version, and the vendored engine is identified
  * by its commit rather than a version string it does not publish.
  */
-function toolVersion(name, tools) {
-  if (name === 'sentinel' || name === 'purple') {
-    const sp = tools.sentinelPurple;
-    if (!sp || !fs.existsSync(sp.repo)) return null;
-    const head = gitOut(sp.repo, 'rev-parse', 'HEAD');
-    if (!head || !String(head).trim()) return null;
-    const dirty = !!gitOut(sp.repo, 'status', '--porcelain');
-    return `engine@${String(head).trim()}${dirty ? '+dirty' : ''}`;
-  }
+function toolVersion(name, tools, pre) {
+  if (name === 'sentinel') return pre && pre.health && pre.health.sentinel && pre.health.sentinel.engineId || null;
   const cfg = tools[name];
   if (!cfg || !cfg.bin) return null;
   // The configured path may carry %LOCALAPPDATA%/%USERPROFILE%, so it has to be
@@ -56,7 +48,7 @@ function makeCtx(repoRoot, inv, pre, workDir, opts = {}) {
   };
 }
 
-function audit(repoPath, opts = {}) {
+async function audit(repoPath, opts = {}) {
   const t0 = Date.now();
   const { policies } = loadConfig();
   const pre = preflight(repoPath, opts);
@@ -99,13 +91,13 @@ function audit(repoPath, opts = {}) {
   }
 
   const ctx = makeCtx(root, pre.inv, pre, workDir, opts);
-  const TOOL_NAMES = ['sentinel', 'purple', 'codeql', 'semgrep', 'bandit', 'shellcheck', 'trivy', 'osv'];
+  const TOOL_NAMES = ['sentinel', 'codeql', 'semgrep', 'bandit', 'shellcheck', 'trivy', 'osv'];
   const versions = {};
-  for (const n of TOOL_NAMES) versions[n] = toolVersion(n, ctx.tools);
+  for (const n of TOOL_NAMES) versions[n] = toolVersion(n, ctx.tools, pre);
   expediente.toolVersions = versions;
 
   // ---- track 1: cheap breadth. Sentinel first, always. ----
-  const sen = A.sentinel(root, ctx); ctx.charge('sentinel', sen.cost.wallClockMs);
+  const sen = await A.sentinel(root, ctx); ctx.charge('sentinel', sen.cost.wallClockMs);
   sen.version = versions.sentinel;
   expediente.tools.sentinel = sen;
 
@@ -131,26 +123,11 @@ function audit(repoPath, opts = {}) {
     sentinelActionable: actionableFindings.length,
     sentinelObservationOnly: sen.findings.length - actionableFindings.length,
   };
+  const routePlan = buildRoutePlan(actionableFindings);
+  expediente.signalRouting = routePlan;
 
-  // ---- track 2: attack hypothesis, focused ----
-  // Purple is archived: it is not in the default path and is not a coverage
-  // requirement. It is recorded as notApplicable so the decision is stated in the
-  // expediente rather than hidden, and so it never forces PARTIAL_ANALYSIS.
-  // An empty shortlist must never be passed through as "no scope": A.purple
-  // treats an empty scope list as null and would then walk the entire repository.
-  const purpleScope = opts.purpleFull ? null : shortlist;
-  const purpleWouldScanRoot = opts.purpleFull || !shortlist.length;
-  const pur = (opts.skipPurple || !opts.purpleFull && purpleWouldScanRoot)
-    ? notApplicableLike('purple', opts.skipPurple
-      ? 'purple deliberately excluded by --skip-purple: attack-hypothesis lens, not a coverage requirement'
-      : 'purple archived and no ACTIONABLE_SIGNAL produced a scope; refusing to fall back to a whole-repository walk')
-    : A.purple(root, ctx, { scope: purpleScope });
-  ctx.charge('purple', pur.cost.wallClockMs);
-  pur.version = versions.purple;
-  expediente.tools.purple = pur;
-
-  // ---- track 3: the verifiers ----
-  const envs = [sen, pur];
+  // ---- signal-routed specialist checks ----
+  const envs = [sen];
   const push = (name, fn, o) => {
     const e = fn(root, ctx, o); ctx.charge(name, e.cost.wallClockMs);
     e.version = e.version || versions[name] || null;
@@ -160,26 +137,36 @@ function audit(repoPath, opts = {}) {
   };
   process.stderr.write(`\n== ${pre.name} (${pre.verdict})\n`);
   process.stderr.write(`   sentinel    ${sen.status.padEnd(11)} ${String(sen.findingCount).padStart(5)} signals  ${sen.verdict}\n`);
-  process.stderr.write(`   purple      ${pur.status.padEnd(11)} ${String(pur.findingCount).padStart(5)} signals  ${pur.verdict}  (scope: ${shortlistOrigin})\n`);
+  process.stderr.write(`   route       ${routePlan.decision}  (${routePlan.reason})\n`);
 
-  if (opts.skipSpecialists) {
-    // Skips every source analyser, but NOT SCA: the cheap track still runs, and
-    // each skip is recorded as SKIPPED so the verdict stays honest.
-    for (const t of ['codeql', 'semgrep', 'bandit', 'shellcheck']) push(t, () => emptyLike(t));
-  } else if (!shortlist.length && !opts.forceEtapaB) {
-    // Etapa B stays closed. notApplicable, never SKIPPED: no lens was withheld
-    // from a signal that existed, so this is a decision and not a coverage gap.
-    const why = 'NO_ACTIONABLE_SENTINEL_FINDINGS: Etapa A produced no ACTIONABLE_SIGNAL, so Etapa B was not opened';
-    for (const t of ['codeql', 'semgrep', 'bandit', 'shellcheck']) push(t, () => notApplicableLike(t, why));
-  } else {
-    push('codeql', A.codeql, { language: pre.inv.mainLanguage, ram: pre.cost.requiredRamMB });
-    push('semgrep', A.semgrep, { scope: opts.purpleFull ? null : shortlist, maxTargets: opts.maxScopeFiles || 25 });
-    push('bandit', A.bandit, { scope: opts.purpleFull ? null : shortlist, maxTargets: opts.maxScopeFiles || 50 });
-    push('shellcheck', A.shellcheck, { scope: opts.purpleFull ? null : shortlist, maxTargets: opts.maxScopeFiles || 50 });
+  const sourceTools = ['codeql', 'semgrep', 'bandit', 'shellcheck'];
+  for (const t of sourceTools) {
+    const requested = opts.forceEtapaB || routePlan.tools.includes(t);
+    if (!requested) {
+      push(t, () => notApplicableLike(t, routePlan.decision === 'NO_ACTIONABLE_SENTINEL_FINDINGS'
+        ? 'NO_ACTIONABLE_SENTINEL_FINDINGS: no source specialist was justified by Sentinel Cloud'
+        : `not routed: ${routePlan.reason}`));
+    } else if (opts.skipSpecialists) {
+      push(t, () => emptyLike(t));
+    } else if (t === 'codeql') {
+      push(t, A.codeql, { language: pre.inv.mainLanguage, ram: pre.cost.requiredRamMB });
+    } else if (t === 'semgrep') {
+      push(t, A.semgrep, { scope: shortlist, maxTargets: opts.maxScopeFiles || 25 });
+    } else if (t === 'bandit') {
+      push(t, A.bandit, { scope: shortlist, maxTargets: opts.maxScopeFiles || 50 });
+    } else {
+      push(t, A.shellcheck, { scope: shortlist, maxTargets: opts.maxScopeFiles || 50 });
+    }
   }
-  // ---- track 4: cheap parallel SCA/secrets ----
-  push('trivy', A.trivy);
-  push('osv', A.osv);
+  for (const t of ['trivy', 'osv']) {
+    if (!routePlan.tools.includes(t)) {
+      push(t, () => notApplicableLike(t, 'no Sentinel Cloud dependency/SCA signal justified this tool'));
+    } else if (opts.skipSpecialists) {
+      push(t, () => emptyLike(t));
+    } else {
+      push(t, A[t]);
+    }
+  }
 
   // ---- correlate ----
   const { candidates, observations, nonProductionSignals } = correlate(root, envs, policies);
@@ -227,3 +214,30 @@ const emptyLike = (tool) => ({
 });
 
 module.exports = { audit, makeCtx };
+
+function buildRoutePlan(findings) {
+  const actionable = Array.isArray(findings) ? findings.filter((f) => f.signalClass === 'ACTIONABLE_SIGNAL') : [];
+  const categories = [...new Set(actionable.map((f) => f.category).filter(Boolean))].sort();
+  const files = [...new Set(actionable.map((f) => f.file).filter(Boolean))].sort();
+  const tools = new Set();
+  if (categories.some((c) => ['process', 'network', 'filesystem'].includes(c))) {
+    tools.add('codeql'); tools.add('semgrep');
+  }
+  if (categories.includes('secret')) tools.add('semgrep');
+  if (categories.includes('lifecycle')) { tools.add('semgrep'); tools.add('trivy'); }
+  if (categories.includes('dependency')) { tools.add('trivy'); tools.add('osv'); }
+  if (categories.some((c) => ['process', 'network', 'filesystem'].includes(c))) {
+    if (files.some((f) => /\.pyi?$/i.test(f))) tools.add('bandit');
+    if (files.some((f) => /\.(?:sh|bash|zsh)$/i.test(f))) tools.add('shellcheck');
+  }
+  const orderedTools = ['codeql', 'semgrep', 'bandit', 'shellcheck', 'trivy', 'osv'].filter((t) => tools.has(t));
+  return {
+    decision: actionable.length ? (orderedTools.length ? 'AMPLIFY' : 'OBSERVE') : 'NO_ACTIONABLE_SENTINEL_FINDINGS',
+    reason: actionable.length
+      ? `Sentinel Cloud emitted ${actionable.length} actionable signal(s) in ${categories.join(', ') || 'unrouted categories'}`
+      : 'Etapa A emitted no actionable Sentinel Cloud signal; no secondary tools are justified',
+    signalCount: actionable.length, categories, files, tools: orderedTools,
+  };
+}
+
+module.exports.buildRoutePlan = buildRoutePlan;

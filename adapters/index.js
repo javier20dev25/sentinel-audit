@@ -10,150 +10,98 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { STATUS, envelope, run, expand, dirBytes, gitOut, snippet } = require('../lib/core');
+const { STATUS, envelope, run, expand, dirBytes, snippet } = require('../lib/core');
 
 const abs = (root, p) => path.resolve(root, String(p || '').replace(/\\/g, '/'));
 
-// ---------------------------------------------------------------- sentinel
-const SENTINEL_CLIP = 80;
-const SENTINEL_BREADTH_KINDS = new Set(['import', 'require', 'string', 'comment', 'observation']);
-const SENTINEL_BEHAVIOR_KINDS = new Set(['exec', 'write', 'download']);
-
-const clipVal = (v) => String(v === undefined || v === null ? '' : v).replace(/\s+/g, ' ').slice(0, SENTINEL_CLIP);
-
-/**
- * The vendored engine emits its payload on named fields (value, source, target,
- * resolved, api, arg, args, sink, specifiers, payloadLiteral) and never on
- * message/detail/title. Reading only those three therefore discards 100% of the
- * engine's evidence and yields an empty detail for every observation.
- */
-function sentinelDetail(o) {
-  const parts = [];
-  if (o.api) parts.push(`api=${clipVal(o.api)}`);
-  if (o.sink) parts.push(`sink=${clipVal(o.sink)}`);
-  if (o.arg !== undefined && o.arg !== null && o.arg !== '') parts.push(`arg=${clipVal(o.arg)}`);
-  if (Array.isArray(o.args) && o.args.length) parts.push(`args=${o.args.map(clipVal).join(' ')}`);
-  if (o.source) parts.push(`source=${clipVal(o.source)}`);
-  if (o.target) parts.push(`target=${clipVal(o.target)}`);
-  if (o.resolved) parts.push(`resolved=${clipVal(o.resolved)}`);
-  if (Array.isArray(o.specifiers) && o.specifiers.length) parts.push(`imports=${o.specifiers.map(clipVal).join(',')}`);
-  if (o.payloadLiteral) parts.push(`payload=${clipVal(o.payloadLiteral)}`);
-  if (o.value) parts.push(`value=${clipVal(o.value)}`);
-  if (o.dynamic) parts.push('dynamic=true');
-  return parts.join(' ').slice(0, 400);
-}
-
-/** The engine reports a source line as a number in `loc` for some emitters and as a value snippet in others. */
-function sentinelLine(o) {
-  if (Number.isInteger(o.line) && o.line > 0) return o.line;
-  if (Number.isInteger(o.loc) && o.loc > 0) return o.loc;
-  return null;
-}
-
-/**
- * A breadth observation becomes a candidate only when it names a concrete
- * security-relevant behaviour and carries evidence for it. Module-graph and
- * string-literal observations never qualify on their own, however many there
- * are: they are the reason the old pipeline escalated whole repositories.
- */
-function sentinelClass(o, detail, file) {
-  const kind = String(o.kind || o.type || 'observation');
-  if (!SENTINEL_BEHAVIOR_KINDS.has(kind)) return 'OBSERVATION_ONLY';
-  if (SENTINEL_BREADTH_KINDS.has(kind)) return 'OBSERVATION_ONLY';
-  if (!detail || !file) return 'OBSERVATION_ONLY';
-  const evidenced = o.api || o.sink || o.arg || (Array.isArray(o.args) && o.args.length);
-  return evidenced ? 'ACTIONABLE_SIGNAL' : 'OBSERVATION_ONLY';
-}
-
-/** Vendored Sentinel defensive engine. Breadth signal, never a verdict. */
-function sentinel(root, ctx) {
-  const cli = ctx.tools.sentinelPurple.cli;
-  if (!fs.existsSync(cli)) return envelope('sentinel', { status: STATUS.UNSUPPORTED, error: 'sentinel CLI missing' });
-  const r = run('node', [cli, ctx.tools.sentinelPurple.modes.defensive, root], { cwd: path.dirname(cli), timeoutMs: ctx.budget('sentinel') });
-  const i = String(r.stdout).search(/[[{]/);
-  let j = null; try { j = i < 0 ? null : JSON.parse(String(r.stdout).slice(i)); } catch (e) { /* tool error */ }
-  if (!j) {
-    return envelope('sentinel', { status: STATUS.ERROR, cost: r.cost, error: 'sentinel produced no parseable output', notes: [String(r.stderr).slice(0, 300)] });
+function cloudSignalCategory(signal) {
+  const raw = JSON.stringify(signal).toLowerCase();
+  const type = String(signal.type || signal.rule || '').toLowerCase();
+  if (/secret|credential|token/.test(type)) return 'secret';
+  if (/dependency|lockfile|sca|typosquat|vulnerable_dep/.test(type)) return 'dependency';
+  if (/lifecycle|install_hook|postinstall/.test(type)) return 'lifecycle';
+  if (/network|http|fetch|socket|exfil/.test(type) || /"intent":"(network|exfiltration)"/.test(raw)) return 'network';
+  if (/filesystem|file_write|fs_write|write_file|persistence/.test(type)) return 'filesystem';
+  if (/process|command|shell|exec|dynamic_execution|unsafe_eval/.test(type) || /"intent":"execution"/.test(raw)) return 'process';
+  if (/capability_chain/.test(type)) {
+    if (/execution|exec|process|shell/.test(raw)) return 'process';
+    if (/network|fetch|http|exfil/.test(raw)) return 'network';
+    if (/filesystem|file_write|write/.test(raw)) return 'filesystem';
   }
-  // The engine's own JSON is the primary evidence: every mapped field below is a
-  // translation of it, and a translation that is wrong or lossy can only be
-  // caught against the source. Persist it before mapping so a zero-signal run
-  // is distinguishable from a run whose output was never captured.
-  const rawPath = path.join(ctx.work, 'sentinel.json');
-  try { fs.writeFileSync(rawPath, JSON.stringify(j, null, 2)); } catch (e) { /* evidence persistence is best-effort, never fatal */ }
-  const obs = j.observations || j.findings || [];
-  const mapped = obs.map((o) => {
-    const file = abs(root, o.file || o.filePath || o.path);
-    const detail = sentinelDetail(o);
+  return 'observation';
+}
+
+function normalizeCloudSignals(root, rawSignals) {
+  return rawSignals.map((signal) => {
+    const candidate = signal._fullPath || signal.file || signal._file || signal.filename || null;
+    const file = candidate ? path.resolve(root, candidate) : null;
+    const rel = file ? path.relative(root, file) : '';
+    const insideRoot = !!file && rel !== '..' && !rel.startsWith(`..${path.sep}`) && !path.isAbsolute(rel);
+    const category = cloudSignalCategory(signal);
+    const evidence = signal.evidence;
+    const detail = [signal.title, signal.description, signal.message, signal.snippet,
+      Array.isArray(evidence) ? evidence.join(' → ') : evidence]
+      .filter((part) => typeof part === 'string' && part.trim()).join(' | ');
     return {
-      tool: 'sentinel',
-      rule: o.rule || o.kind || o.type || 'observation',
-      kind: o.kind || o.type || 'observation',
-      file, line: sentinelLine(o), detail,
-      signalClass: sentinelClass(o, detail, file),
-      observedApi: o.api || null, observedSink: o.sink || null,
-      observedArg: o.arg === undefined ? null : clipVal(o.arg),
-      observedSource: o.source || o.target || null, observedValue: o.value || null,
+      tool: 'sentinel', rule: signal.type || signal.ruleName || 'cloud_signal',
+      kind: signal.type || 'observation', category, file: insideRoot ? file : null,
+      line: Number.isInteger(signal.line) ? signal.line : Number.isInteger(signal.line_number) ? signal.line_number : null,
+      detail,
+      signalClass: category !== 'observation' && insideRoot && !!detail ? 'ACTIONABLE_SIGNAL' : 'OBSERVATION_ONLY',
+      rawEngineSignal: signal,
     };
   });
-  const actionable = mapped.filter((f) => f.signalClass === 'ACTIONABLE_SIGNAL').length;
-  return envelope('sentinel', {
-    findings: mapped,
-    signalCounts: { total: mapped.length, actionable, observationOnly: mapped.length - actionable },
-    coverage: { filesSeen: invCount(ctx), filesEligible: invCount(ctx), filesParsed: invCount(ctx), analysisCompleted: true },
-    cost: r.cost,
-    notes: [
-      'breadth signal only; never adjudicate exploitability from this',
-      'signalClass separates ACTIONABLE_SIGNAL from OBSERVATION_ONLY before any lens escalates',
-    ],
-    rawArtifact: rawPath,
-  });
 }
-const invCount = (ctx) => (ctx.inv ? ctx.inv.sourceFiles : 0);
 
-// ---------------------------------------------------------------- purple
-/**
- * Purple = attack hypothesis. Its output is candidate only, by contract.
- * runScoped=true restricts it to the files Sentinel flagged, which is the
- * point of the incremental pipeline: do not walk 33k files to re-derive a
- * shortlist some other lens already produced.
- */
-function purple(root, ctx, opts = {}) {
-  const cli = ctx.tools.sentinelPurple.cli;
-  if (!fs.existsSync(cli)) return envelope('purple', { status: STATUS.UNSUPPORTED, error: 'purple CLI missing' });
-  const scope = opts.scope && opts.scope.length ? opts.scope : null;
-  const target = scope && scope.length === 1 ? scope[0] : root;
-  const out = path.join(ctx.work, 'purple');
-  fs.mkdirSync(out, { recursive: true });
-  const r = run('node', [cli, ctx.tools.sentinelPurple.modes.expediente, target, '--out', out],
-    { cwd: path.dirname(cli), timeoutMs: ctx.budget('purple') });
-  const apPath = path.join(out, '02-attack-paths.json');
-  const mfPath = path.join(out, 'audit-manifest.json');
-  if (!fs.existsSync(apPath)) {
-    return envelope('purple', { status: STATUS.ERROR, cost: r.cost, error: 'purple produced no 02-attack-paths.json', notes: [String(r.stderr).slice(0, 300)] });
+/** Direct local adapter for the Sentinel Cloud worker engine. */
+function sentinelCloud(root, ctx) {
+  const enginePath = expand(ctx.tools.sentinelCloud.engine);
+  const rawPath = path.join(ctx.work, 'sentinel.json');
+  if (!fs.existsSync(enginePath)) return envelope('sentinel', { status: STATUS.UNSUPPORTED, error: `Sentinel Cloud engine missing: ${enginePath}` });
+  const started = Date.now();
+  let scan;
+  try {
+    const engine = require(enginePath);
+    if (typeof engine.scanDirectory !== 'function') throw new Error('scanDirectory export missing');
+    scan = engine.scanDirectory(root, null, 5, { mode: 'local', profile: 'DEFAULT' });
+  } catch (error) {
+    return envelope('sentinel', { status: STATUS.ERROR, cost: { wallClockMs: Date.now() - started }, error: `direct Cloud scan failed: ${error.message}` });
   }
-  const ap = JSON.parse(fs.readFileSync(apPath, 'utf8'));
-  const mf = fs.existsSync(mfPath) ? JSON.parse(fs.readFileSync(mfPath, 'utf8')) : null;
-  const edges = Array.isArray(ap.edges) ? ap.edges : [];
-  const mfCov = mf ? { filesSeen: mf.filesHashed, filesEligible: mf.filesHashed, filesParsed: mf.filesHashed, analysisCompleted: true } : { analysisCompleted: true };
-  return envelope('purple', {
-    findings: edges.map((e) => ({
-      tool: 'purple', kind: 'attack_path', verdictFromTool: e.verdict,
-      source: e.source, sink: e.sink, sourceTrust: e.sourceTrust, sinkSeverity: e.sinkSeverity,
-      file: abs(root, e.sinkFile || e.sourceFile), sourceFile: abs(root, e.sourceFile),
-      line: e.sinkLocation && e.sinkLocation.start, sourceLine: e.sourceLocation && e.sourceLocation.start,
-      scopeFromTool: e.analysisScope, controls: e.controls || [], blockedBy: e.blockedBy || [],
-      reason: (e.reasons || []).join(';'), sha256: e.contentSha256 || null,
-    })),
-    coverage: mfCov,
-    cost: Object.assign(r.cost, { artifactBytes: dirBytes(out) }),
-    rawArtifact: apPath,
-    notes: [
-      'Purple ENTAILED is a candidate, never a vulnerability (measured 0 TP / 2 FP).',
-      'Every candidate requires a location sanity check before any disposition.',
-    ],
-    manifest: mf ? { targetHash: mf.targetHash, scannerVersion: mf.scannerVersion, analysisMode: mf.analysisMode, networkUsed: mf.networkUsed, llmInDecisionPath: mf.llmInDecisionPath } : null,
-  });
+  if (!scan || typeof scan.then !== 'function') {
+    return envelope('sentinel', { status: STATUS.ERROR, cost: { wallClockMs: Date.now() - started }, error: 'Cloud scanDirectory did not return a promise' });
+  }
+  return scan.then((result) => {
+    const rawSignals = Array.isArray(result.rawAlerts) ? result.rawAlerts : Array.isArray(result.alerts) ? result.alerts : [];
+    const identity = ctx.pre && ctx.pre.health && ctx.pre.health.sentinel || null;
+    try {
+      fs.writeFileSync(rawPath, JSON.stringify({ engine: identity, enginePath, mode: 'local', result }, null, 2));
+    } catch (error) {
+      return envelope('sentinel', { status: STATUS.ERROR, cost: { wallClockMs: Date.now() - started }, error: `raw output persistence failed: ${error.message}` });
+    }
+    const findings = normalizeCloudSignals(root, rawSignals);
+    const actionable = findings.filter((f) => f.signalClass === 'ACTIONABLE_SIGNAL').length;
+    const attempted = Number.isInteger(result.filesScanned) ? result.filesScanned : null;
+    return envelope('sentinel', {
+      status: STATUS.PARTIAL, findings,
+      signalCounts: { total: findings.length, actionable, observationOnly: findings.length - actionable },
+      coverage: {
+        filesSeen: attempted, filesEligible: null, filesParsed: null,
+        parseErrors: null, unsupportedFiles: null, analysisCompleted: false,
+        engineCoverage: 'ENGINE_COVERAGE_UNMEASURED', engineFilesScannedReported: attempted,
+        errors: ['Cloud engine does not expose parsed-file or parser-error counters'],
+      },
+      cost: { wallClockMs: Date.now() - started },
+      notes: [
+        'direct local Sentinel Cloud worker engine; hosted scan endpoint not used',
+        'PRODUCTION_PARITY_UNKNOWN: this result identifies the local source, not the currently deployed worker',
+        'raw engine output persisted before normalization',
+        'ENGINE_COVERAGE_UNMEASURED: filesScanned is not parsed-file coverage',
+      ],
+      rawArtifact: rawPath, version: identity && identity.engineId || null,
+    });
+  }).catch((error) => envelope('sentinel', {
+    status: STATUS.ERROR, cost: { wallClockMs: Date.now() - started }, error: `direct Cloud scan failed: ${error.message}`,
+  }));
 }
 
 // ---------------------------------------------------------------- codeql
@@ -402,4 +350,4 @@ function osv(root, ctx) {
   return envelope('osv', { findings, cost: r.cost, rawArtifact: out, coverage: { filesSeen: ctx.inv.totalFiles, filesEligible: ctx.inv.totalFiles, filesParsed: ctx.inv.totalFiles, analysisCompleted: true } });
 }
 
-module.exports = { sentinel, purple, codeql, semgrep, bandit, shellcheck, trivy, osv, sentinelDetail, sentinelLine, sentinelClass };
+module.exports = { sentinel: sentinelCloud, normalizeCloudSignals, cloudSignalCategory, codeql, semgrep, bandit, shellcheck, trivy, osv };

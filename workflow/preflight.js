@@ -12,6 +12,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { loadConfig, inventory, gitOut, gitTracked, gitHas, run, STATUS, which, expand } = require('../lib/core');
 
 function detectDisclosure(root, inv, policies, tracked) {
@@ -161,11 +162,34 @@ function checkToolHealth(tools) {
     const w = which(bin);
     health[key] = { available: w.available, version: w.version, path: bin };
   }
-  // Sentinel-purple must exist and be untouched; it is an input, not a dependency we install.
-  const sp = tools.sentinelPurple;
-  health.sentinel = fs.existsSync(sp.cli)
-    ? { available: true, repo: sp.repo, head: gitOut(sp.repo, 'rev-parse', '--short', 'HEAD'), dirty: !!gitOut(sp.repo, 'status', '--porcelain') }
-    : { available: false, reason: 'sentinel-purple CLI missing' };
+  const cloud = tools.sentinelCloud || {};
+  const repo = expand(cloud.repo || '');
+  const engine = expand(cloud.engine || '');
+  const worker = expand(cloud.worker || '');
+  const bridge = expand(cloud.bridge || '');
+  const astInspector = expand(cloud.astInspector || '');
+  const engineConfig = expand(cloud.config || '');
+  const productionTrace = fs.existsSync(worker) && fs.existsSync(bridge)
+    && fs.readFileSync(worker, 'utf8').includes("require('./scan-bridge.cjs')")
+    && fs.readFileSync(bridge, 'utf8').includes("require('./core/scanner/index.js')");
+  const hash = (file) => fs.existsSync(file) ? crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex') : null;
+  const head = repo ? gitOut(repo, 'rev-parse', 'HEAD') : null;
+  const relevantPaths = ['packages/worker/core/scanner', 'packages/worker/core/lib', 'packages/worker/scan-bridge.cjs', 'packages/worker/index.js'];
+  const statusArgs = ['status', '--porcelain', '--', ...relevantPaths];
+  const relevantStatus = repo ? gitOut(repo, ...statusArgs) : null;
+  const exists = [engine, worker, bridge, astInspector, engineConfig].every((file) => fs.existsSync(file));
+  const engineSha256 = hash(engine);
+  const engineId = head && engineSha256 ? `sentinel-cloud-worker@${head}#sha256:${engineSha256}` : null;
+  health.sentinel = exists && !!productionTrace && !!engineId
+    ? {
+      available: true, repo, head, engine, engineId, engineSha256,
+      astInspectorSha256: hash(astInspector), configSha256: hash(engineConfig),
+      productionTrace, engineDirty: relevantStatus === null ? null : !!relevantStatus,
+      productionParity: 'UNKNOWN',
+      resultLabel: 'Sentinel Cloud local engine; production parity unverified',
+      relevantWorktreeStatus: relevantStatus,
+    }
+    : { available: false, repo, engine, productionTrace, reason: 'Sentinel Cloud worker engine, bridge lineage, or identity unavailable' };
   return health;
 }
 
@@ -227,7 +251,8 @@ function preflight(repoPath, opts = {}) {
   if (inv.sourceFiles && inv.production === 0) reasons.push('every source file is test/example/vendor/generated');
   if (!inv.lockfiles.length) limits.push('no lockfile: SCA will be a coverage gap, not a clean result');
   if (!health.codeql.available) limits.push('codeql unavailable');
-  if (health.sentinel && health.sentinel.available && health.sentinel.dirty) limits.push('sentinel-purple worktree is dirty; pinned-input contract violated');
+  if (!health.sentinel || !health.sentinel.available) reasons.push('Sentinel Cloud local worker engine unavailable or production trace failed');
+  if (health.sentinel && health.sentinel.available && health.sentinel.engineDirty) limits.push('Sentinel Cloud engine worktree has local changes; engine identity is not pinned');
 
   const cost = estimateCost(inv, health, policies);
   cost.totalEstimateMinutes = Object.values(cost.estimateMinutes).reduce((a, b) => a + b, 0);

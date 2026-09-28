@@ -1,13 +1,12 @@
 {
-  "_comment": "Tool locations and query suites. Sentinel-purple is a pinned input, never modified by the runner.",
-  "sentinelPurple": {
-    "cli": "C:\\Users\\sleyt\\sentinel-purple\\bin\\purple.js",
-    "repo": "C:\\Users\\sleyt\\sentinel-purple",
-    "modes": {
-      "defensive": "commensal",
-      "offensive": "red",
-      "expediente": "report"
-    }
+  "_comment": "Sentinel Cloud worker engine is loaded directly from its local production source. No hosted scan API is used.",
+  "sentinelCloud": {
+    "repo": "%USERPROFILE%\\sentinel-cloud",
+    "worker": "%USERPROFILE%\\sentinel-cloud\\packages\\worker\\index.js",
+    "bridge": "%USERPROFILE%\\sentinel-cloud\\packages\\worker\\scan-bridge.cjs",
+    "engine": "%USERPROFILE%\\sentinel-cloud\\packages\\worker\\core\\scanner\\index.js",
+    "astInspector": "%USERPROFILE%\\sentinel-cloud\\packages\\worker\\core\\scanner\\ast_inspector.js",
+    "config": "%USERPROFILE%\\sentinel-cloud\\packages\\worker\\core\\scanner\\config.js"
   },
   "codeql": {
     "bin": "%LOCALAPPDATA%\\opencode\\tools\\codeql\\codeql.exe",

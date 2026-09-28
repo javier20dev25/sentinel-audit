@@ -107,3 +107,13 @@ tool still degrades; that distinction is asserted in
 The exclusion is opt-in and recorded, not silent. Sentinel and Purple are
 unmodified by this change.
 
+## Superseding implementation note (2026-09-27)
+
+The v1.5 implementation note above is historical and no longer describes the
+active runner. The campaign runner was rewired to call the local Sentinel Cloud
+worker scanner directly. Purple has no active config entry, is not exported by
+the shipping adapter module, and is absent from the audit tool roster and
+routing. The legacy paragraphs above document the prior freeze state only; do
+not use them as current execution instructions. See
+`docs/SENTINEL-CLOUD-FIRST-ARCHITECTURE.md` and
+`docs/SENTINEL-CLOUD-DIRECT-GATE.md` for the current architecture and gate.

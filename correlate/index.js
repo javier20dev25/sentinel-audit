@@ -15,13 +15,12 @@ const STATE = {
   REPORTABLE: 'REPORTABLE', NON_REPORTABLE: 'NON_REPORTABLE',
 };
 
-/** Roles decide what a corroboration is worth. Sentinel/Purple are never sufficient alone. */
+/** Roles decide what a corroboration is worth. Sentinel Cloud is never sufficient alone. */
 const AUTHORITY = {
   codeql: 'dataflow_authority',
   bandit: 'sink_semantics',
   semgrep: 'pattern',
   sentinel: 'behaviour_breadth',
-  purple: 'attack_hypothesis',
   trivy: 'dependency_config',
   osv: 'dependency_intel',
   shellcheck: 'lint_only',
@@ -37,7 +36,6 @@ const SUFFICIENT_TO_CORROBORATE = new Set(['codeql', 'bandit', 'semgrep']);
  */
 const DEFAULT_SIGNAL_CLASS = {
   sentinel: 'OBSERVATION_ONLY',
-  purple: 'OBSERVATION_ONLY',
   shellcheck: 'OBSERVATION_ONLY',
   codeql: 'ACTIONABLE_SIGNAL',
   semgrep: 'ACTIONABLE_SIGNAL',
@@ -175,9 +173,8 @@ function correlate(root, envelopes, policies) {
     const actionableSignals = signals.filter((s) => !isObservationClass(s.signalClass));
     const file = signals[0].file || key.split('|')[1];
     const line = signals.find((s) => s.line) ? signals.find((s) => s.line).line : null;
-    const purpleSaysEntailed = signals.some((s) => s.verdictFromTool === 'ENTAILED');
-    // A signal only from a breadth or hypothesis lens is an OBSERVATION, not a
-    // candidate. Sentinel alone is 54 files of noise; calling those "candidates"
+    // A signal only from Sentinel Cloud is an OBSERVATION, not a candidate.
+    // Calling breadth output "candidates"
     // is how a report ends up implying 64 unverified security issues.
     if (!authorities.length) {
       observations.push({
@@ -187,7 +184,6 @@ function correlate(root, envelopes, policies) {
         signalCount: signals.length,
         actionableSignals: actionableSignals.length,
         signals: signals.map(signalView),
-        purpleEntailed: purpleSaysEntailed,
         state: STATE.TRIAGED,
         status: actionableSignals.length ? 'BREADTH_SIGNAL_ONLY_NOT_A_CANDIDATE' : 'BREADTH_SIGNAL_NO_EVIDENCE',
         note: 'no dataflow or pattern authority corroborated this; it is a lead, not a finding',
@@ -290,7 +286,7 @@ function auditVerdict(envs, candidates) {
   // nothing that earned an expensive lens. That is a statement about Sentinel's
   // output, not about the target's security, so it can never set canClaimClean.
   const senEnv = applicable.find((e) => e.tool === 'sentinel');
-  const etapaBClosed = !!senEnv && !hardFailed.length && !limited.length
+  const etapaBClosed = !!senEnv && !hardFailed.length
     && SOURCE_LENSES.every((t) => notApplicable.some((e) => e.tool === t))
     && !(senEnv.signalCounts && senEnv.signalCounts.actionable > 0);
 
@@ -314,7 +310,7 @@ function auditVerdict(envs, candidates) {
     statement: verdict === 'CANDIDATES_FOUND'
       ? `${candidates.length} candidate(s) require human adjudication. ${degraded.length ? degraded.length + ' tool(s) also degraded, so absence of further findings is not evidence of absence.' : 'Tool coverage was complete.'}`
       : etapaBClosed
-        ? `Sentinel (Etapa A) completed with full coverage and produced 0 ACTIONABLE_SIGNAL, so Etapa B was not opened. This is NOT a security claim and NOT equivalent to SECURE: breadth lenses do not prove absence of issues, and no deep dataflow analysis was performed on this target.`
+        ? `Sentinel Cloud produced 0 ACTIONABLE_SIGNAL, so no secondary tools were routed. This is NOT a security claim and NOT equivalent to SECURE.${senEnv.coverage && senEnv.coverage.engineCoverage === 'ENGINE_COVERAGE_UNMEASURED' ? ' Engine parsed-file coverage is unmeasured.' : ' No deep dataflow analysis was performed on this target.'}`
         : hardFailed.length
           ? `${hardFailed.length} of ${applicable.length} applicable tools did not run to completion (${hardFailed.map((e) => e.tool + '=' + e.status).join(', ')}). Absence of findings is NOT evidence of absence.`
           : limited.length
@@ -324,6 +320,6 @@ function auditVerdict(envs, candidates) {
   };
 }
 const STATUS_SKIPPED = 'SKIPPED';
-const SOURCE_LENSES = ['codeql', 'semgrep', 'bandit', 'shellcheck', 'purple'];
+const SOURCE_LENSES = ['codeql', 'semgrep', 'bandit', 'shellcheck'];
 
 module.exports = { STATE, AUTHORITY, PRIORITY, REVIEW, RESOLVED_NO_ISSUE, openCandidates, correlate, adjudicate, auditVerdict, scopeOf, rel, dedup, nonProduction, signalClassOf, isObservationClass, DEFAULT_SIGNAL_CLASS };

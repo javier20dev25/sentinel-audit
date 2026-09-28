@@ -11,7 +11,6 @@
       "osv": 10,
       "bandit": 5,
       "shellcheck": 5,
-      "purple": 20,
       "sentinel": 10
     },
     "_commentLargeRepoBasis": "The large-repo threshold is measured on ANALYZABLE SOURCE FILES, never on production files. Evidence: next.js has 3301 production but 25154 source files and CodeQL still died on the default heap until --ram=8192.",

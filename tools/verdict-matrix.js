@@ -11,6 +11,7 @@
  * Run: node tools/verdict-matrix.js
  */
 const { openCandidates, RESOLVED_NO_ISSUE, PRIORITY, REVIEW, adjudicate, auditVerdict } = require('../correlate');
+const { buildRoutePlan } = require('../workflow/audit');
 
 const HEALTHY = [
   { tool: 'codeql', status: 'RAN', verdict: 'FULL_COVERAGE', coverage: { errors: [] }, notes: [], error: null },
@@ -147,31 +148,6 @@ console.log('\nreview state is workflow only, never an analytic input');
   check('REVIEW vocabulary', Object.keys(REVIEW).sort().join(','), 'REVIEWED,UNREVIEWED');
 }
 
-console.log('\npurple opt-out is not a coverage failure');
-{
-  const ran = (t) => ({ tool: t, status: 'RAN', verdict: 'FULL_COVERAGE', notApplicable: false, coverage: { filesSeen: 10, filesEligible: 10, filesParsed: 10, errors: [] }, notes: [], error: null });
-  const optedOut = { tool: 'purple', status: 'SKIPPED', verdict: 'NOT_APPLICABLE', notApplicable: true, coverage: { filesSeen: 0, filesEligible: 0, filesParsed: 0, analysisCompleted: true, errors: [] }, notes: ['purple deliberately excluded by --skip-purple'], error: null };
-  const failed = { tool: 'purple', status: 'SKIPPED', verdict: 'SKIPPED', notApplicable: false, coverage: { filesSeen: 0, filesEligible: 0, filesParsed: 0, analysisCompleted: false, errors: ['skipped by request'] }, notes: ['skipped via --skip-specialists'], error: null };
-  const base = [ran('sentinel'), ran('codeql'), ran('semgrep'), ran('trivy')];
-
-  const withPurple = auditVerdict([...base, ran('purple')], openCandidates([]));
-  const without = auditVerdict([...base, optedOut], openCandidates([]));
-  const asFailure = auditVerdict([...base, failed], openCandidates([]));
-
-  check('purple run: full coverage', withPurple.verdict, 'CLEAN_WITH_FULL_COVERAGE');
-  check('purple opt-out: not a degraded tool', without.degradedTools.length, 0);
-  check('purple opt-out: keeps full coverage verdict', without.verdict, 'CLEAN_WITH_FULL_COVERAGE');
-  check('purple opt-out: canClaimClean still true', without.canClaimClean, true);
-  check('purple opt-out: listed as not applicable', without.notApplicableTools.includes('purple'), true);
-  check('purple opt-out: analysis state FULL', without.analysisState, 'FULL');
-  // The contrast that matters: a genuinely skipped tool must still degrade.
-  check('genuinely skipped purple still degrades', asFailure.verdict, 'PARTIAL_ANALYSIS');
-  check('genuinely skipped purple blocks clean', asFailure.canClaimClean, false);
-  // And opt-out must not mask a real candidate.
-  const c = candidate('PLAUSIBLE_SECURITY_ISSUE');
-  check('purple opt-out cannot hide an open candidate', auditVerdict([...base, optedOut], openCandidates([c])).verdict, 'CANDIDATES_FOUND');
-}
-
 console.log('\nSentinel-first: observation vs candidate vs confirmed');
 {
   const { signalClassOf, correlate } = require('../correlate');
@@ -185,7 +161,6 @@ console.log('\nSentinel-first: observation vs candidate vs confirmed');
 
   check('breadth kind defaults to OBSERVATION_ONLY', signalClassOf('sentinel', { kind: 'import', detail: 'x' }), 'OBSERVATION_ONLY');
   check('authority kind defaults to ACTIONABLE_SIGNAL', signalClassOf('codeql', { kind: 'dataflow', detail: 'x' }), 'ACTIONABLE_SIGNAL');
-  check('hypothesis lens defaults to OBSERVATION_ONLY', signalClassOf('purple', { kind: 'attack_path', detail: 'x' }), 'OBSERVATION_ONLY');
   check('empty detail forces OBSERVATION_ONLY even from an authority', signalClassOf('codeql', { kind: 'dataflow', detail: '' }), 'OBSERVATION_ONLY');
   check('missing detail forces OBSERVATION_ONLY', signalClassOf('semgrep', { rule: 'r', detail: undefined }), 'OBSERVATION_ONLY');
   check('declared ACTIONABLE_SIGNAL is respected', signalClassOf('sentinel', { kind: 'exec', detail: 'api=eval', signalClass: 'ACTIONABLE_SIGNAL' }), 'ACTIONABLE_SIGNAL');
@@ -224,7 +199,7 @@ console.log('\nNO_ACTIONABLE_SENTINEL_FINDINGS is not a clean claim');
 {
   const ran = (t, sc) => ({ tool: t, status: 'SUCCESS', verdict: 'NO_SIGNALS_FULL_COVERAGE', notApplicable: false, signalCounts: sc || null, coverage: { filesSeen: 10, filesEligible: 10, filesParsed: 10, analysisCompleted: true, errors: [] }, notes: [], error: null, findings: [] });
   const closed = (t) => ({ tool: t, status: 'SKIPPED', verdict: 'NOT_APPLICABLE', notApplicable: true, coverage: { filesSeen: 0, filesEligible: 0, filesParsed: 0, analysisCompleted: true, errors: [] }, notes: ['NO_ACTIONABLE_SENTINEL_FINDINGS'], error: null, findings: [] });
-  const LENSES = ['codeql', 'semgrep', 'bandit', 'shellcheck', 'purple'];
+  const LENSES = ['codeql', 'semgrep', 'bandit', 'shellcheck'];
 
   const v = auditVerdict([ran('sentinel', { total: 120, actionable: 0, observationOnly: 120 }), ...LENSES.map(closed), ran('trivy'), ran('osv')], openCandidates([]));
   check('closed Etapa B yields the sentinel-first verdict', v.verdict, 'NO_ACTIONABLE_SENTINEL_FINDINGS');
@@ -232,7 +207,7 @@ console.log('\nNO_ACTIONABLE_SENTINEL_FINDINGS is not a clean claim');
   check('it is marked not-a-security-claim', v.securityClaim, 'NOT_A_SECURITY_CLAIM');
   check('analysis state is still FULL', v.analysisState, 'FULL');
   check('statement says it is not SECURE', /NOT equivalent to SECURE/.test(v.statement), true);
-  check('statement says no deep analysis ran', /no deep dataflow analysis/.test(v.statement), true);
+  check('statement says no secondary analysis was routed', /no secondary tools were routed|no deep dataflow analysis/.test(v.statement), true);
 
   const withActionable = auditVerdict([ran('sentinel', { total: 120, actionable: 3, observationOnly: 117 }), ...LENSES.map(closed), ran('trivy')], openCandidates([]));
   check('a nonzero actionable count never yields the sentinel-first verdict', withActionable.verdict, 'CLEAN_WITH_FULL_COVERAGE');
@@ -244,8 +219,27 @@ console.log('\nNO_ACTIONABLE_SENTINEL_FINDINGS is not a clean claim');
   const c = candidate('PLAUSIBLE_SECURITY_ISSUE');
   check('an open candidate outranks the sentinel-first verdict', auditVerdict([ran('sentinel', { total: 5, actionable: 0, observationOnly: 5 }), ...LENSES.map(closed), ran('trivy')], openCandidates([c])).verdict, 'CANDIDATES_FOUND');
 
-  const allRan = auditVerdict([ran('sentinel', { total: 5, actionable: 0, observationOnly: 5 }), ran('codeql'), ran('semgrep'), ran('purple'), ran('trivy')], openCandidates([]));
+  const allRan = auditVerdict([ran('sentinel', { total: 5, actionable: 0, observationOnly: 5 }), ran('codeql'), ran('semgrep'), ran('trivy')], openCandidates([]));
   check('sentinel-first verdict cannot fire when Etapa B actually ran', allRan.verdict, 'CLEAN_WITH_FULL_COVERAGE');
+}
+
+console.log('\nSignal-first routing is explicit and deterministic');
+{
+  const none = buildRoutePlan([]);
+  check('no signal routes no secondary tools', none.tools.length, 0);
+  check('no signal records no-action state', none.decision, 'NO_ACTIONABLE_SENTINEL_FINDINGS');
+  const processJs = buildRoutePlan([{ signalClass: 'ACTIONABLE_SIGNAL', category: 'process', file: 'src/run.js' }]);
+  check('process signal routes CodeQL and Semgrep', processJs.tools.join(','), 'codeql,semgrep');
+  const processPy = buildRoutePlan([{ signalClass: 'ACTIONABLE_SIGNAL', category: 'process', file: 'src/run.py' }]);
+  check('Python process signal additionally routes Bandit', processPy.tools.join(','), 'codeql,semgrep,bandit');
+  const dependency = buildRoutePlan([{ signalClass: 'ACTIONABLE_SIGNAL', category: 'dependency', file: 'package-lock.json' }]);
+  check('dependency signal routes only SCA specialists', dependency.tools.join(','), 'trivy,osv');
+  const unmeasured = auditVerdict([
+    { tool: 'sentinel', status: 'PARTIAL', verdict: 'LIMITED_COVERAGE', signalCounts: { total: 0, actionable: 0, observationOnly: 0 }, coverage: { engineCoverage: 'ENGINE_COVERAGE_UNMEASURED', filesSeen: 3, filesEligible: null, filesParsed: null, analysisCompleted: false, errors: ['coverage unmeasured'] }, findings: [], notes: [], error: null },
+    ...['codeql', 'semgrep', 'bandit', 'shellcheck', 'trivy', 'osv'].map((tool) => ({ tool, status: 'SKIPPED', verdict: 'NOT_APPLICABLE', notApplicable: true, coverage: { errors: [] }, findings: [], notes: [], error: null })),
+  ], openCandidates([]));
+  check('unmeasured zero-signal cannot claim clean', unmeasured.canClaimClean, false);
+  check('unmeasured zero-signal keeps explicit no-action state', unmeasured.verdict, 'NO_ACTIONABLE_SENTINEL_FINDINGS');
 }
 
 console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : failures + ' CHECK(S) FAILED'}`);

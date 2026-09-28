@@ -33,15 +33,16 @@ analyzable surface, and what will it cost.
 ```bash
 node audit-runner.js doctor
 node audit-runner.js preflight <repo> [<repo> ...]
-node audit-runner.js audit <repo> --name <label> [--skip-purple] [--purple-full]
+node audit-runner.js audit <repo> --name <label>
 node audit-runner.js report <expedienteDir>
 node audit-runner.js adjudicate <expedienteDir> --candidate SAR-0001 \
     --disposition <DISPOSITION> --priority <P0|P1|P2|P3> --rationale "..."
 ```
 
-`--skip-purple` records Purple as `NOT_APPLICABLE`, which keeps the run's
-coverage `FULL`. It is a deliberate exclusion, not a skipped tool: a tool that
-is genuinely skipped still degrades the run to `PARTIAL_ANALYSIS`.
+The primary sensor is the local Sentinel Cloud worker engine configured in
+`config/tools.json`. The runner calls its scanner module directly in local mode;
+it does not call the hosted service or Sentinel Purple. Scanner parse coverage
+is currently unmeasured, so a zero-signal result is never a clean claim.
 
 ### Candidate fields that are not verdicts
 
@@ -63,8 +64,7 @@ that distinction an untouched backlog is indistinguishable from a triaged one.
 
 | Tool | Role | Authority |
 |---|---|---|
-| Sentinel | behavioral breadth signals | signal only |
-| Purple | attack-path hypothesis | signal only, archived (see ADR-0001) |
+| Sentinel Cloud worker engine | primary behavioral signals | signal only; coverage currently unmeasured |
 | CodeQL | dataflow / reachability | corroborating |
 | Semgrep | pattern semantics | corroborating |
 | Bandit | Python sink semantics | corroborating |
@@ -160,7 +160,7 @@ tolerated.
 | `audit-runner-v1.2-freeze` | `16b1dab` | Retired channels and CNA fallbacks are not vetted channels. |
 | `audit-runner-v1.3-freeze` | `6d09016` | A finding closed by an analyst no longer counted as open, so a triaged target could be reported clean. |
 | `audit-runner-v1.4-freeze` | `4e0c267` | Investigation priority, as a field no verdict reads. |
-| `audit-runner-v1.5-freeze` | this commit | Review state, and a Purple opt-out that is not a coverage failure. |
+| `audit-runner-v1.5-freeze` | this commit | Historical freeze; its Purple opt-out behavior was removed when wiring the direct Cloud worker engine. |
 
 v1 and v1.1 are both wrong in ways that produced a false clean claim. They are
 not deleted. A freeze that gets quietly rewritten is worse than one that keeps

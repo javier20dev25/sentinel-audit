@@ -9,11 +9,11 @@
  *
  * Commands:
  *   preflight <repo...>        cheap readiness check, no analysis
- *   audit <repo>               two-stage pipeline: Etapa A discovery, Etapa B on demand
+ *   audit <repo>               direct local Cloud engine first; route specialists on demand
  *   report <expedienteDir>     render the markdown report
  *   doctor                     tool health + version table
  *
- * Etapa A is Sentinel, always. Etapa B (CodeQL, Semgrep, Bandit, ShellCheck) opens
+ * Etapa A is the local Sentinel Cloud worker engine, always. Etapa B opens
  * only when Etapa A produced an ACTIONABLE_SIGNAL, and its result lands as
  * NO_ACTIONABLE_SENTINEL_FINDINGS, which is not a clean claim and not SECURE.
  * --force-etapa-b runs the verifiers anyway, for a target under manual review.
@@ -44,7 +44,7 @@ function positionalFor(all) {
     const a = all[i];
     if (a.startsWith('--')) {
       const name = a.slice(2);
-      if (!['purple-full', 'skip-specialists', 'json', 'no-sca', 'quiet', 'keep-db'].includes(name)) i++; // consume value
+      if (!['skip-specialists', 'json', 'no-sca', 'quiet', 'keep-db'].includes(name)) i++; // consume value
       continue;
     }
     out.push(a);
@@ -70,8 +70,7 @@ async function main() {
       const ok = v.available ? c.grn + 'ok  ' + c.off : c.red + 'MISS' + c.off;
       let detail = v.version || v.reason || '';
       if (k === 'sentinel' && v.available) {
-        // The pinned-input contract: the audit is only reproducible against a known, clean Purple.
-        detail = `head ${v.head}${v.dirty ? c.yel + '  DIRTY WORKTREE' + c.off : c.dim + '  clean' + c.off}`;
+        detail = `${v.engineId}${v.engineDirty ? c.yel + '  ENGINE FILES DIRTY' + c.off : c.dim + '  engine files clean' + c.off}`;
       }
       console.log(`  ${k.padEnd(12)} ${ok}  ${String(detail).slice(0, 78)}`);
     }
@@ -103,14 +102,12 @@ async function main() {
   }
 
   if (cmd === 'audit') {
-    if (!targets.length) { console.error('usage: audit <repo> [--name x] [--force-etapa-b] [--skip-specialists] [--skip-purple] [--purple-full]'); process.exit(2); }
+    if (!targets.length) { console.error('usage: audit <repo> [--name x] [--force-etapa-b] [--skip-specialists]'); process.exit(2); }
     const repo = targets[0];
     console.log(`${c.bold}Sentinel Audit Runner${c.off}  ${repo}`);
-    const res = audit(repo, {
+    const res = await audit(repo, {
       name: typeof flag('name') === 'string' ? flag('name') : undefined,
       skipSpecialists: has('skip-specialists'),
-      skipPurple: has('skip-purple'),
-      purpleFull: has('purple-full'),
       forceEtapaB: has('force-etapa-b'),
       maxScopeFiles: Number(flag('max-scope-files', 40)),
       keepDb: has('keep-db'),
@@ -125,8 +122,7 @@ async function main() {
       console.log(`  ${c.cyn}${cand.candidateId}${c.off} ${cand.confidence.padEnd(6)} ${cand.tools.join('+').padEnd(28)} ${path.basename(cand.file)}:${cand.line || '?'}  ${cand.state}`);
     }
     if (e.observations && e.observations.length) {
-      const ent = e.observations.filter((o) => o.purpleEntailed).length;
-      console.log(`\n${c.dim}observations ${e.observations.length} breadth-only leads (not findings; ${ent} with purple ENTAILED)${c.off}`);
+      console.log(`\n${c.dim}observations ${e.observations.length} non-production or non-actionable signals (not candidates)${c.off}`);
     }
     if (av.degradedTools.length) {
       console.log(`\n${c.yel}degraded tools${c.off}`);

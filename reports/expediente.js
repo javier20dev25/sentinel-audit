@@ -12,13 +12,17 @@ function renderReport(e) {
     const x = e.tools[t];
     if (!x) return ['-', '-', '-', '-'];
     const c = x.coverage || {};
-    return [x.status, `${c.filesSeen ?? '?'}/${c.filesEligible ?? '?'}`, c.filesParsed ?? '?', c.parseErrors || 0];
+    return [x.status, `${c.filesSeen ?? '?'}/${c.filesEligible ?? '?'}`, c.filesParsed ?? '?', c.parseErrors ?? '?'];
   };
 
   w(`# Audit Expediente — ${e.name}`);
   w('');
   w(`- **Repo:** \`${e.repo}\``);
   w(`- **Commit:** \`${(e.commit || '').slice(0, 12)}\`  **Tree:** \`${(e.tree || '').slice(0, 12)}\`  **shallow:** ${e.shallow}`);
+  const cloudIdentity = e.preflight.toolHealth && e.preflight.toolHealth.sentinel;
+  if (cloudIdentity && cloudIdentity.available) {
+    w(`- **Sentinel engine:** \`${cloudIdentity.engineId}\` · **Production parity:** ${cloudIdentity.productionParity || 'UNKNOWN'} — ${cloudIdentity.resultLabel || 'local engine; deployed parity unverified'}`);
+  }
   w(`- **Started:** ${e.startedAt}  **Wall clock:** ${((e.totalWallClockMs || 0) / 60000).toFixed(1)}m`);
   w(`- **Preflight:** **${e.preflight.verdict}**  · disclosure: **${e.preflight.disclosure.verdict}**  · estimated ${e.preflight.estimatedMinutes}m`);
   w(`- **Publication:** push/PR/issue/report/email all **FORBIDDEN**. Fixes and drafts stay local.`);
@@ -56,15 +60,16 @@ function renderReport(e) {
 
   w('## 2. Coverage and cost (Gates B and C)');
   w('');
-  w('| Tool | Status | Verdict | seen/eligible | parsed | parse errors | signals | wall ms |');
-  w('|---|---|---|---|---|---|---|---|');
+  w('| Tool | Status | Verdict | seen/eligible | parsed | parse errors | coverage state | signals | wall ms |');
+  w('|---|---|---|---|---|---|---|---|---|');
   for (const t of Object.keys(e.tools)) {
     const [s, se, p, pe] = cov(t);
     const x = e.tools[t];
-    w(`| ${t} | ${s} | ${x.verdict} | ${se} | ${p} | ${pe} | ${x.findingCount} | ${x.cost.wallClockMs} |`);
+    w(`| ${t} | ${s} | ${x.verdict} | ${se} | ${p} | ${pe} | ${(x.coverage && x.coverage.engineCoverage) || 'measured/other'} | ${x.findingCount} | ${x.cost.wallClockMs} |`);
   }
   w('');
-  if (e.shortlist) w(`Purple scope: **${e.shortlist.count} files**, origin \`${e.shortlist.origin}\`.`);
+  if (e.shortlist) w(`Sentinel Cloud promotion: **${e.shortlist.count} files**, origin \`${e.shortlist.origin}\`.`);
+  if (e.signalRouting) w(`Signal routing: **${e.signalRouting.decision}** — ${e.signalRouting.reason}; tools: ${e.signalRouting.tools.join(', ') || 'none'}.`);
   w('');
 
   w('## 3. Candidates (corroborated by at least one dataflow or pattern authority)');
@@ -132,13 +137,11 @@ function renderReport(e) {
   w('');
   if (!obs.length) w('None.');
   else {
-    w('Signals seen only by Sentinel (behaviour) or Purple (hypothesis). By contract neither is');
-    w('sufficient to raise a candidate, and Purple `ENTAILED` measured 0 true positives / 2 false');
-    w('positives in calibration. They are retained so a human can spot a pattern, not to inflate counts.');
+    w('Signals seen only by Sentinel Cloud remain observations until an independent dataflow or pattern authority corroborates them.');
     w('');
-    w('| ID | Tools | Purple ENTAILED | Location |');
-    w('|---|---|---|---|');
-    for (const o of obs.slice(0, 60)) w(`| ${o.observationId} | ${o.tools.join('+')} | ${o.purpleEntailed ? 'yes' : 'no'} | \`${path.basename(o.file)}${o.line ? ':' + o.line : ''}\` |`);
+    w('| ID | Tools | Actionable signals | Location |');
+    w('|---|---|---:|---|');
+    for (const o of obs.slice(0, 60)) w(`| ${o.observationId} | ${o.tools.join('+')} | ${o.actionableSignals || 0} | \`${path.basename(o.file || '')}${o.line ? ':' + o.line : ''}\` |`);
     if (obs.length > 60) w(`\n_...and ${obs.length - 60} more, in \`expediente.json\`.`);
   }
   w('');
