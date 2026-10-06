@@ -1,26 +1,32 @@
 {
-  "_comment": "Sentinel Cloud worker engine is loaded directly from its local production source. No hosted scan API is used.",
+  "_comment": "Sentinel Audit configuration. Cloud intelligence is provided by Sentinel Cloud via @sentinel/cloud-client (--cloud). Specialists are discovered on PATH or via environment overrides.",
   "sentinelCloud": {
-    "repo": "%USERPROFILE%\\sentinel-cloud",
-    "worker": "%USERPROFILE%\\sentinel-cloud\\packages\\worker\\index.js",
-    "bridge": "%USERPROFILE%\\sentinel-cloud\\packages\\worker\\scan-bridge.cjs",
-    "engine": "%USERPROFILE%\\sentinel-cloud\\packages\\worker\\core\\scanner\\index.js",
-    "astInspector": "%USERPROFILE%\\sentinel-cloud\\packages\\worker\\core\\scanner\\ast_inspector.js",
-    "config": "%USERPROFILE%\\sentinel-cloud\\packages\\worker\\core\\scanner\\config.js"
+    "hosted": {
+      "_comment": "Protocol and transport live in @sentinel/cloud-client. The runner never builds its own authenticated request; it resolves this module and calls it.",
+      "clientModule": "@sentinel/cloud-client",
+      "baseUrlEnv": "SENTINEL_CLOUD_URL",
+      "tokenEnv": "SENTINEL_CLOUD_API_TOKEN"
+    }
   },
   "codeql": {
-    "bin": "%LOCALAPPDATA%\\opencode\\tools\\codeql\\codeql.exe",
+    "bin": "codeql",
+    "envVar": "SPECIALIST_CODEQL_PATH",
     "ramDefault": 4096,
     "ramMonorepo": 8192,
     "suites": {
-      "javascript": "%USERPROFILE%\\.codeql\\packages\\codeql\\javascript-queries\\2.4.6\\codeql-suites\\javascript-security-extended.qls",
-      "typescript": "%USERPROFILE%\\.codeql\\packages\\codeql\\javascript-queries\\2.4.6\\codeql-suites\\javascript-security-extended.qls",
-      "python": "%USERPROFILE%\\.codeql\\packages\\codeql\\python-queries\\1.8.11\\codeql-suites\\python-security-extended.qls"
+      "javascript": "javascript-security-extended.qls",
+      "typescript": "javascript-security-extended.qls",
+      "python": "python-security-extended.qls"
     }
   },
-  "semgrep": { "bin": "semgrep", "configs": ["p/security-audit", "p/secrets"] },
-  "bandit": { "bin": "%LOCALAPPDATA%\\opencode\\tools\\bandit-env\\Scripts\\bandit.exe" },
-  "shellcheck": { "bin": "%LOCALAPPDATA%\\opencode\\tools\\bandit-env\\Scripts\\shellcheck.exe", "severity": "warning" },
-  "trivy": { "bin": "%LOCALAPPDATA%\\opencode\\tools\\trivy.exe", "scanners": "vuln,secret,misconfig" },
-  "osv": { "bin": "%LOCALAPPDATA%\\opencode\\tools\\osv-scanner.exe" }
+  "semgrep": {
+    "bin": "semgrep",
+    "envVar": "SPECIALIST_SEMGREP_PATH",
+    "configs": ["rules/semgrep"],
+    "allowRemoteRules": false
+  },
+  "bandit": { "bin": "bandit", "envVar": "SPECIALIST_BANDIT_PATH" },
+  "shellcheck": { "bin": "shellcheck", "envVar": "SPECIALIST_SHELLCHECK_PATH", "severity": "warning" },
+  "trivy": { "bin": "trivy", "envVar": "SPECIALIST_TRIVY_PATH", "scanners": "vuln,secret,misconfig", "offline": false },
+  "osv": { "bin": "osv-scanner", "envVar": "SPECIALIST_OSV_PATH", "offline": false }
 }

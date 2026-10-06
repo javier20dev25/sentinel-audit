@@ -1,0 +1,48 @@
+{
+  "status": "ROOT_CAUSE_UNKNOWN",
+  "cloudEngineRevision": "f674ffafefee6923aa91a4bced43d1810d74ff2c",
+  "productionParity": "UNKNOWN",
+  "coverageTelemetry": "ENGINE_COVERAGE_UNMEASURED",
+  "findings": [
+    {
+      "repo":"expressjs__express",
+      "commit":"9a34acf03cb818ff3f8bc40e44176e277a25cbb9",
+      "file":"examples/session/index.js",
+      "line":19,
+      "semgrepRule":"javascript.express.security.audit.express-session-hardcoded-secret.express-session-hardcoded-secret",
+      "severity":"HIGH",
+      "semgrepEvidence":"Saved finding message states a hard-coded credential was detected; no source snippet/value was retained in this artifact.",
+      "pathScope":"NON_PRODUCTION examples directory; do not infer benignity",
+      "cloudActionableSignalsOnFile":0,
+      "cloudPromoted":false,
+      "policyDisposition":"OUT_OF_SCOPE for the production-candidate KPI: run policy SHA256 matches HEAD and nonProductionPathHints explicitly includes /examples/; raw specialist evidence remains retained. Rev.4 narrative conflicts with this policy.",
+      "cause":"Cloud-to-routing signal absence is demonstrated; detector absent vs detector not triggered vs parser/coverage cannot be separated",
+      "rootCause":"ROOT_CAUSE_UNKNOWN"
+    },
+    {
+      "repo":"expressjs__express",
+      "commit":"9a34acf03cb818ff3f8bc40e44176e277a25cbb9",
+      "file":"examples/session/redis.js",
+      "line":23,
+      "semgrepRule":"javascript.express.security.audit.express-session-hardcoded-secret.express-session-hardcoded-secret",
+      "severity":"HIGH",
+      "semgrepEvidence":"Saved finding message states a hard-coded credential was detected; no source snippet/value was retained in this artifact.",
+      "pathScope":"NON_PRODUCTION examples directory; do not infer benignity",
+      "cloudActionableSignalsOnFile":0,
+      "cloudPromoted":false,
+      "policyDisposition":"OUT_OF_SCOPE for the production-candidate KPI: run policy SHA256 matches HEAD and nonProductionPathHints explicitly includes /examples/; raw specialist evidence remains retained. Rev.4 narrative conflicts with this policy.",
+      "cause":"Cloud-to-routing signal absence is demonstrated; detector absent vs detector not triggered vs parser/coverage cannot be separated",
+      "rootCause":"ROOT_CAUSE_UNKNOWN"
+    }
+  ],
+  "coverageStateProposal": {
+    "engineExecutionComplete":"boolean or null",
+    "engineIncomplete":"boolean",
+    "coverageKnown":"boolean",
+    "coverageUnknown":"boolean",
+    "filesScanned":"integer or null, only engine-reported value",
+    "filesFailed":"integer or null, only engine-reported value",
+    "alertsFailed":"integer or null, only engine-reported value",
+    "implemented":false
+  }
+}

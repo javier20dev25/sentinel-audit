@@ -8,7 +8,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const VOLATILE = new Set(['startedAt', 'finishedAt', 'totalWallClockMs', 'artifactBytes', 'wallClockMs', 'dbBytes', 'dbDiscardedBytes', 'artifactBytes', 'peakRamMB', 'out']);
+const VOLATILE = new Set([
+  'startedAt', 'finishedAt', 'checkedAt', 'completedAt', 'cleanedAt',
+  'executionId', 'artifactDir', 'jobId', 'specialistFindingId',
+  'totalWallClockMs', 'artifactBytes', 'wallClockMs', 'dbBytes', 'dbDiscardedBytes', 'peakRamMB', 'out',
+]);
 
 function normalize(v) {
   if (Array.isArray(v)) return v.map(normalize);

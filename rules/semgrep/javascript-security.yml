@@ -1,0 +1,161 @@
+# Sentinel Audit vendored Semgrep ruleset.
+#
+# These rules are vendored on purpose.  Remote `p/...` rulesets are rejected by
+# workflow/specialist-runtime.js because they are neither deterministic nor
+# reviewable: registry contents change without notice, so two runs of the same
+# commit could legitimately disagree, and P0-2 requires a ruleset hash.
+#
+# Every rule below is a syntactic pattern, not a heuristic.  They intentionally
+# do not exclude test/example paths: the non-production policy belongs to the
+# correlation stage, which must classify and retain out-of-scope evidence
+# instead of silently dropping it here.
+rules:
+  - id: sentinel.javascript.security.detect-child-process
+    message: >-
+      This process-spawning API executes an external command. When the command
+      or an argument is influenced by untrusted input it becomes command
+      injection (CWE-78).
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+      technology: [nodejs]
+    patterns:
+      - pattern-either:
+          - pattern: require("child_process").exec(...)
+          - pattern: require("child_process").execSync(...)
+          - pattern: require("child_process").spawn(...)
+          - pattern: require("child_process").spawnSync(...)
+          - pattern: require("child_process").execFile(...)
+          - pattern: require("child_process").fork(...)
+          - pattern: child_process.exec(...)
+          - pattern: child_process.execSync(...)
+          - pattern: child_process.spawn(...)
+          - pattern: child_process.spawnSync(...)
+          - pattern: child_process.execFile(...)
+
+  - id: sentinel.javascript.security.detect-eval
+    message: >-
+      Dynamic evaluation executes its argument as code. Untrusted input reaching
+      this call is arbitrary code execution (CWE-95).
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code"
+    patterns:
+      - pattern: eval(...)
+
+  - id: sentinel.javascript.security.detect-new-function
+    message: >-
+      `new Function` compiles a string into code at runtime and is the same
+      code-execution risk as eval (CWE-95).
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code"
+    patterns:
+      - pattern: new Function(...)
+
+  - id: sentinel.javascript.security.detect-inner-html-assignment
+    message: >-
+      Assigning to innerHTML renders unescaped markup. Attacker-controlled input
+      here is cross-site scripting (CWE-79).
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation"
+    patterns:
+      - pattern: $X.innerHTML = $Y
+
+  - id: sentinel.javascript.security.audit.tls-verification-disabled
+    message: >-
+      TLS certificate verification is disabled, so the connection can be
+      intercepted (CWE-295).
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-295: Improper Certificate Validation"
+    pattern-regex: 'rejectUnauthorized\s*:\s*false'
+
+  - id: sentinel.javascript.security.audit.weak-cryptographic-hash
+    message: >-
+      MD5 and SHA-1 are broken for any security purpose. Use SHA-256 or stronger
+      (CWE-327).
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+    patterns:
+      - pattern-either:
+          - pattern: crypto.createHash("md5", ...)
+          - pattern: crypto.createHash("md4", ...)
+          - pattern: crypto.createHash("sha1", ...)
+          - pattern: createHash("md5", ...)
+          - pattern: createHash("md4", ...)
+          - pattern: createHash("sha1", ...)
+
+  - id: sentinel.javascript.security.audit.hardcoded-credential
+    message: >-
+      A credential appears to be hardcoded in source. Anyone with repository or
+      build access can reuse it (CWE-798).
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+    pattern-regex: '(?i)\b(pass(word|wd)?|secret|api_?key|access_?token|client_?secret|private_?key)\b\s*[:=]\s*["''][^"''\s]{8,}["'']'
+
+  - id: sentinel.javascript.security.audit.insecure-http-url
+    message: >-
+      A plaintext http:// URL is hardcoded. Traffic to it is not protected in
+      transit (CWE-319).
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-319: Cleartext Transmission of Sensitive Information"
+    patterns:
+      # Matched against string literals rather than raw text on purpose.  A
+      # plain pattern-regex also fires on http:// inside comments, doc blocks and
+      # curl examples, which produced 17 findings on express of which zero were
+      # real cleartext transmissions.
+      - pattern-either:
+          - pattern: '"$URL"'
+          - pattern: "'$URL'"
+          - pattern: '`$URL`'
+      - metavariable-regex:
+          metavariable: $URL
+          # Plaintext only.  An earlier revision anchored on ^https?:// and so
+          # flagged every https:// URL, which is the opposite of the finding it
+          # claims to report.
+          #
+          # Loopback and reserved documentation hosts cannot be intercepted
+          # off-host, so flagging them is noise.  The exclusion is a negative
+          # lookahead because metavariable-pattern-not does not accept a nested
+          # patterns list in semgrep 1.175 and invalidates the whole ruleset when
+          # used.  The optional subdomain group makes it cover api.example.com
+          # and friends, not just the bare reserved names.
+          regex: '^http://(?!(?:[A-Za-z0-9-]+\.)*(?:localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|example\.(?:com|org|net))(?::\d+)?(?:[/?#]|$))'
+
+  - id: sentinel.javascript.security.detect-settimeout-string-delay
+    message: >-
+      A string was passed as the timer delay. A non-numeric first argument is
+      coerced and silently disables the intended delay (CWE-704).
+    severity: INFO
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-704: Incorrect Type Conversion or Cast"
+    patterns:
+      - pattern-either:
+          - pattern: setTimeout(..., $DELAY)
+          - pattern: setInterval(..., $DELAY)
+      - metavariable-regex:
+          metavariable: $DELAY
+          regex: '^["'']'

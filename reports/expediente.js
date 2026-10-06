@@ -8,6 +8,8 @@ const yn = (b) => (b ? 'yes' : 'no');
 function renderReport(e) {
   const L = [];
   const w = (s) => L.push(s);
+  const repo = e.repository || e.repo || e.sourceRepository || '(unknown)';
+  const preflight = e.preflight || { verdict: 'UNKNOWN', disclosure: { verdict: 'UNKNOWN' }, limits: [] };
   const cov = (t) => {
     const x = e.tools[t];
     if (!x) return ['-', '-', '-', '-'];
@@ -15,16 +17,18 @@ function renderReport(e) {
     return [x.status, `${c.filesSeen ?? '?'}/${c.filesEligible ?? '?'}`, c.filesParsed ?? '?', c.parseErrors ?? '?'];
   };
 
-  w(`# Audit Expediente — ${e.name}`);
+  w(`# Sentinel Audit v1 — ${e.name}`);
   w('');
-  w(`- **Repo:** \`${e.repo}\``);
+  w(`- **Repository:** \`${repo}\``);
+  if (e.sourceRepository) w(`- **Source checkout:** \`${e.sourceRepository}\` (never modified)`);
   w(`- **Commit:** \`${(e.commit || '').slice(0, 12)}\`  **Tree:** \`${(e.tree || '').slice(0, 12)}\`  **shallow:** ${e.shallow}`);
-  const cloudIdentity = e.preflight.toolHealth && e.preflight.toolHealth.sentinel;
+  const cloudIdentity = (preflight.health || preflight.toolHealth || {}).sentinel;
   if (cloudIdentity && cloudIdentity.available) {
     w(`- **Sentinel engine:** \`${cloudIdentity.engineId}\` · **Production parity:** ${cloudIdentity.productionParity || 'UNKNOWN'} — ${cloudIdentity.resultLabel || 'local engine; deployed parity unverified'}`);
   }
   w(`- **Started:** ${e.startedAt}  **Wall clock:** ${((e.totalWallClockMs || 0) / 60000).toFixed(1)}m`);
-  w(`- **Preflight:** **${e.preflight.verdict}**  · disclosure: **${e.preflight.disclosure.verdict}**  · estimated ${e.preflight.estimatedMinutes}m`);
+  w(`- **Execution:** \`${e.executionId || 'legacy'}\` · working tree: **${e.identity && e.identity.target && e.identity.target.workingTreeClean === true ? 'clean' : 'not verified clean'}**`);
+  w(`- **Preflight:** **${preflight.verdict}**  · disclosure: **${preflight.disclosure && preflight.disclosure.verdict || 'UNKNOWN'}**  · estimated ${preflight.cost && preflight.cost.totalEstimateMinutes || preflight.estimatedMinutes || '?'}m`);
   w(`- **Publication:** push/PR/issue/report/email all **FORBIDDEN**. Fixes and drafts stay local.`);
   w('');
 
@@ -35,20 +39,20 @@ function renderReport(e) {
   w(e.auditVerdict.statement);
   w('');
   w(`- Can this audit claim "clean"? **${yn(e.auditVerdict.canClaimClean)}**`);
-  if (e.preflight.disclosure) {
-    const dj = e.preflight.disclosure;
+  if (preflight.disclosure) {
+    const dj = preflight.disclosure;
     w(`- Disclosure channel: **${dj.verdict}** — source of truth: \`${dj.sourceOfTruth}\``);
     if (dj.channels && dj.channels.length) for (const c of dj.channels) w(`  - **route to use:** \`${c}\``);
     if (dj.contacts && dj.contacts.length) w(`  - monitored inbox: ${dj.contacts.join(', ')}`);
     if (dj.secondaryContacts && dj.secondaryContacts.length) w(`  - fallback only, do not lead with: ${dj.secondaryContacts.join(', ')}`);
     if (dj.retiredChannels && dj.retiredChannels.length) w(`  - retired by policy, not usable: ${dj.retiredChannels.join(', ')}`);
   }
-  if (e.preflight.license) w(`- License: ${e.preflight.license.present ? `\`${e.preflight.license.file}\` (${e.preflight.license.sourceOfTruth})` : `**absent** (${e.preflight.license.sourceOfTruth})`}`);
-  if (e.preflight.trackedFileCount != null) w(`- Tracked files: ${e.preflight.trackedFileCount}`);
-  if (e.preflight.requiredRamMB) w(`- RAM required: ${e.preflight.requiredRamMB}MB${e.preflight.largeRepo ? ' (large repo)' : ''}`);
-  if (e.preflight.limits && e.preflight.limits.length) {
+  if (preflight.license) w(`- License: ${preflight.license.present ? `\`${preflight.license.file}\` (${preflight.license.sourceOfTruth})` : `**absent** (${preflight.license.sourceOfTruth})`}`);
+  if (preflight.trackedFileCount != null) w(`- Tracked files: ${preflight.trackedFileCount}`);
+  if (preflight.cost && preflight.cost.requiredRamMB) w(`- RAM required: ${preflight.cost.requiredRamMB}MB${preflight.cost.largeRepo ? ' (large repo)' : ''}`);
+  if (preflight.limits && preflight.limits.length) {
     w('- Preflight limits:');
-    for (const l of e.preflight.limits) w(`  - ${l}`);
+    for (const l of preflight.limits) w(`  - ${l}`);
   }
   if (e.auditVerdict.degradedTools.length) {
     w('');
@@ -58,18 +62,23 @@ function renderReport(e) {
   }
   w('');
 
-  w('## 2. Coverage and cost (Gates B and C)');
+  w('## 2. Cloud coverage, routing and specialist state');
   w('');
-  w('| Tool | Status | Verdict | seen/eligible | parsed | parse errors | coverage state | signals | wall ms |');
-  w('|---|---|---|---|---|---|---|---|---|');
+  w('| Tool | Status | Verdict | availability | coverage | signals | wall ms |');
+  w('|---|---|---|---|---|---:|---:|');
   for (const t of Object.keys(e.tools)) {
-    const [s, se, p, pe] = cov(t);
     const x = e.tools[t];
-    w(`| ${t} | ${s} | ${x.verdict} | ${se} | ${p} | ${pe} | ${(x.coverage && x.coverage.engineCoverage) || 'measured/other'} | ${x.findingCount} | ${x.cost.wallClockMs} |`);
+    const coverage = x.coverage || {};
+    const availability = x.availability && x.availability.state || (t === 'sentinel' ? 'DIRECT_LOCAL_ENGINE' : 'UNKNOWN');
+    const state = coverage.coverageKnown ? 'KNOWN' : coverage.coverageUnknown ? 'UNKNOWN' : 'UNSPECIFIED';
+    w(`| ${t} | ${x.status} | ${x.verdict} | ${availability} | ${state}; exec=${coverage.engineExecutionComplete ?? coverage.analysisCompleted ?? '?'} | ${x.findingCount} | ${(x.cost && x.cost.wallClockMs) || 0} |`);
   }
   w('');
   if (e.shortlist) w(`Sentinel Cloud promotion: **${e.shortlist.count} files**, origin \`${e.shortlist.origin}\`.`);
   if (e.signalRouting) w(`Signal routing: **${e.signalRouting.decision}** — ${e.signalRouting.reason}; tools: ${e.signalRouting.tools.join(', ') || 'none'}.`);
+  if (e.signalRouting && e.signalRouting.coverageUnknown) w('**Coverage unknown:** engine execution completion is not a claim that all files or vulnerability classes were covered. `NOT_PROMOTED` means not selected for that stage, never safe or clean.');
+  if (e.resourceMetrics) w(`Resource queue: heavy=${e.resourceMetrics.limits.maxHeavy}, light=${e.resourceMetrics.limits.maxLight}; recorded jobs=${(e.resourceMetrics.scheduler || []).length}.`);
+  if (e.cleanup) w(`Cleanup: **${e.cleanup.cleanupStatus}**${e.cleanup.cleanupErrors && e.cleanup.cleanupErrors.length ? ` — ${e.cleanup.cleanupErrors.join('; ')}` : ''}.`);
   w('');
 
   w('## 3. Candidates (corroborated by at least one dataflow or pattern authority)');
@@ -84,7 +93,7 @@ function renderReport(e) {
     // playground/ssr/server.js fixtures collapse onto one indistinguishable
     // "server.js" row, and it also swallowed the packages/ prefix that
     // separates vite's own source from its playgrounds.
-    const root = e.repo || e.repository;
+    const root = e.repository || e.repo || e.sourceRepository;
     const loc = (f) => {
       let s = String(f || '').replace(/\\/g, '/');
       const r = String(root || '').replace(/\\/g, '/');
@@ -162,13 +171,20 @@ function renderReport(e) {
 
   w('## 5. Local changes and drafts');
   w('');
-  w(`- Branch: \`${e.localChanges.branch || 'none'}\``);
-  w(`- Commit: \`${e.localChanges.commit || 'none'}\``);
-  w(`- Patch: ${e.localChanges.patch || 'none'}`);
-  w(`- Drafts: ${e.drafts.length ? e.drafts.join(', ') : 'none'}`);
+  const localChanges = e.localChanges || {};
+  const drafts = e.drafts || [];
+  w(`- Branch: \`${localChanges.branch || 'none'}\``);
+  w(`- Commit: \`${localChanges.commit || 'none'}\``);
+  w(`- Patch: ${localChanges.patch || 'none'}`);
+  w(`- Drafts: ${drafts.length ? drafts.join(', ') : 'none'}`);
   w('');
 
-  const out = path.join(__dirname, '..', 'out', e.name, 'REPORT.md');
+  w('## 6. Artifact contract');
+  w('');
+  w('Raw Cloud evidence is stored before normalization in `cloud/raw.json`; normalized signals, route decisions, specialist raw/normalized outputs, correlation ledgers, cleanup state and `manifest.json` are retained under this execution directory. Raw artifacts are redacted at persistence time to avoid intentionally storing credentials.');
+  w('');
+
+  const out = path.join(e.artifactDir || path.join(__dirname, '..', 'out', e.name), 'report', 'REPORT.md');
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, L.join('\n'));
   return out;

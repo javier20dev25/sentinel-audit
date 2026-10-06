@@ -1,0 +1,396 @@
+{
+  "generatedAt": "2026-09-28T23:28:04.134Z",
+  "note": "Semgrep solo puede medir los candidatos de origen semgrep; los de CodeQL son repo-level y su scope no lo define la shortlist",
+  "rows": [
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0001",
+      "file": "packages/svelte/src/compiler/migrate/index.js",
+      "line": 132,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 16,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0002",
+      "file": "packages/svelte/src/compiler/phases/1-parse/index.js",
+      "line": 84,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": false,
+      "cloudActionableSignalsInFile": 0,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0003",
+      "file": "packages/svelte/src/compiler/preprocess/replace_in_code.js",
+      "line": 29,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": false,
+      "cloudActionableSignalsInFile": 0,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0004",
+      "file": "packages/svelte/src/internal/shared/attributes.js",
+      "line": 147,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": false,
+      "cloudActionableSignalsInFile": 0,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0005",
+      "file": "packages/svelte/src/reactivity/media-query.js",
+      "line": 44,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 1,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0006",
+      "file": "packages/svelte/src/transition/index.js",
+      "line": 27,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": false,
+      "cloudActionableSignalsInFile": 0,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0007",
+      "file": "packages/svelte/src/compiler/phases/1-parse/index.js",
+      "line": 15,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": false,
+      "cloudActionableSignalsInFile": 0,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0008",
+      "file": "packages/svelte/src/compiler/preprocess/index.js",
+      "line": 254,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 3,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0009",
+      "file": "playgrounds/sandbox/scripts/download.js",
+      "line": 360,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 26,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0010",
+      "file": "playgrounds/sandbox/scripts/download.js",
+      "line": 362,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 26,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0011",
+      "file": "playgrounds/sandbox/scripts/create-app-svelte.js",
+      "line": 12,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 1,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0012",
+      "file": "playgrounds/sandbox/scripts/download.js",
+      "line": 792,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 26,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0013",
+      "file": "playgrounds/sandbox/scripts/download.js",
+      "line": 811,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 26,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0014",
+      "file": "packages/svelte/scripts/check-treeshakeability.js",
+      "line": 90,
+      "originTools": [
+        "semgrep"
+      ],
+      "semgrepOrigin": true,
+      "codeqlOrigin": false,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 4,
+      "semgrepFoundInFullUniverse_F": true,
+      "semgrepRules_F": [
+        "javascript.lang.security.audit.unknown-value-with-script-tag.unknown-value-with-script-tag"
+      ],
+      "semgrepFoundInRouted_B": true,
+      "semgrepRules_B": [
+        "javascript.lang.security.audit.unknown-value-with-script-tag.unknown-value-with-script-tag"
+      ],
+      "measurableBySemgrep": true,
+      "missClassification": "RECOVERED"
+    },
+    {
+      "repo": "sveltejs__svelte",
+      "candidateId": "SAR-0015",
+      "file": "packages/svelte/src/compiler/migrate/index.js",
+      "line": 363,
+      "originTools": [
+        "semgrep"
+      ],
+      "semgrepOrigin": true,
+      "codeqlOrigin": false,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 16,
+      "semgrepFoundInFullUniverse_F": true,
+      "semgrepRules_F": [
+        "javascript.lang.security.audit.unknown-value-with-script-tag.unknown-value-with-script-tag"
+      ],
+      "semgrepFoundInRouted_B": true,
+      "semgrepRules_B": [
+        "javascript.lang.security.audit.unknown-value-with-script-tag.unknown-value-with-script-tag"
+      ],
+      "measurableBySemgrep": true,
+      "missClassification": "RECOVERED"
+    },
+    {
+      "repo": "vercel__flags",
+      "candidateId": "SAR-0001",
+      "file": "packages/prepare-flags-definitions/src/index.ts",
+      "line": 95,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 6,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "vercel__flags",
+      "candidateId": "SAR-0002",
+      "file": "packages/prepare-flags-definitions/src/index.ts",
+      "line": 410,
+      "originTools": [
+        "codeql"
+      ],
+      "semgrepOrigin": false,
+      "codeqlOrigin": true,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 6,
+      "semgrepFoundInFullUniverse_F": false,
+      "semgrepRules_F": [],
+      "semgrepFoundInRouted_B": false,
+      "semgrepRules_B": [],
+      "measurableBySemgrep": false,
+      "missClassification": "NOT_MEASURABLE_BY_SEMGREP (CodeQL es repo-level; su scope no lo define la shortlist)"
+    },
+    {
+      "repo": "vercel__swr",
+      "candidateId": "SAR-0001",
+      "file": "scripts/bump-next-version.js",
+      "line": 19,
+      "originTools": [
+        "semgrep"
+      ],
+      "semgrepOrigin": true,
+      "codeqlOrigin": false,
+      "disposition": "PLAUSIBLE_SECURITY_ISSUE",
+      "state": "CORROBORATED",
+      "cloudFilePromoted": true,
+      "cloudActionableSignalsInFile": 3,
+      "semgrepFoundInFullUniverse_F": true,
+      "semgrepRules_F": [
+        "javascript.lang.security.detect-child-process.detect-child-process"
+      ],
+      "semgrepFoundInRouted_B": true,
+      "semgrepRules_B": [
+        "javascript.lang.security.detect-child-process.detect-child-process"
+      ],
+      "measurableBySemgrep": true,
+      "missClassification": "RECOVERED"
+    }
+  ]
+}

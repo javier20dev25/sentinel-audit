@@ -1,182 +1,200 @@
 #!/usr/bin/env node
 'use strict';
-/**
- * Sentinel Audit Runner - a thin orchestrator.
- *
- * Principle: if CodeQL, Semgrep, Trivy, OSV, Bandit or ShellCheck already do it,
- * this runner does NOT implement it. It invokes, validates, normalises,
- * correlates, and refuses to let a zero look like a clean bill of health.
- *
- * Commands:
- *   preflight <repo...>        cheap readiness check, no analysis
- *   audit <repo>               direct local Cloud engine first; route specialists on demand
- *   report <expedienteDir>     render the markdown report
- *   doctor                     tool health + version table
- *
- * Etapa A is the local Sentinel Cloud worker engine, always. Etapa B opens
- * only when Etapa A produced an ACTIONABLE_SIGNAL, and its result lands as
- * NO_ACTIONABLE_SENTINEL_FINDINGS, which is not a clean claim and not SECURE.
- * --force-etapa-b runs the verifiers anyway, for a target under manual review.
- */
+/** Sentinel Audit v1 command line.  Every advertised command does work. */
 const fs = require('fs');
 const path = require('path');
-const { loadConfig, run, expand } = require('./lib/core');
-const { preflight, checkToolHealth } = require('./workflow/preflight');
-const { audit } = require('./workflow/audit');
-const { renderReport } = require('./reports/expediente');
+const { loadConfig } = require('./lib/core');
+const { preflight, checkToolHealth, checkHostedHealth } = require('./workflow/preflight');
+const { runAuditV1, rerenderExecution, rerouteExecution, cleanupExecution, continueSpecialists, loadExecution, exitCodeFor } = require('./workflow/pipeline-v1');
 const { adjudicate, auditVerdict, openCandidates } = require('./correlate');
+const { renderReport } = require('./reports/expediente');
+const { writeJson, manifest, contained } = require('./workflow/artifacts');
 
-const argv = process.argv.slice(2);
-const cmd = argv[0];
-const flag = (n, d) => { const i = argv.indexOf('--' + n); return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[i + 1] : (argv.includes('--' + n) ? true : d); };
-const has = (n) => argv.includes('--' + n);
-const positional = argv.slice(1).filter((a, i) => !a.startsWith('--') && !(i > 0 && argv[i].startsWith('--' + '') && false) && !isFlagValue(argv, a, i));
-function isFlagValue(all, a, i) {
-  const prev = all[i];
-  if (!prev || !prev.startsWith('--')) return false;
-  return !/^(true|false)$/.test(prev) && ['name', 'max-scope-files', 'ram'].includes(prev.slice(2));
+const EXIT = Object.freeze({ COMPLETE: 0, CANDIDATES: 1, DEGRADED: 2, PREFLIGHT: 3, INFRA: 4 });
+const VALUE_FLAGS = new Set(['repo', 'commit', 'routing', 'only', 'skip', 'output', 'max-heavy', 'max-light', 'timeout', 'name', 'candidate', 'disposition', 'rationale', 'severity', 'priority', 'ground-truth', 'provider', 'api']);
+const BOOLEAN_FLAGS = new Set(['dry-run', 'keep-worktree', 'json', 'verbose', 'quiet', 'help', 'cloud']);
+const PROVIDERS = new Set(['local', 'cloud']);
+const COMMANDS = new Set(['preflight', 'run', 'scan', 'route', 'specialists', 'report', 'cleanup', 'adjudicate', 'doctor', 'resume', 'retry', 'help']);
+
+function usage() {
+  return [
+    'Sentinel Audit v1',
+    '  sentinel-audit preflight --repo <path> [--commit <40-sha>] [--json]',
+    '  sentinel-audit run --repo <path> --commit <40-sha> [--routing file|directory|repo] [--only tools] [--skip tools] [--dry-run] [--output dir] [--keep-worktree] [--max-heavy n] [--max-light n] [--timeout 30s]',
+    '  sentinel-audit run --repo <path> --commit <40-sha> --cloud [--api <url>]  # hosted provider, requires policies.hosted.enabled',
+    '  sentinel-audit scan --repo <path> --commit <40-sha> [run flags]  # Stage A + routing only',
+    '  sentinel-audit route <execution-dir> --routing file|directory|repo',
+    '  sentinel-audit specialists <execution-dir> [--only codeql,semgrep] [--max-heavy n] [--max-light n] [--timeout 30s]',
+    '  sentinel-audit resume <execution-dir> [--only tools]  |  retry <execution-dir> --only tool',
+    '  sentinel-audit report <execution-dir> | cleanup <execution-dir> | adjudicate <execution-dir> --candidate ID --disposition VALUE --rationale TEXT | doctor',
+    '',
+    'Flags: --repo --commit --routing --only --skip --dry-run --output --keep-worktree --max-heavy --max-light --timeout --cloud --provider local|cloud --api --json --verbose --quiet',
+    'Exit codes: 0 COMPLETE; 1 FINDINGS/CANDIDATES; 2 DEGRADED/INCOMPLETE; 3 PREFLIGHT/CONFIG; 4 UNRECOVERABLE INFRASTRUCTURE.',
+  ].join('\n');
 }
-const targets = positionalFor(argv);
 
-function positionalFor(all) {
-  const out = [];
-  for (let i = 1; i < all.length; i++) {
-    const a = all[i];
-    if (a.startsWith('--')) {
-      const name = a.slice(2);
-      if (!['skip-specialists', 'json', 'no-sca', 'quiet', 'keep-db'].includes(name)) i++; // consume value
-      continue;
-    }
-    out.push(a);
+function parse(argv) {
+  const args = argv.slice(2);
+  const command = args.shift() || 'doctor';
+  if (!COMMANDS.has(command) && command !== '--help' && command !== '-h') throw new Error(`unknown command: ${command}`);
+  const flags = {};
+  const positional = [];
+  for (let index = 0; index < args.length; index++) {
+    const value = args[index];
+    if (!value.startsWith('--')) { positional.push(value); continue; }
+    const key = value.slice(2);
+    if (!VALUE_FLAGS.has(key) && !BOOLEAN_FLAGS.has(key)) throw new Error(`unsupported flag: --${key}`);
+    if (BOOLEAN_FLAGS.has(key)) { flags[key] = true; continue; }
+    const next = args[++index];
+    if (next == null || next.startsWith('--')) throw new Error(`--${key} requires a value`);
+    flags[key] = next;
   }
-  return out;
+  return { command: command === '--help' || command === '-h' ? 'help' : command, flags, positional };
 }
 
-const c = { dim: '\x1b[2m', red: '\x1b[31m', grn: '\x1b[32m', yel: '\x1b[33m', cyn: '\x1b[36m', bold: '\x1b[1m', off: '\x1b[0m' };
-const V = (verdict) => ({
-  AUDIT_READY: c.grn, AUDIT_LIMITED: c.yel, SKIP: c.red,
-  CLEAN_WITH_FULL_COVERAGE: c.grn, CLEAN_WITH_LIMITATIONS: c.yel, CANDIDATES_FOUND: c.cyn, PARTIAL_ANALYSIS: c.red,
-  SUCCESS: c.grn, PARTIAL: c.yel, ERROR: c.red, UNSUPPORTED: c.red, SKIPPED: c.dim, NOT_APPLICABLE: c.dim,
-  FULL: c.grn, LIMITED_COVERAGE: c.yel,
-}[verdict] || '') + verdict + c.off;
+function list(value) { return value ? String(value).split(',').map((item) => item.trim()).filter(Boolean) : []; }
+function integer(value, flag) {
+  if (value == null) return null;
+  if (!/^\d+$/.test(String(value)) || Number(value) < 1) throw new Error(`--${flag} must be a positive integer`);
+  return Number(value);
+}
+function duration(value) {
+  if (value == null) return null;
+  const match = String(value).trim().match(/^(\d+)(ms|s|m)?$/i);
+  if (!match) throw new Error('--timeout must be an integer optionally followed by ms, s, or m');
+  const n = Number(match[1]);
+  return n * ((match[2] || 'ms').toLowerCase() === 'm' ? 60000 : (match[2] || '').toLowerCase() === 's' ? 1000 : 1);
+}
+function repoArgument(parsed) {
+  const repo = parsed.flags.repo || parsed.positional[0];
+  if (!repo) throw new Error('--repo or one repository path is required');
+  if (parsed.flags.repo && parsed.positional.length) throw new Error('use either --repo or a positional repository path, not both');
+  return repo;
+}
+function executionArgument(parsed) {
+  const value = parsed.positional[0] || parsed.flags.repo;
+  if (!value) throw new Error('execution directory is required');
+  if (parsed.positional.length > 1) throw new Error('only one execution directory is allowed');
+  return fs.statSync(value).isFile() ? path.dirname(value) : value;
+}
+function options(parsed) {
+  return {
+    name: parsed.flags.name,
+    commit: parsed.flags.commit,
+    routing: parsed.flags.routing,
+    only: list(parsed.flags.only),
+    skip: list(parsed.flags.skip),
+    output: parsed.flags.output,
+    dryRun: !!parsed.flags['dry-run'],
+    keepWorktree: !!parsed.flags['keep-worktree'],
+    maxHeavy: integer(parsed.flags['max-heavy'], 'max-heavy'),
+    maxLight: integer(parsed.flags['max-light'], 'max-light'),
+    timeoutMs: duration(parsed.flags.timeout),
+    provider: parsed.flags.cloud ? 'cloud' : (parsed.flags.provider || null),
+    apiUrl: parsed.flags.api || null,
+  };
+}
+
+function selectedProvider(opts) {
+  const requested = opts.provider;
+  if (requested == null) return null;
+  if (!PROVIDERS.has(requested)) throw new Error(`--provider must be local or cloud (got ${requested})`);
+  return requested;
+}
+function print(value, asJson, quiet = false) {
+  if (quiet) return;
+  if (asJson) console.log(JSON.stringify(value, null, 2));
+  else if (typeof value === 'string') console.log(value);
+  else console.log(JSON.stringify(value, null, 2));
+}
+function executionSummary(result) {
+  const e = result.expediente;
+  return {
+    executionId: e.executionId,
+    executionDir: result.executionDir,
+    pipelineStatus: e.pipelineStatus,
+    verdict: e.auditVerdict && e.auditVerdict.verdict,
+    analysisState: e.auditVerdict && e.auditVerdict.analysisState,
+    canClaimClean: e.auditVerdict && e.auditVerdict.canClaimClean,
+    candidates: e.auditVerdict && e.auditVerdict.candidateCount,
+    cleanup: e.cleanup && e.cleanup.cleanupStatus,
+    exitCode: result.exitCode,
+  };
+}
 
 async function main() {
-  const { tools, policies } = loadConfig();
-
-  if (cmd === 'doctor' || !cmd) {
-    const h = checkToolHealth(tools);
-    console.log(`${c.bold}Sentinel Audit Runner - doctor${c.off}\n`);
-    for (const [k, v] of Object.entries(h)) {
-      const ok = v.available ? c.grn + 'ok  ' + c.off : c.red + 'MISS' + c.off;
-      let detail = v.version || v.reason || '';
-      if (k === 'sentinel' && v.available) {
-        detail = `${v.engineId}${v.engineDirty ? c.yel + '  ENGINE FILES DIRTY' + c.off : c.dim + '  engine files clean' + c.off}`;
-      }
-      console.log(`  ${k.padEnd(12)} ${ok}  ${String(detail).slice(0, 78)}`);
-    }
-    console.log(`\n  budget: ${policies.budget.totalWallClockMinutes}m wall clock, ` +
-      Object.entries(policies.budget.perToolMinutes).map(([k, v]) => `${k}:${v}m`).join(' '));
-    console.log(`  publication: push=${policies.publication.gitPush} pr=${policies.publication.createPullRequest} issue=${policies.publication.createIssue}`);
-    console.log(`\n  ${c.dim}principle: this runner orchestrates. It does not re-implement detection.${c.off}`);
-    return;
+  const parsed = parse(process.argv);
+  const opts = options(parsed);
+  if (parsed.command === 'help' || parsed.flags.help) { console.log(usage()); return EXIT.COMPLETE; }
+  if (parsed.command === 'doctor') {
+    const { tools, policies } = loadConfig();
+    const health = checkToolHealth(tools);
+    const output = { cloud: health.sentinel, hosted: checkHostedHealth(tools, policies), specialists: Object.fromEntries(Object.entries(health).filter(([name]) => name !== 'sentinel')), resources: policies.resources, publication: policies.publication };
+    print(output, !!parsed.flags.json, !!parsed.flags.quiet);
+    return health.sentinel && health.sentinel.available ? EXIT.COMPLETE : EXIT.PREFLIGHT;
   }
-
-  if (cmd === 'preflight') {
-    if (!targets.length) { console.error('usage: preflight <repo...>'); process.exit(2); }
-    const rows = [];
-    for (const t of targets) {
-      const p = preflight(t, { name: flag('name') });
-      rows.push(p);
-      console.log(`\n${c.bold}${p.name}${c.off}  ${V(p.verdict)}`);
-      if (p.reasons.length) console.log(`   ${c.red}reasons${c.off}  ${p.reasons.join('; ')}`);
-      if (p.limits.length) console.log(`   ${c.yel}limits${c.off}   ${p.limits.join('; ')}`);
-      if (p.disclosure) console.log(`   disclosure  ${V(p.disclosure.verdict)} ${p.disclosure.files.join(',') || '(none)'}`);
-      if (p.inv) console.log(`   surface     ${p.inv.production} production / ${p.inv.sourceFiles} source / ${(p.inv.nonShippedRatio * 100).toFixed(0)}% non-shipped  lang=${p.inv.mainLanguage}`);
-      if (p.cost) console.log(`   cost        ~${p.cost.totalEstimateMinutes}m  ram=${p.cost.requiredRamMB}MB  ${p.cost.fitsBudget ? 'fits budget' : c.red + 'OVER BUDGET' + c.off}`);
-    }
-    if (has('json')) { console.log(JSON.stringify(rows, null, 2)); return; }
-    const ready = rows.filter((r) => r.verdict === 'AUDIT_READY');
-    console.log(`\n${c.bold}${ready.length}/${rows.length} AUDIT_READY${c.off}` +
-      (ready.length ? `  -> ${ready.map((r) => r.name).join(', ')}` : '  (none worth the spend)'));
-    return;
+  if (parsed.command === 'preflight') {
+    const repos = parsed.flags.repo ? [parsed.flags.repo] : parsed.positional;
+    if (!repos.length) throw new Error('preflight requires --repo or one or more positional repository paths');
+    const rows = repos.map((repo) => preflight(repo, { commit: opts.commit, name: opts.name }));
+    print(rows, !!parsed.flags.json, !!parsed.flags.quiet);
+    return rows.some((row) => row.verdict === 'SKIP') ? EXIT.PREFLIGHT : rows.some((row) => row.verdict === 'AUDIT_LIMITED') ? EXIT.DEGRADED : EXIT.COMPLETE;
   }
-
-  if (cmd === 'audit') {
-    if (!targets.length) { console.error('usage: audit <repo> [--name x] [--force-etapa-b] [--skip-specialists]'); process.exit(2); }
-    const repo = targets[0];
-    console.log(`${c.bold}Sentinel Audit Runner${c.off}  ${repo}`);
-    const res = await audit(repo, {
-      name: typeof flag('name') === 'string' ? flag('name') : undefined,
-      skipSpecialists: has('skip-specialists'),
-      forceEtapaB: has('force-etapa-b'),
-      maxScopeFiles: Number(flag('max-scope-files', 40)),
-      keepDb: has('keep-db'),
-    });
-    const e = res.expediente;
-    if (e.skipped) { console.log(`\n${c.red}SKIPPED${c.off}: ${e.skipReasons.join('; ')}`); return; }
-    const av = e.auditVerdict;
-    console.log(`\n${c.bold}verdict${c.off}  ${V(av.verdict)}   ${c.dim}analysis:${c.off} ${V(av.analysisState)}   ${c.dim}canClaimClean:${c.off} ${av.canClaimClean}`);
-    console.log(`  ${av.statement}`);
-    console.log(`\n${c.bold}candidates${c.off} ${e.candidates.length}  ${c.dim}(corroborated by a dataflow/pattern authority)${c.off}`);
-    for (const cand of e.candidates.slice(0, 20)) {
-      console.log(`  ${c.cyn}${cand.candidateId}${c.off} ${cand.confidence.padEnd(6)} ${cand.tools.join('+').padEnd(28)} ${path.basename(cand.file)}:${cand.line || '?'}  ${cand.state}`);
-    }
-    if (e.observations && e.observations.length) {
-      console.log(`\n${c.dim}observations ${e.observations.length} non-production or non-actionable signals (not candidates)${c.off}`);
-    }
-    if (av.degradedTools.length) {
-      console.log(`\n${c.yel}degraded tools${c.off}`);
-      for (const d of av.degradedTools) console.log(`  ${d.tool.padEnd(12)} ${d.status.padEnd(11)} ${(d.reason || '').slice(0, 80)}`);
-    }
-    const report = renderReport(e);
-    console.log(`\nexpediente  ${path.join(res.workDir, 'expediente.json')}`);
-    console.log(`report      ${report}`);
-    return;
+  if (parsed.command === 'run' || parsed.command === 'scan') {
+    if (parsed.flags.cloud && parsed.flags.provider && parsed.flags.provider !== 'cloud') throw new Error(`--cloud selects the hosted provider and conflicts with --provider ${parsed.flags.provider}`);
+    const provider = selectedProvider(opts) || 'local';
+    if (parsed.command === 'scan' && provider === 'cloud') throw new Error('--cloud is only supported by run; scan is Stage A + routing only');
+    const result = await runAuditV1(repoArgument(parsed), Object.assign(opts, { scanOnly: parsed.command === 'scan', provider }));
+    print(executionSummary(result), !!parsed.flags.json, !!parsed.flags.quiet);
+    return result.exitCode;
   }
-
-  if (cmd === 'report') {
-    if (!targets.length) { console.error('usage: report <expedienteDir>'); process.exit(2); }
-    const dir = targets[0];
-    const e = JSON.parse(fs.readFileSync(path.join(dir, 'expediente.json'), 'utf8'));
-    console.log(renderReport(e));
-    return;
+  if (parsed.command === 'route') {
+    if (!opts.routing) throw new Error('route requires --routing file|directory|repo');
+    const result = rerouteExecution(executionArgument(parsed), opts);
+    print(executionSummary(result), !!parsed.flags.json, !!parsed.flags.quiet);
+    return result.exitCode;
   }
-
-  if (cmd === 'adjudicate') {
-    if (!targets.length) { console.error('usage: adjudicate <expedienteDir> --candidate SAR-0001 --disposition OUT_OF_SCOPE --rationale "..."'); process.exit(2); }
-    const dir = targets[0];
-    const file = path.join(dir, 'expediente.json');
-    const e = JSON.parse(fs.readFileSync(file, 'utf8'));
-    const id = flag('candidate');
-    const cand = (e.candidates || []).find((x) => x.candidateId === id);
-    if (!cand) { console.error(`candidate ${id} not found. open candidates: ${(e.candidates || []).map((x) => x.candidateId).join(', ') || 'none'}`); process.exit(2); }
+  if (parsed.command === 'report') {
+    const result = rerenderExecution(executionArgument(parsed));
+    print(executionSummary(result), !!parsed.flags.json, !!parsed.flags.quiet);
+    return result.exitCode;
+  }
+  if (parsed.command === 'cleanup') {
+    const result = cleanupExecution(executionArgument(parsed), opts);
+    print(executionSummary(result), !!parsed.flags.json, !!parsed.flags.quiet);
+    return result.exitCode;
+  }
+  if (parsed.command === 'specialists' || parsed.command === 'resume' || parsed.command === 'retry') {
+    if (parsed.command === 'retry' && !opts.only.length) throw new Error('retry requires --only <tool>');
+    const result = await continueSpecialists(executionArgument(parsed), opts);
+    print(executionSummary(result), !!parsed.flags.json, !!parsed.flags.quiet);
+    return result.exitCode;
+  }
+  if (parsed.command === 'adjudicate') {
+    const { root, expediente } = loadExecution(executionArgument(parsed));
+    const candidate = (expediente.candidates || []).find((item) => item.candidateId === parsed.flags.candidate);
+    if (!candidate) throw new Error(`candidate not found: ${parsed.flags.candidate || '(missing --candidate)'}`);
     const { policies } = loadConfig();
-    const disp = flag('disposition');
-    if (disp && !policies.dispositions.includes(disp)) {
-      console.error(`unknown disposition "${disp}". allowed: ${policies.dispositions.join(', ')}`); process.exit(2);
-    }
-    const PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
-    const prio = String(flag('priority') || '').trim().toUpperCase();
-    if (prio && !PRIORITIES.includes(prio)) {
-      console.error(`${c.red}--priority must be one of ${PRIORITIES.join(', ')} (investigation priority, not severity)${c.off}`);
-      process.exit(2);
-    }
-    adjudicate(cand, { disposition: disp, state: 'MANUALLY_VERIFIED', severity: flag('severity'), priority: prio || null, rationale: flag('rationale'), groundTruth: flag('ground-truth') });
-    e.adjudications = (e.adjudications || []).concat([{ candidateId: cand.candidateId, at: new Date().toISOString(), by: 'human', disposition: cand.disposition, severity: cand.severity, investigationPriority: cand.investigationPriority || null, rationale: cand.rationale }]);
-    const av = auditVerdict(Object.values(e.tools).map((t) => ({ ...t, tool: t.tool })), openCandidates(e.candidates));
-    e.auditVerdict = av;
-    fs.writeFileSync(file, JSON.stringify(e, null, 2));
-    const report = renderReport(e);
-    console.log(`${c.cyn}${cand.candidateId}${c.off} -> ${c.bold}${cand.disposition}${c.off}${cand.severity ? ' (' + cand.severity + ')' : ''}`);
-    console.log(`  fingerprint ${cand.fingerprint}  reportable=${cand.reportable}${cand.investigationPriority ? '  investigation=' + cand.investigationPriority : ''}`);
-    console.log(`  rationale: ${cand.rationale || '(none recorded)'}`);
-    console.log(`  audit verdict now: ${V(av.verdict)}   analysis=${V(av.analysisState)}   canClaimClean=${av.canClaimClean}`);
-    console.log(`  report: ${report}`);
-    return;
+    if (!parsed.flags.disposition || !policies.dispositions.includes(parsed.flags.disposition)) throw new Error('--disposition must be a configured disposition');
+    if (!parsed.flags.rationale) throw new Error('--rationale is required for a human adjudication');
+    adjudicate(candidate, { disposition: parsed.flags.disposition, state: 'MANUALLY_VERIFIED', severity: parsed.flags.severity, priority: parsed.flags.priority, rationale: parsed.flags.rationale, groundTruth: parsed.flags['ground-truth'] });
+    expediente.adjudications = [...(expediente.adjudications || []), { candidateId: candidate.candidateId, at: new Date().toISOString(), by: 'human', disposition: candidate.disposition, rationale: candidate.rationale }];
+    expediente.auditVerdict = auditVerdict(Object.values(expediente.tools || {}), openCandidates(expediente.candidates));
+    writeJson(contained(root, 'expediente.json'), expediente, { overwrite: true });
+    writeJson(contained(root, 'report', 'REPORT.json'), expediente, { overwrite: true });
+    renderReport(expediente);
+    manifest(root, { pipelineStatus: expediente.pipelineStatus, adjudicated: candidate.candidateId });
+    const result = { executionDir: root, expediente, exitCode: exitCodeFor(expediente) };
+    print(executionSummary(result), !!parsed.flags.json, !!parsed.flags.quiet);
+    return result.exitCode;
   }
-
-  console.error('usage: sentinel-audit <preflight|audit|report|adjudicate|doctor> ...');
-  process.exit(2);
+  throw new Error(`command is not implemented: ${parsed.command}`);
 }
 
-main().catch((err) => { console.error(c.red + 'runner error:' + c.off, err && err.stack || err); process.exit(1); });
+if (require.main === module) {
+  main()
+    .then((code) => { process.exitCode = code; })
+    .catch((error) => { console.error(`sentinel-audit: ${error && error.message || error}`); process.exitCode = EXIT.INFRA; });
+}
+
+module.exports = { parse, options, duration, integer, usage, EXIT, main };

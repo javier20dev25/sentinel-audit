@@ -1,0 +1,101 @@
+{
+  "repo": "expressjs__express",
+  "commit": "9a34acf03cb818ff3f8bc40e44176e277a25cbb9",
+  "tree": "57f7c07418f5985672e6533afd53865049394249",
+  "semgrepVersion": "1.175.0",
+  "configs": [
+    "p/security-audit",
+    "p/secrets"
+  ],
+  "perFileTimeoutS": 900,
+  "files": {
+    "fullUniverse_F": 214,
+    "directoryScan_A": 102,
+    "routed_B": 45,
+    "promotedByCloud": 45
+  },
+  "fileReduction": {
+    "vsFullUniverse_pct": 79,
+    "vsDirectoryScan_pct": 55.9
+  },
+  "findings": {
+    "fullUniverse_F": 4,
+    "directoryScan_A": 4,
+    "routed_B": 2,
+    "rawReported_F": 4,
+    "rawReported_B": 2,
+    "rawReported_A": 4,
+    "duplicateAcrossRulesets_F": 0,
+    "recallOfFullUniverse_pct": 50,
+    "matched": 2,
+    "lostByRouting": 2,
+    "inRoutedNotInFull": 0
+  },
+  "time": {
+    "pairUsed": "A(directorio) vs B(routed): 1 proceso por config en ambos, misma maquina",
+    "directoryScan_A_ms": 49632,
+    "routed_B_ms": 43713,
+    "reduction_pct": 11.9,
+    "fullUniverse_F_ms_notComparable": 94091,
+    "fullUniverse_F_note": "loteado en 2 procesos por config; incluye costo de startup repetido"
+  },
+  "cost": {
+    "peakRssMB": {
+      "A": 130.9,
+      "B": 131,
+      "F": 133.1
+    },
+    "cpuSec": {
+      "A": 4.6,
+      "B": 4.1,
+      "F": 5
+    }
+  },
+  "errors": {
+    "A": 0,
+    "B": 0,
+    "F": 0
+  },
+  "sensitivityCurve": [
+    {
+      "targetRecall": 1,
+      "filesNeeded": 45,
+      "promotedTotal": 45,
+      "filesPctOfFullUniverse": 21,
+      "findingsCaptured": 2,
+      "findingsTotal": 4,
+      "achievedRecall": 50,
+      "exact": false,
+      "coverageNote": "requiere la shortlist completa"
+    },
+    {
+      "targetRecall": 0.95,
+      "filesNeeded": 45,
+      "promotedTotal": 45,
+      "filesPctOfFullUniverse": 21,
+      "findingsCaptured": 2,
+      "findingsTotal": 4,
+      "achievedRecall": 50,
+      "exact": false,
+      "coverageNote": "requiere la shortlist completa"
+    },
+    {
+      "targetRecall": 0.9,
+      "filesNeeded": 45,
+      "promotedTotal": 45,
+      "filesPctOfFullUniverse": 21,
+      "findingsCaptured": 2,
+      "findingsTotal": 4,
+      "achievedRecall": 50,
+      "exact": false,
+      "coverageNote": "requiere la shortlist completa"
+    }
+  ],
+  "gate1_reproducibility": {
+    "rev2RecordedSemgrepFindings": 2,
+    "rev2Rev2CapFiles": 40,
+    "rev2ShortlistFiles": 45,
+    "note": "Rev.2 ejecuto Semgrep sobre la shortlist CAPADA a max-scope-files=40; este brazo B usa la shortlist completa, asi que B != Rev.2 por construccion"
+  },
+  "rejectedDollarPaths_F": 0
+}

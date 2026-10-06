@@ -32,12 +32,41 @@ analyzable surface, and what will it cost.
 
 ```bash
 node audit-runner.js doctor
-node audit-runner.js preflight <repo> [<repo> ...]
-node audit-runner.js audit <repo> --name <label>
-node audit-runner.js report <expedienteDir>
-node audit-runner.js adjudicate <expedienteDir> --candidate SAR-0001 \
+node audit-runner.js preflight <repo> [<repo> ...] --commit <sha>
+node audit-runner.js run <repo> --commit <sha> --routing file|directory|repo
+node audit-runner.js route <executionDir> --routing file|directory|repo
+node audit-runner.js specialists <executionDir> [--only codeql,semgrep]
+node audit-runner.js report <executionDir>
+node audit-runner.js cleanup <executionDir>
+node audit-runner.js adjudicate <executionDir> --candidate SAR-0001 \
     --disposition <DISPOSITION> --priority <P0|P1|P2|P3> --rationale "..."
 ```
+
+`audit` and `scan` remain aliases for `run`. Each new execution receives a
+unique directory under `out/<repo>/<execution-id>/`; raw evidence is written
+before normalization and is not reused across runs. `identity.json` pins the
+target commit/tree and records worktree state, engine revision/hash, audit
+source hashes, specialist versions, and routing/config hashes. A dirty target
+checkout or a requested SHA that differs from `HEAD` fails preflight.
+
+Routing policy is in `config/policies.json`. `file` is the current default;
+`directory` groups promoted files by parent directory, and `repo` selects the
+whole checkout. Repository-wide tools such as CodeQL/Trivy/OSV are explicitly
+recorded as repo-level jobs and are not represented as scoped by Cloud.
+`--only` and `--skip` can narrow a justified specialist set; skipped jobs remain
+coverage gaps. Unpromoted files mean “not selected for this stage,” never
+“safe.”
+
+Coverage counters are only numeric when an analyzer provides a real denominator.
+Otherwise the artifact carries `coverageKnown=false`, `coverageUnknown=true`,
+and `ENGINE_COVERAGE_UNMEASURED`; an execution-complete flag is not a coverage
+claim. Candidate records retain signal, promotion, job, specialist-finding and
+correlation IDs. CodeQL's memory setting is recorded as a requested budget, not
+as measured peak RAM.
+
+Exit codes: `0` complete with no blocking candidate; `1` candidate(s) under the
+configured policy; `2` incomplete/degraded execution; `3` preflight or
+configuration failure; `4` unrecoverable infrastructure/tool failure.
 
 The primary sensor is the local Sentinel Cloud worker engine configured in
 `config/tools.json`. The runner calls its scanner module directly in local mode;

@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-09-28T23:28:04.134Z",
+  "count": 2,
+  "rows": [
+    {
+      "repo": "expressjs__express",
+      "file": "examples/session/index.js",
+      "line": 19,
+      "rule": "javascript.express.security.audit.express-session-hardcoded-secret.express-session-hardcoded-secret",
+      "severity": "HIGH",
+      "message": "A hard-coded credential was detected. It is not recommended to store credentials in source-code, as this risks secrets being leaked and used by either an internal or external malicious adversary. It i",
+      "cloudActionableSignalsInFile": 0,
+      "fileInCloudShortlist": false,
+      "reason": "archivo NO promovido por Sentinel Cloud -> perdido por routing"
+    },
+    {
+      "repo": "expressjs__express",
+      "file": "examples/session/redis.js",
+      "line": 23,
+      "rule": "javascript.express.security.audit.express-session-hardcoded-secret.express-session-hardcoded-secret",
+      "severity": "HIGH",
+      "message": "A hard-coded credential was detected. It is not recommended to store credentials in source-code, as this risks secrets being leaked and used by either an internal or external malicious adversary. It i",
+      "cloudActionableSignalsInFile": 0,
+      "fileInCloudShortlist": false,
+      "reason": "archivo NO promovido por Sentinel Cloud -> perdido por routing"
+    }
+  ]
+}

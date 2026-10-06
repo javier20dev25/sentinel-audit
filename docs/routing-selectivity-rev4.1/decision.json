@@ -1,0 +1,21 @@
+{
+  "verdict":"HOLD",
+  "directoryRouting":"DIRECTORY_ROUTING_CANDIDATE",
+  "campaign50Plus":"NOT_AUTHORIZED_BY_GATE",
+  "basis":{
+    "A0MeasuredFindingRecallPct":92.9,
+    "A0KnownFileSurfaceReductionPct":9.3,
+    "A0Miss":"F13 is HIGH but under examples/shirt-shop/scripts (non-production by path); scope is not proof of benignity",
+    "A1MeasuredFRecallPct":100,
+    "A1KnownFileSurfaceReductionPct":0,
+    "A0A1WallTime":"NOT_MEASURED",
+    "cloudCoverage":"UNKNOWN",
+    "expressTwoHighFindings":"both exact B0 misses; no actionable Cloud signal on either file; ROOT_CAUSE_UNKNOWN"
+  },
+  "nextConditions": [
+    "Specify whether root-level promoted files select the repository root or remain exact-file targets.",
+    "Keep engine execution completeness distinct from security coverage; absence of Cloud signals is never CLEAN.",
+    "Do not claim A0/A1 cost reduction without executing and measuring that routing policy in a controlled pilot.",
+    "Do not launch the 50+ repository campaign while Cloud coverage and production parity remain unknown."
+  ]
+}

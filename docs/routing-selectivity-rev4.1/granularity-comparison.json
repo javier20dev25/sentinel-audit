@@ -1,0 +1,24 @@
+{
+  "source": "Offline replay over Rev.4 saved artifacts; no A0/A1 scanner execution",
+  "semgrepVersion": "1.175.0",
+  "definitions": {
+    "F": "saved explicit tracked-file universe; includes only recorded scan results",
+    "B0": "full Cloud-promoted file shortlist",
+    "A0": "recursive immediate parent directories of promoted files; root-level file maps to repository root",
+    "A1": "A0 directories expanded by one parent level",
+    "A_rev4": "executed repository-directory arm; distinct from A0/A1"
+  },
+  "aggregate": {
+    "F": {"files":10853,"uniqueFindings":14,"wallMsComparable":false},
+    "A_rev4": {"filesScanned":1798,"uniqueFindings":13,"recallOfMeasuredF_pct":92.9,"wallMs":277977,"cpuSeconds":25.6,"peakRssMBMax":136.4},
+    "B0": {"files":413,"uniqueFindings":12,"recallOfMeasuredF_pct":85.7,"wallMs":225867,"cpuSeconds":22.5,"peakRssMBMax":132.3},
+    "A0": {"directoryTargets":193,"knownFilesSelected":9847,"uniqueFindingsInSavedF":13,"recallOfMeasuredF_pct":92.9,"measuredWallMs":null,"measuredCpuSeconds":null,"surfaceReductionVsF_pct":9.3,"lostFindingIds":["F13"]},
+    "A1": {"directoryTargets":104,"knownFilesSelected":10853,"uniqueFindingsInSavedF":14,"recallOfMeasuredF_pct":100,"measuredWallMs":null,"measuredCpuSeconds":null,"surfaceReductionVsF_pct":0,"lostFindingIds":[],"unmeasuredSvelteRejectedPaths":64}
+  },
+  "replayNotes": [
+    "A0/A1 were computed by membership against saved filesScannedList and F findings; these are not executed scanner runs.",
+    "The 64 Svelte paths rejected due to '$' roots have no recorded Semgrep finding result; A1 may select some and coverage there remains unknown.",
+    "A0 selects repository root for root-level promoted files, expanding the known universe in Express, Fastify, and Svelte.",
+    "Rev.4 A timing is not attributable to A0/A1. Do not infer wall time from file-count ratios."
+  ]
+}
