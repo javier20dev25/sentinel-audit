@@ -36,9 +36,10 @@ function resolveClient(ctx, opts) {
   candidates.push('@sentinel/cloud-client');
   // fallbackClientPath allows development checkouts without npm install.
   // Set SENTINEL_CLOUD_CLIENT_PATH env var or hosted.fallbackClientPath in config.
-  if (hosted.fallbackClientPath) candidates.push(expand(hosted.fallbackClientPath));
   const envFallback = process.env.SENTINEL_CLOUD_CLIENT_PATH;
   if (envFallback) candidates.push(envFallback);
+  const siblingClient = path.resolve(__dirname, '..', '..', 'sentinel-cloud-client', 'dist', 'index.js');
+  if (fs.existsSync(siblingClient)) candidates.push(siblingClient);
   for (const candidate of candidates) {
     try { return require(candidate); } catch (_) { /* try the next resolution path */ }
   }

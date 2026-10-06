@@ -76,7 +76,7 @@
 
   "hosted": {
     "_comment": "Opt-in gate for the hosted Cloud provider (--cloud). Sending source to a Cloud endpoint is a deliberate operator decision, so it is disabled until this is set to true. This is distinct from publication.uploadThirdPartyCode, which governs pushing artifacts to arbitrary third parties; Sentinel Cloud is the operator's own service. The runner refuses --cloud while enabled is false and never falls back to local silently.",
-    "enabled": true,
+    "enabled": false,
     "provider": "sentinel-cloud",
     "maxArchiveBytes": 26214400,
     "maxFiles": 50000,
