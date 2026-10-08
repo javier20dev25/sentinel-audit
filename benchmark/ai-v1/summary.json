@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "1.0",
+  "benchmarkId": "sentinel-ai-v1",
+  "completedAt": "2026-10-07T17:06:07.965Z",
+  "totalRuns": 84,
+  "statisticalQuality": "LOW_MEDIUM_CONTROLLED_ENGINEERING_STUDY",
+  "corpus": {
+    "malicious": 6,
+    "benign": 20,
+    "semanticPair": 2,
+    "total": 28
+  },
+  "model": {
+    "provider": "google",
+    "model": "gemini-3.5-flash-lite",
+    "temperature": 0,
+    "maxOutputTokens": 2048
+  },
+  "systemPromptHashes": {
+    "AI_ALONE": "9b1bcb1b31920ecd1b708bf75ebbf28bed8f273a0364b68bca44b3cbb4baa124",
+    "SENTINEL_ASSISTED": "6f36d9f3ffb18dc9e60c7bd80a02d23ce075615b89fa2ce27cadd0ea18e404b5",
+    "SENTINEL_AGENTIC": "4785a9c6807b5e905c3d4f38b3e9c93e8a8624ac44a4b76787f570d85d298bf7"
+  },
+  "results": {
+    "AI_ALONE": {
+      "runs": 28,
+      "tp": 6,
+      "tn": 4,
+      "fp": 1,
+      "fn": 0,
+      "unknown": 17,
+      "precision": 0.8571,
+      "recall": 1,
+      "fpr": 0.2,
+      "fnr": 0,
+      "inputTokens": 10001,
+      "outputTokens": 3320,
+      "totalTokens": 13321,
+      "avgTokensPerRun": 476,
+      "totalWallTimeMs": 145812,
+      "toolCalls": 0,
+      "confirmedPer1kTokens": 0.4504,
+      "tokenMeasurementPass": 28,
+      "actualTokenMeasurement": "PASS"
+    },
+    "SENTINEL_ASSISTED": {
+      "runs": 28,
+      "tp": 7,
+      "tn": 20,
+      "fp": 1,
+      "fn": 0,
+      "unknown": 0,
+      "precision": 0.875,
+      "recall": 1,
+      "fpr": 0.0476,
+      "fnr": 0,
+      "inputTokens": 15660,
+      "outputTokens": 3319,
+      "totalTokens": 18979,
+      "avgTokensPerRun": 678,
+      "totalWallTimeMs": 144861,
+      "toolCalls": 0,
+      "confirmedPer1kTokens": 0.3688,
+      "tokenMeasurementPass": 28,
+      "actualTokenMeasurement": "PASS"
+    },
+    "SENTINEL_AGENTIC": {
+      "runs": 28,
+      "tp": 3,
+      "tn": 15,
+      "fp": 0,
+      "fn": 0,
+      "unknown": 10,
+      "precision": 1,
+      "recall": 1,
+      "fpr": 0,
+      "fnr": 0,
+      "inputTokens": 19715,
+      "outputTokens": 2675,
+      "totalTokens": 22390,
+      "avgTokensPerRun": 800,
+      "totalWallTimeMs": 69173,
+      "toolCalls": 16,
+      "confirmedPer1kTokens": 0.134,
+      "tokenMeasurementPass": 28,
+      "actualTokenMeasurement": "PASS"
+    }
+  },
+  "benchmarkComplete": "YES"
+}

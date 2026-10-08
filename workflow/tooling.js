@@ -263,7 +263,7 @@ function hashFile(file) {
 function validateAuditConfig({ tools, policies }) {
   const errors = [];
   for (const tool of ['codeql', 'semgrep', 'trivy', 'osv']) if (!tools[tool] || (!tools[tool].bin && !tools[tool].path)) errors.push(`tools.${tool}.bin is missing`);
-  if (!tools.sentinelCloud || !tools.sentinelCloud.engine) errors.push('tools.sentinelCloud.engine is missing');
+  // tools.sentinelCloud.engine is optional in OSS mode; when absent, preflight adapts to OSS local or --cloud hosted
   const supported = policies.routing && policies.routing.supportedModes;
   if (!Array.isArray(supported) || !['file', 'directory', 'repo'].every((mode) => supported.includes(mode))) errors.push('routing must support file, directory, repo');
   if (!supported || !supported.includes(policies.routing.defaultMode)) errors.push('routing.defaultMode is invalid');

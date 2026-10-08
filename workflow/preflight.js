@@ -306,8 +306,12 @@ function preflight(repoPath, opts = {}) {
     // reason to skip; the hosted readiness reasons take its place.
     reasons.push(...hosted.reasons);
   } else {
-    if (!health.sentinel || !health.sentinel.available) reasons.push('Sentinel Cloud local worker engine unavailable or production trace failed');
-    if (health.sentinel && health.sentinel.available && health.sentinel.engineDirty) limits.push('Sentinel Cloud engine worktree has local changes; engine identity is not pinned');
+    if (!health.sentinel || !health.sentinel.available) {
+      limits.push('Sentinel Cloud local worker engine unavailable: running in OSS standalone mode without proprietary engine');
+    }
+    if (health.sentinel && health.sentinel.available && health.sentinel.engineDirty) {
+      limits.push('Sentinel Cloud engine worktree has local changes; engine identity is not pinned');
+    }
   }
 
   const cost = estimateCost(inv, health, policies);

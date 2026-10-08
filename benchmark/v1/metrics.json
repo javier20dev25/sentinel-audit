@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "1.0",
+  "benchmarkId": "sentinel-hybrid-benchmark-v1",
+  "benchmarkClassification": "CONTROLLED_BENCHMARK_RESULT",
+  "statisticalQuality": "LOW_MEDIUM_CONTROLLED_ENGINEERING_STUDY",
+  "frozenAt": "2026-10-07T20:15:00.000Z",
+  "gitCommitSha": "a91b61f552d9238c5ed3f33de72ac3bf62140bc7",
+  "corpus": {
+    "totalCases": 28,
+    "maliciousCount": 7,
+    "benignCount": 21,
+    "description": "6 PR#12 vectors (M01-M06) + 20 synthetic controls (B01-B20) + 2 semantic pair cases (SP01a benign eval, SP01b tainted eval)"
+  },
+  "model": {
+    "provider": "google",
+    "model": "gemini-3.5-flash-lite",
+    "temperature": 0.0,
+    "maxOutputTokens": 2048
+  },
+  "metrics": {
+    "AI_ALONE": {
+      "coverage": 0.3929,
+      "decidedCases": 11,
+      "undecidedCases": 17,
+      "tp": 6,
+      "tn": 4,
+      "fp": 1,
+      "fn": 0,
+      "unknown": 17,
+      "precisionAmongDecisions": 0.8571,
+      "decisionAccuracy": 0.9091,
+      "recallGlobal": 0.8571,
+      "fprConventional": 0.2000,
+      "falseAlarmIncidence": 0.0476,
+      "totalTokens": 13321,
+      "tokensPerCorrectDecision": 1332.1,
+      "sumCaseMs": 145812
+    },
+    "SENTINEL_ASSISTED": {
+      "coverage": 1.0000,
+      "decidedCases": 28,
+      "undecidedCases": 0,
+      "tp": 7,
+      "tn": 20,
+      "fp": 1,
+      "fn": 0,
+      "unknown": 0,
+      "precisionAmongDecisions": 0.8750,
+      "decisionAccuracy": 0.9643,
+      "recallGlobal": 1.0000,
+      "fprConventional": 0.0476,
+      "falseAlarmIncidence": 0.0476,
+      "totalTokens": 18979,
+      "tokensPerCorrectDecision": 702.9,
+      "sumCaseMs": 144861
+    },
+    "SENTINEL_AGENTIC_PURE": {
+      "coverage": 0.6429,
+      "decidedCases": 18,
+      "undecidedCases": 10,
+      "tp": 3,
+      "tn": 15,
+      "fp": 0,
+      "fn": 0,
+      "unknown": 10,
+      "precisionAmongDecisions": 1.0000,
+      "decisionAccuracy": 1.0000,
+      "recallGlobal": 0.4286,
+      "fprConventional": 0.0000,
+      "falseAlarmIncidence": 0.0000,
+      "totalTokens": 22390,
+      "tokensPerCorrectDecision": 1243.9,
+      "toolCalls": 16,
+      "sumCaseMs": 69173
+    },
+    "SENTINEL_HYBRID": {
+      "coverage": 1.0000,
+      "decidedCases": 28,
+      "undecidedCases": 0,
+      "tp": 7,
+      "tn": 21,
+      "fp": 0,
+      "fn": 0,
+      "unknown": 0,
+      "precisionAmongDecisions": 1.0000,
+      "decisionAccuracy": 1.0000,
+      "recallGlobal": 1.0000,
+      "fprConventional": 0.0000,
+      "falseAlarmIncidence": 0.0000,
+      "totalTokens": 20696,
+      "tokensPerCorrectDecision": 739.1,
+      "toolCalls": 2,
+      "toolCallReduction": 0.8750,
+      "sumCaseMs": 134670,
+      "campaignWallMs": 188919
+    }
+  },
+  "semanticPair": {
+    "SP01a": {
+      "code": "const TEMPLATE = \"(function(){ return 42; })()\"; eval(TEMPLATE);",
+      "groundTruth": "BENIGN",
+      "hybridResolution": {
+        "verdict": "BENIGN",
+        "escalated": true,
+        "toolCalls": 0,
+        "reason": "Static closed string literal constant, no external taint reach"
+      }
+    },
+    "SP01b": {
+      "code": "const userCode = req.body.code; eval(userCode);",
+      "groundTruth": "MALICIOUS",
+      "hybridResolution": {
+        "verdict": "CONFIRMED",
+        "escalated": true,
+        "toolCalls": 2,
+        "toolsUsed": ["inspect_source", "inspect_dataflow"],
+        "reason": "Taint flow confirmed from req.body.code into eval() sink"
+      }
+    }
+  }
+}
