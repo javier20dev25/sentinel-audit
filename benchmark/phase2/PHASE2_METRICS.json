@@ -1,0 +1,57 @@
+{
+  "campaign": "PHASE2_REAL_WORLD_BENIGN_OSS",
+  "totalTargetsEvaluated": 180,
+  "verdictDistribution": {
+    "PASS": 102,
+    "REVIEW": 67,
+    "BLOCK": 11,
+    "passRate": "56.67%",
+    "reviewRate": "37.22%",
+    "blockRate": "6.11%"
+  },
+  "engineFindings": {
+    "cloudTotal": 4115,
+    "cliTotal": 470,
+    "oracleTotal": 435,
+    "cloudAvgPerTarget": "22.86",
+    "cliAvgPerTarget": "2.61",
+    "oracleAvgPerTarget": "2.42"
+  },
+  "candidates": {
+    "total": 5020,
+    "critical": 40,
+    "high": 240,
+    "medium": 701,
+    "low": 4039
+  },
+  "hybridTriage": {
+    "totalEscalations": 101,
+    "totalToolCalls": 101,
+    "escalationSelectivity": "2.01%",
+    "escalationYield": "26.73%",
+    "confirmedFindings": 27,
+    "falsePositivesDismissed": 4897
+  },
+  "performance": {
+    "cloudLatencyMs": {
+      "avg": "1114.05",
+      "p50": "130.57",
+      "p95": "6091.34"
+    },
+    "cliLatencyMs": {
+      "avg": "426.52",
+      "p50": "42.85",
+      "p95": "1500.87"
+    },
+    "oracleLatencyMs": {
+      "avg": "1192.37",
+      "p50": "142.05",
+      "p95": "2239.22"
+    },
+    "totalWallMs": {
+      "avg": "2739.98",
+      "p50": "379.41",
+      "p95": "16146.09"
+    }
+  }
+}
