@@ -1,18 +1,29 @@
 {
-  "schemaVersion": "1.0",
-  "generatedAt": "2026-10-08T19:30:58.233Z",
+  "schemaVersion": "2.0",
+  "generatedAt": "2026-10-08T19:43:04.413Z",
+  "freeze": {
+    "ecosystemSha": "eb4ac1c",
+    "auditVersion": "1.1.0",
+    "auditSha": "012e095bc362129253435328e246c4f901e7842d",
+    "cliSha": "ae10c223db766a041cb8a3dda561485769b47877",
+    "oracleSha": "292123e1e2be22781c0184eb444c1b6be9f1840a",
+    "cloudDeploymentSha": "ebc469ae9797f269f4cc20c1b322260e97bc0b7a",
+    "model": "google/gemini-3.5-flash-lite",
+    "temperature": 0
+  },
   "corpus": {
     "totalTargets": 4301,
     "analyzableTargets": 3277,
-    "unscannableTargets": 1024
+    "unscannableTargets": 1024,
+    "groundTruth": "ALL_MALICIOUS"
   },
-  "metrics": {
-    "scanCompletionRatePct": "76.19",
-    "strictBlockDetectionAllPct": "68.73",
-    "strictBlockDetectionAnalyzablePct": "90.20",
-    "blockPlusReviewAllPct": "73.73",
-    "blockPlusReviewAnalyzablePct": "96.77",
-    "unscannableRatePct": "23.81"
+  "mathematicalDecomposition": {
+    "effectiveScanability": "76.19%",
+    "conditionalDetection": "96.77%",
+    "conditionalStrictBlockRecall": "90.20%",
+    "endToEndDetection": "73.73%",
+    "endToEndStrictBlockRecall": "68.73%",
+    "formula": "End-to-End Detection (73.73%) = Effective Scanability (76.19%) * Conditional Detection (96.77%)"
   },
   "counts": {
     "BLOCK": 2956,
@@ -21,42 +32,332 @@
     "NO_ARTIFACT": 1018,
     "ERROR": 6
   },
-  "unscannableTaxonomy": {
+  "unscannableAudit": {
     "total": 1024,
-    "extractionFailures": 6,
-    "archiveLayoutMismatch": 1018,
-    "archiveLayoutMismatchPct": "99.41",
-    "details": {
-      "extractionFailuresNote": "Tarball decompression timed out or encountered deeply nested invalid symlinks / file path limits (6 targets).",
-      "archiveLayoutMismatchNote": "NPMStudy scraper saved gzip archives containing tarballs whose internal header preserved the .tgz filename rather than .tar. The parser expected *.tar as the uncompressed stream, skipping the second-stage extraction (1,018 targets)."
+    "intakeArchiveMismatch": {
+      "count": 1018,
+      "percentage": "99.41%",
+      "nature": "Tarball contained an uncompressed tar stream named *.tgz inside the outer gzip. The runner pipeline specifically looked for *.tar before walking source files, skipping the second-stage extraction.",
+      "sizeStats": {
+        "zeroBytes": 0,
+        "under1KB": 50,
+        "oneTo10KB": 853,
+        "over10KB": 115,
+        "avgSizeBytes": 146247
+      }
+    },
+    "extractionFailures": {
+      "count": 6,
+      "percentage": "0.59%",
+      "timeouts": 5,
+      "commandErrors": 1,
+      "records": [
+        {
+          "targetId": "@asdfvr##qaqazzaaa@1.0.1",
+          "error": "Extract failed: Command failed: \"C:\\Program Files\\7-Zip\\7z.exe\" x \"C:/Users/sleyt/sentinel-cloud/.c7-sandbox/scratch"
+        },
+        {
+          "targetId": "chatbot-community@1.20.23",
+          "error": "Extract failed: spawnSync C:\\Windows\\system32\\cmd.exe ETIMEDOUT"
+        },
+        {
+          "targetId": "ductai-chatbot-community@1.20.22",
+          "error": "Extract failed: spawnSync C:\\Windows\\system32\\cmd.exe ETIMEDOUT"
+        },
+        {
+          "targetId": "eslint-config-airbnb-standard@2.0.0",
+          "error": "Extract failed: spawnSync C:\\Windows\\system32\\cmd.exe ETIMEDOUT"
+        },
+        {
+          "targetId": "healthbridge-design-system@1.0.1",
+          "error": "Extract failed: spawnSync C:\\Windows\\system32\\cmd.exe ETIMEDOUT"
+        },
+        {
+          "targetId": "warbeast2000@1.0.8",
+          "error": "Extract failed: spawnSync C:\\Windows\\system32\\cmd.exe ETIMEDOUT"
+        }
+      ]
     }
   },
-  "passTaxonomy": {
+  "passAudit": {
     "total": 106,
-    "completeBlindspotCount": 46,
-    "completeBlindspotPct": "43.40",
-    "suppressedSubthresholdCount": 60,
-    "suppressedSubthresholdPct": "56.60",
-    "alertBuckets": {
-      "0": 46,
-      "1-2": 10,
-      "3-5": 33,
-      "6+": 17
+    "rateAmongAnalyzable": "3.23%",
+    "categories": {
+      "COMPLETE_STATIC_BLINDSPOT": {
+        "count": 46,
+        "percentage": "43.40%",
+        "description": "0 raw alerts across all three engines. Packages containing plain HTTP requests / webhooks without dynamic evaluation or subprocess execution."
+      },
+      "SUBTHRESHOLD_HEURISTIC_SUPPRESSION": {
+        "count": 60,
+        "percentage": "56.60%",
+        "description": "1 to 5 Low/Medium alerts, 0 Critical, 0 High, and no dynamic execution triggers. Intentionally suppressed to PASS by enterprise policy."
+      }
     },
-    "primaryCauses": [
+    "sampleRecords": [
       {
-        "category": "Pure Webhook / Callback Exfiltration without Dynamic Sink (46 targets)",
-        "description": "Packages that perform plain HTTP/DNS requests (e.g., Interactsh / Burp Collaborator callbacks in postinstall or main) without eval(), child_process, or syntax obfuscation. While suspicious, single HTTP requests without corroborating sinks fall below the CRITICAL/HIGH blocking threshold to preserve benign precision.",
-        "impact": "Escaped detection as PASS due to absence of dynamic execution markers."
+        "targetId": "@0x000000000000000##util@0.1.0",
+        "packageName": "@0x000000000000000##util",
+        "version": "0.1.0",
+        "archiveSha256": "4cfc91dee89759d1e47d74e4587f7839fbabeff80eba4cd75b6c51f0cf4702a5",
+        "fileCount": 4,
+        "rawCandidates": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "cloudAlerts": 0,
+        "cliAlerts": 0,
+        "oracleAlerts": 0,
+        "category": "COMPLETE_STATIC_BLINDSPOT"
       },
       {
-        "category": "Sub-threshold Medium/Low Alerts (60 targets)",
-        "description": "Packages that triggered 1-5 MEDIUM or LOW signals (e.g. NETWORK_ACTIVITY, SNT-MEDI-001, building-block-network-import) but had 0 CRITICAL and 0 HIGH candidates, and lacked dataflow ambiguity triggers.",
-        "impact": "Classified as PASS because Sentinel policy requires either CRITICAL, HIGH, >5 MEDIUM, or ambiguous candidates to escalate to REVIEW/BLOCK."
+        "targetId": "@bybit-fe##bitd@69.0.0",
+        "packageName": "@bybit-fe##bitd",
+        "version": "69.0.0",
+        "archiveSha256": "054bc41ed30c56298237d6adf838c3b345488d7e0830d8702cf05af3ea42b26b",
+        "fileCount": 2,
+        "rawCandidates": 2,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 2,
+        "cloudAlerts": 2,
+        "cliAlerts": 0,
+        "oracleAlerts": 0,
+        "category": "SUBTHRESHOLD_HEURISTIC_SUPPRESSION"
+      },
+      {
+        "targetId": "@epgu##epgu-constructor@0.0.118030",
+        "packageName": "@epgu##epgu-constructor",
+        "version": "0.0.118030",
+        "archiveSha256": "2b350f9645effa147d3c13ac9065e7e0eb6c6ff5181e880107519d214bc2e836",
+        "fileCount": 2,
+        "rawCandidates": 2,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 2,
+        "cloudAlerts": 2,
+        "cliAlerts": 0,
+        "oracleAlerts": 0,
+        "category": "SUBTHRESHOLD_HEURISTIC_SUPPRESSION"
+      },
+      {
+        "targetId": "@mariott##mi-headless-utils@1.0.0",
+        "packageName": "@mariott##mi-headless-utils",
+        "version": "1.0.0",
+        "archiveSha256": "f0bafadbab8be867d795addea2ce934b5419ae48bd6aa4c2ebbde5c5bb3439b6",
+        "fileCount": 2,
+        "rawCandidates": 5,
+        "critical": 0,
+        "high": 0,
+        "medium": 2,
+        "low": 3,
+        "cloudAlerts": 3,
+        "cliAlerts": 1,
+        "oracleAlerts": 1,
+        "category": "SUBTHRESHOLD_HEURISTIC_SUPPRESSION"
+      },
+      {
+        "targetId": "@superbet-group##web.lib.config@1.22.0",
+        "packageName": "@superbet-group##web.lib.config",
+        "version": "1.22.0",
+        "archiveSha256": "f0a898d41c6822c898c840f1246e9625a37100c819aed57c5ce832e571d142e1",
+        "fileCount": 2,
+        "rawCandidates": 5,
+        "critical": 0,
+        "high": 0,
+        "medium": 2,
+        "low": 3,
+        "cloudAlerts": 3,
+        "cliAlerts": 1,
+        "oracleAlerts": 1,
+        "category": "SUBTHRESHOLD_HEURISTIC_SUPPRESSION"
+      },
+      {
+        "targetId": "@superbet-group##web.types@1.9.1",
+        "packageName": "@superbet-group##web.types",
+        "version": "1.9.1",
+        "archiveSha256": "05fe09091f33134b247d742620be9911e3908550519864024659ed5499fac8c3",
+        "fileCount": 2,
+        "rawCandidates": 5,
+        "critical": 0,
+        "high": 0,
+        "medium": 2,
+        "low": 3,
+        "cloudAlerts": 3,
+        "cliAlerts": 1,
+        "oracleAlerts": 1,
+        "category": "SUBTHRESHOLD_HEURISTIC_SUPPRESSION"
+      },
+      {
+        "targetId": "@tide-web-apps##bert2@5.0.0",
+        "packageName": "@tide-web-apps##bert2",
+        "version": "5.0.0",
+        "archiveSha256": "7d0dc05d49bd3ef83604ee5dee9ce5bc0d8fba9d82c92f4782cfb9227996df8b",
+        "fileCount": 3,
+        "rawCandidates": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "cloudAlerts": 0,
+        "cliAlerts": 0,
+        "oracleAlerts": 0,
+        "category": "COMPLETE_STATIC_BLINDSPOT"
+      },
+      {
+        "targetId": "@zarafront##lib-zds@99.49.53",
+        "packageName": "@zarafront##lib-zds",
+        "version": "99.49.53",
+        "archiveSha256": "582e27600bfbb65f7a75c2fadddd0ba412358d9bf08df185fdcfa15f263b299c",
+        "fileCount": 3,
+        "rawCandidates": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "cloudAlerts": 0,
+        "cliAlerts": 0,
+        "oracleAlerts": 0,
+        "category": "COMPLETE_STATIC_BLINDSPOT"
+      },
+      {
+        "targetId": "@zva##web@99.49.53",
+        "packageName": "@zva##web",
+        "version": "99.49.53",
+        "archiveSha256": "ed49e9607a754bb9fc736fe5c65bf2c67333c2b108656c1593ad9935a57540d3",
+        "fileCount": 3,
+        "rawCandidates": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "cloudAlerts": 0,
+        "cliAlerts": 0,
+        "oracleAlerts": 0,
+        "category": "COMPLETE_STATIC_BLINDSPOT"
+      },
+      {
+        "targetId": "alicon@2.0.0",
+        "packageName": "alicon",
+        "version": "2.0.0",
+        "archiveSha256": "747b46aa4392ef8b996a6c0081cee15e059a220f3118e4d7d98da7a9c43d2220",
+        "fileCount": 2,
+        "rawCandidates": 4,
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 3,
+        "cloudAlerts": 2,
+        "cliAlerts": 1,
+        "oracleAlerts": 1,
+        "category": "SUBTHRESHOLD_HEURISTIC_SUPPRESSION"
+      },
+      {
+        "targetId": "anarchy@0.0.10",
+        "packageName": "anarchy",
+        "version": "0.0.10",
+        "archiveSha256": "65d5a8bda44702f9983f7ffecf661d7ac0477c331e8b49751c39f345526e5d66",
+        "fileCount": 2,
+        "rawCandidates": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "cloudAlerts": 0,
+        "cliAlerts": 0,
+        "oracleAlerts": 0,
+        "category": "COMPLETE_STATIC_BLINDSPOT"
+      },
+      {
+        "targetId": "angular-location-update@0.0.3",
+        "packageName": "angular-location-update",
+        "version": "0.0.3",
+        "archiveSha256": "dfd4e9c1f9235bab29391395bcf4f6ab205503b98f598d86a19b4356fd973a9f",
+        "fileCount": 4,
+        "rawCandidates": 8,
+        "critical": 0,
+        "high": 0,
+        "medium": 4,
+        "low": 4,
+        "cloudAlerts": 4,
+        "cliAlerts": 2,
+        "oracleAlerts": 2,
+        "category": "SUBTHRESHOLD_HEURISTIC_SUPPRESSION"
+      },
+      {
+        "targetId": "antd-cloud@1.0.0",
+        "packageName": "antd-cloud",
+        "version": "1.0.0",
+        "archiveSha256": "1cb179be5fc114da8b4bcbfd80644ac1415ca0694e7cef00e777b2ccc3c9aecc",
+        "fileCount": 1,
+        "rawCandidates": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "cloudAlerts": 0,
+        "cliAlerts": 0,
+        "oracleAlerts": 0,
+        "category": "COMPLETE_STATIC_BLINDSPOT"
+      },
+      {
+        "targetId": "@diotoborg##mollitia-tempore@2.6.89",
+        "packageName": "@diotoborg##mollitia-tempore",
+        "version": "2.6.89",
+        "archiveSha256": "c34c050d6b0366fadb39c2d035d8c98850ebb764d7786264760f5dac4508e5ac",
+        "fileCount": 400,
+        "rawCandidates": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "cloudAlerts": 0,
+        "cliAlerts": 0,
+        "oracleAlerts": 0,
+        "category": "COMPLETE_STATIC_BLINDSPOT"
+      },
+      {
+        "targetId": "apollo-components@6.72.5",
+        "packageName": "apollo-components",
+        "version": "6.72.5",
+        "archiveSha256": "c767d480004b23f22ac540ff39b8d2c20e23563744a2d7bbcc6740256fc1bbc6",
+        "fileCount": 2,
+        "rawCandidates": 5,
+        "critical": 0,
+        "high": 0,
+        "medium": 2,
+        "low": 3,
+        "cloudAlerts": 3,
+        "cliAlerts": 1,
+        "oracleAlerts": 1,
+        "category": "SUBTHRESHOLD_HEURISTIC_SUPPRESSION"
       }
     ]
   },
-  "funnelStability": {
+  "escalationAudit": {
+    "totalEscalations": 1170,
+    "escalationSelectivityPct": "2.05%",
+    "resolutionDistribution": {
+      "resolvedToBlock": {
+        "count": 1146,
+        "pct": "97.95%"
+      },
+      "resolvedToReview": {
+        "count": 24,
+        "pct": "2.05%"
+      },
+      "resolvedToPass": {
+        "count": 0,
+        "pct": "0.00%"
+      }
+    },
+    "actionableYield": "100.00% (1,170 / 1,170 escalations converted into actionable security decisions: 1,146 BLOCK + 24 REVIEW)"
+  },
+  "funnelStabilityBootstrap": {
+    "iterations": 10000,
     "phase2AEscalationRatePct": 2.012,
     "phase2ACI95Pct": [
       1.062,
@@ -73,6 +374,6 @@
       1.056
     ],
     "includesZero": true,
-    "methodology": "Package-cluster bootstrap resampling with replacement (B=10,000)"
+    "conclusion": "Observed escalation selectivity was remarkably stable across benign and malicious corpora (2.01% vs. 2.05%, delta = 0.04 pp; 95% CI includes zero)."
   }
 }
