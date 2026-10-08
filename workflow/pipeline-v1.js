@@ -22,6 +22,7 @@ const { initExecution, contained, writeJson, manifest, verifyManifest } = requir
 const { createManagedCheckout, cleanupManagedCheckout, rebaseTargets } = require('./workspace');
 const { installCancellation } = require('./cancellation');
 const { abs: resolveTarget, relTarget } = require('./paths');
+const { triageCandidatesHybrid } = require('./hybrid-triage');
 
 const ALL_SPECIALISTS = ['codeql', 'semgrep', 'trivy', 'osv'];
 const HEAVY = new Set(['codeql']);
@@ -377,7 +378,9 @@ async function runAuditV1(sourceRepo, options = {}) {
     updateAuditVerdict(skeleton, envelopes, options.scanOnly && !correlationFailure
       ? stageFailure('specialist-stage', 'scan-only execution: specialists were intentionally not run')
       : correlationFailure);
-    markStage(executionDir, stages, 'TRIAGE', 'COMPLETE', { verdict: skeleton.auditVerdict.verdict, candidateCount: skeleton.auditVerdict.candidateCount });
+    const triageResults = await triageCandidatesHybrid(skeleton, workspace.path, options);
+    skeleton.triageRuns = triageResults;
+    markStage(executionDir, stages, 'TRIAGE', 'COMPLETE', { verdict: skeleton.auditVerdict.verdict, candidateCount: skeleton.auditVerdict.candidateCount, triageDecisions: triageResults.length });
     skeleton.pipelineStatus = options.scanOnly ? 'SCAN_COMPLETE_PENDING_SPECIALISTS' : 'COMPLETE';
   } catch (error) {
     skeleton.pipelineStatus = 'INFRASTRUCTURE_FAILURE';
