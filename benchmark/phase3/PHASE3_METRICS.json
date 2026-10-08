@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "3.0",
+  "generatedAt": "2026-10-08T19:19:39.067Z",
+  "freeze": {
+    "ecosystemSha": "eb4ac1c",
+    "auditVersion": "1.1.0",
+    "auditSha": "012e095bc362129253435328e246c4f901e7842d",
+    "cliSha": "ae10c223db766a041cb8a3dda561485769b47877",
+    "oracleSha": "292123e1e2be22781c0184eb444c1b6be9f1840a",
+    "cloudClientSha": "924d25d2362545fb58a39189d941f64404614093",
+    "cloudDeploymentSha": "ebc469ae9797f269f4cc20c1b322260e97bc0b7a",
+    "model": "google/gemini-3.5-flash-lite",
+    "temperature": 0
+  },
+  "corpus": {
+    "source": "NPMStudy zip_malware",
+    "groundTruth": "ALL_MALICIOUS",
+    "totalTargets": 4301,
+    "workers": 8
+  },
+  "verdicts": {
+    "BLOCK": 2956,
+    "REVIEW": 215,
+    "PASS": 106,
+    "TIMEOUT": 0,
+    "ERROR": 6,
+    "NO_ARTIFACT": 1018
+  },
+  "verdictRates": {
+    "blockPct": "68.73",
+    "reviewPct": "5.00",
+    "passPct": "2.46",
+    "timeoutPct": "0.00",
+    "errorPct": "0.14",
+    "noArtifactPct": "23.67"
+  },
+  "recall": {
+    "strict": {
+      "label": "BLOCK only (TP)",
+      "TP": 2956,
+      "FN": 1345,
+      "recallPct": "68.73"
+    },
+    "loose": {
+      "label": "BLOCK + REVIEW (detected)",
+      "detected": 3171,
+      "missed": 1130,
+      "detectionRatePct": "73.73"
+    }
+  },
+  "engines": {
+    "cloudAlerts": 32760,
+    "cliAlerts": 14219,
+    "oracleAlerts": 9961,
+    "totalRawCandidates": 56940
+  },
+  "severityDistribution": {
+    "critical": 5636,
+    "high": 7917,
+    "medium": 12679,
+    "low": 30708
+  },
+  "hybridTriage": {
+    "totalAgenticEscalations": 1170,
+    "totalToolCalls": 1170,
+    "totalConfirmedFindings": 5324,
+    "totalEscalatedConfirmed": 76,
+    "totalAmbiguousFindings": 1049,
+    "escalationSelectivityPct": "2.05",
+    "escalationYieldPct": "6.50",
+    "suppressionRatePct": "97.95",
+    "rawCandidatesSuppressed": 55770
+  },
+  "performance": {
+    "count": 3277,
+    "avgExtractMs": "213.91",
+    "avgCloudMs": "1116.46",
+    "avgCliMs": "456.21",
+    "avgOracleMs": "1417.69",
+    "avgHybridMs": "0.55",
+    "avgTotalWallMsPerPackage": "3209.73"
+  },
+  "errors": {
+    "campaignErrors": 0,
+    "scanErrors": 6
+  }
+}

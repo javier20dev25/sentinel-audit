@@ -1,20 +1,21 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "2.0.0",
   "campaign": "PHASE2_REAL_WORLD_BENIGN_OSS",
   "totalEvaluated": 180,
   "totalBlocks": 11,
-  "blockIncidence": "6.11%",
-  "categories": {
-    "justifiedHighRisk": 3,
-    "policyOrSupplyChain": 3,
-    "testFixtureArtifacts": 1,
-    "benignMetaprogrammingFP": 4
-  },
   "metrics": {
-    "decisionFprPure": "2.22%",
-    "decisionFprPolicyBroad": "4.44%",
-    "justifiedBlockRate": "1.67%",
-    "suppressionRate": "97.55%"
+    "blockIncidence": "6.11% (11/180)",
+    "technicalUnjustifiedBlockRate": "2.22% (4/180)",
+    "policyDependentBlockRate": "1.67% (3/180)",
+    "contextTestRelatedBlockRate": "0.56% (1/180)",
+    "justifiedInherentHighRiskRate": "1.67% (3/180)",
+    "suppressionRate": "97.55% (4,897 / 5,020 candidates suppressed/filtered)"
+  },
+  "categories": {
+    "justifiedInherentHighRisk": 3,
+    "policyViolationSupplyChain": 3,
+    "contextTestRelated": 1,
+    "technicalFalsePositive": 4
   },
   "adjudications": [
     {
@@ -22,110 +23,99 @@
       "verdict": "BLOCK",
       "triggerRule": "DIRECT_URL_DEPENDENCY",
       "sourceEngine": "cloud",
-      "category": "POLICY_SUPPLY_CHAIN",
-      "isDangerous": false,
-      "adjudication": "POLICY_DEPENDENT_FP",
-      "rationale": "Package contains direct URL git dependency in manifest. Not actively malicious, but triggers strict zero-trust supply chain rules."
+      "category": "POLICY_VIOLATION_SUPPLY_CHAIN",
+      "adjudication": "POLICY_DEPENDENT_BLOCK",
+      "rationale": "Package manifest contains unversioned direct URL Git dependencies. Violates zero-trust unpinned dependency policy in strict enterprise environments, though not actively malicious."
     },
     {
       "targetId": "depd@2.0.0",
       "verdict": "BLOCK",
       "triggerRule": "AGENT_RISK",
       "sourceEngine": "cli",
-      "category": "BENIGN_METAPROGRAMMING",
-      "isDangerous": false,
-      "adjudication": "TRUE_FP",
-      "rationale": "Monkeypatches process deprecation events. Legitimate diagnostic utility flagged by heuristic rule."
+      "category": "TECHNICAL_FALSE_POSITIVE",
+      "adjudication": "TECHNICAL_FALSE_POSITIVE",
+      "rationale": "Legitimate diagnostic utility monkeypatching process deprecation event emitters. Flagged by aggressive heuristic rule."
     },
     {
       "targetId": "ejs@3.1.10",
       "verdict": "BLOCK",
       "triggerRule": "UNSAFE_EVAL_TAINT",
       "sourceEngine": "hybrid_dataflow",
-      "category": "JUSTIFIED_HIGH_RISK",
-      "isDangerous": true,
-      "adjudication": "JUSTIFIED_BLOCK",
-      "rationale": "Template compilation evaluates dynamic user template expressions with new Function(). Famous SSTI vector (CVE-2022-29078). Justified block under production security gate."
+      "category": "JUSTIFIED_INHERENT_HIGH_RISK",
+      "adjudication": "JUSTIFIED_BEHAVIORAL_BLOCK",
+      "rationale": "EJS inherently functions as a dynamic JavaScript runtime, compiling template strings into executable JS via Function constructors. While by design, EJS official security policy explicitly warns that passing untrusted user input to render options is inherently unsafe. Under a zero-trust execution sink gate, blocking this capability is a correct risk decision, distinct from asserting an unpatched CVE."
     },
     {
       "targetId": "fresh@0.5.2",
       "verdict": "BLOCK",
       "triggerRule": "AGENT_RISK",
       "sourceEngine": "cli",
-      "category": "BENIGN_METAPROGRAMMING",
-      "isDangerous": false,
-      "adjudication": "TRUE_FP",
-      "rationale": "HTTP cache validation library with zero malicious behavior. False alarm from generic heuristic."
+      "category": "TECHNICAL_FALSE_POSITIVE",
+      "adjudication": "TECHNICAL_FALSE_POSITIVE",
+      "rationale": "Pure HTTP header freshness validator with zero dangerous sinks. Genuine scanner false positive."
     },
     {
       "targetId": "js-yaml@3.14.1",
       "verdict": "BLOCK",
       "triggerRule": "UNSAFE_EVAL",
       "sourceEngine": "cli_oracle",
-      "category": "JUSTIFIED_HIGH_RISK",
-      "isDangerous": true,
-      "adjudication": "JUSTIFIED_BLOCK",
-      "rationale": "Contains !!js/function deserialization via eval() in lib/js-yaml/type/js/function.js (CVE-2013-4660 historical RCE vector). Justified block."
+      "category": "JUSTIFIED_INHERENT_HIGH_RISK",
+      "adjudication": "JUSTIFIED_BEHAVIORAL_BLOCK",
+      "rationale": "Contains code generation via Function constructor in lib/js-yaml/type/js/function.js (supporting !!js/function schema type). While historical CVE-2013-4660 formally applied to v2.x and subsequent v3.14.1 vulnerabilities (CVE-2025-64718 prototype pollution, CVE-2026-59869 quadratic complexity) differ in mechanism, the active code path constructing functions from text is an inherently dangerous deserialization pattern justified for policy blocking."
     },
     {
       "targetId": "morgan@1.10.0",
       "verdict": "BLOCK",
       "triggerRule": "UNSAFE_EVAL",
       "sourceEngine": "cli",
-      "category": "BENIGN_METAPROGRAMMING",
-      "isDangerous": false,
-      "adjudication": "TRUE_FP",
-      "rationale": "Compiles log format strings into functions via dynamic code generation. Safe in standard Express contexts."
+      "category": "TECHNICAL_FALSE_POSITIVE",
+      "adjudication": "TECHNICAL_FALSE_POSITIVE",
+      "rationale": "Dynamic compilation of log format strings into functions. Benign metaprogramming safe in standard Express deployment."
     },
     {
       "targetId": "picomatch@2.3.1",
       "verdict": "BLOCK",
       "triggerRule": "DIRECT_URL_DEPENDENCY",
       "sourceEngine": "cloud",
-      "category": "POLICY_SUPPLY_CHAIN",
-      "isDangerous": false,
-      "adjudication": "POLICY_DEPENDENT_FP",
-      "rationale": "Glob matching library containing direct dependency specifiers."
+      "category": "POLICY_VIOLATION_SUPPLY_CHAIN",
+      "adjudication": "POLICY_DEPENDENT_BLOCK",
+      "rationale": "Glob matching library containing direct dependency references. Policy-level gate enforcement."
     },
     {
       "targetId": "needle@3.3.1",
       "verdict": "BLOCK",
       "triggerRule": "SECRET_HARDCODED_PASSWORD",
       "sourceEngine": "cli",
-      "category": "TEST_FIXTURE_ARTIFACT",
-      "isDangerous": false,
-      "adjudication": "POLICY_DEPENDENT_FP",
-      "rationale": "Test fixture in test/basic_auth_spec.js contains dummy credentials ('user:pass') for HTTP basic auth tests. Scanner lacks test-path exclusion."
+      "category": "CONTEXT_TEST_RELATED",
+      "adjudication": "CONTEXT_DEPENDENT_BLOCK",
+      "rationale": "Test spec test/basic_auth_spec.js defines dummy test credentials ('user:pass') for HTTP basic auth test assertions. Block is context-dependent due to absence of test-path exclusion."
     },
     {
       "targetId": "source-map-support@0.5.21",
       "verdict": "BLOCK",
       "triggerRule": "UNSAFE_EVAL",
       "sourceEngine": "cli_oracle",
-      "category": "BENIGN_METAPROGRAMMING",
-      "isDangerous": false,
-      "adjudication": "TRUE_FP",
-      "rationale": "Dynamically modifies Error.prepareStackTrace to map stack traces. Benign runtime instrumentation."
+      "category": "TECHNICAL_FALSE_POSITIVE",
+      "adjudication": "TECHNICAL_FALSE_POSITIVE",
+      "rationale": "Dynamically instruments Error.prepareStackTrace to map stack traces. Benign developer tooling."
     },
     {
       "targetId": "vinyl@2.2.1",
       "verdict": "BLOCK",
       "triggerRule": "DIRECT_URL_DEPENDENCY",
       "sourceEngine": "cloud",
-      "category": "POLICY_SUPPLY_CHAIN",
-      "isDangerous": false,
-      "adjudication": "POLICY_DEPENDENT_FP",
-      "rationale": "Virtual file format with direct git URL references."
+      "category": "POLICY_VIOLATION_SUPPLY_CHAIN",
+      "adjudication": "POLICY_DEPENDENT_BLOCK",
+      "rationale": "Virtual file format containing direct repository references. Supply-chain policy enforcement."
     },
     {
       "targetId": "es5-ext@0.10.64",
       "verdict": "BLOCK",
       "triggerRule": "LIFECYCLE_CURL_BASH",
       "sourceEngine": "cli",
-      "category": "JUSTIFIED_HIGH_RISK",
-      "isDangerous": true,
-      "adjudication": "JUSTIFIED_BLOCK",
-      "rationale": "Contains postinstall lifecycle script that triggered postinstall heuristics, combined with dynamic function constructor arity definitions."
+      "category": "JUSTIFIED_INHERENT_HIGH_RISK",
+      "adjudication": "JUSTIFIED_BEHAVIORAL_BLOCK",
+      "rationale": "Triggers on aggressive postinstall lifecycle script patterns combined with dynamic function arity construction. Blocking unverified lifecycle scripts is justified supply-chain defense."
     }
   ]
 }

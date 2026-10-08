@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "3.0",
+  "generatedAt": "2026-10-08T19:19:39.068Z",
+  "freeze": {
+    "ecosystemSha": "eb4ac1c",
+    "auditVersion": "1.1.0",
+    "auditSha": "012e095bc362129253435328e246c4f901e7842d",
+    "cliSha": "ae10c223db766a041cb8a3dda561485769b47877",
+    "oracleSha": "292123e1e2be22781c0184eb444c1b6be9f1840a",
+    "cloudClientSha": "924d25d2362545fb58a39189d941f64404614093",
+    "cloudDeploymentSha": "ebc469ae9797f269f4cc20c1b322260e97bc0b7a",
+    "model": "google/gemini-3.5-flash-lite",
+    "temperature": 0
+  },
+  "host": {
+    "platform": "win32",
+    "arch": "x64",
+    "cpus": 8,
+    "nodeVersion": "v24.13.1",
+    "totalMemoryMB": 7380
+  },
+  "workers": 8,
+  "paths": {
+    "malwareDir": "C:/Users/sleyt/sentinel-cloud/.c7-sandbox/scratch/benchmark/raw/NPMStudy-full/NPMStudy/Dataset/zip_malware",
+    "resultsFile": "C:\\Users\\sleyt\\sentinel-audit\\benchmark\\phase3\\PHASE3_RESULTS.jsonl"
+  }
+}
