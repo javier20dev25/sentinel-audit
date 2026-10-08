@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0",
+  "campaign": "PHASE_1_HISTORICAL_REPLAY",
+  "auditVersion": "1.1.0",
+  "commitSha": "012e095bc362129253435328e246c4f901e7842d",
+  "executedAt": "2026-10-08T03:32:03.184Z",
+  "totalCases": 28,
+  "model": {
+    "provider": "google",
+    "model": "gemini-3.5-flash-lite",
+    "temperature": 0,
+    "maxOutputTokens": 2048
+  },
+  "metrics": {
+    "tp": 7,
+    "tn": 21,
+    "fp": 0,
+    "fn": 0,
+    "unknown": 0,
+    "coverage": 1,
+    "precision": 1,
+    "recall": 1,
+    "conventionalFpr": 0,
+    "tokensPerCorrectDecision": 722.3,
+    "totalTokens": 20225,
+    "inputTokens": 16511,
+    "outputTokens": 3714,
+    "totalToolCalls": 0,
+    "escalatedCases": 2,
+    "sumCaseMs": 66302,
+    "campaignWallMs": 108532
+  },
+  "reproducibility": {
+    "tpMatch": true,
+    "tnMatch": true,
+    "fpMatch": true,
+    "fnMatch": true,
+    "unknownMatch": true,
+    "perfectMatch": true
+  }
+}
