@@ -1,39 +1,43 @@
-{
-  "name": "sentinel-audit",
-  "version": "1.0.0",
-  "type": "commonjs",
-  "description": "Sentinel Audit v1: security orchestrator that runs Sentinel Cloud plus scoped specialists over an immutable repository commit and retains auditable evidence.",
-  "bin": { "sentinel-audit": "./audit-runner.js" },
-  "main": "audit-runner.js",
-  "files": [
-    "adapters/",
-    "config/",
-    "correlate/",
-    "lib/",
-    "reports/",
-    "rules/",
-    "workflow/",
-    "audit-runner.js",
-    "README.md",
-    "LICENSE",
-    "SECURITY.md",
-    "CONTRIBUTING.md",
-    "CHANGELOG.md"
-  ],
-  "engines": { "node": ">=20.0.0" },
-  "scripts": {
-    "test": "node --test \"test/**/*.test.js\"",
-    "doctor": "node audit-runner.js doctor --json",
-    "help": "node audit-runner.js --help"
-  },
-  "keywords": [
-    "sentinel",
-    "security",
-    "audit",
-    "orchestrator",
-    "sast",
-    "codeql",
-    "semgrep"
-  ],
-  "license": "Apache-2.0"
+﻿{
+    "name":  "sentinel-audit",
+    "version":  "1.1.0",
+    "type":  "commonjs",
+    "description":  "Sentinel Audit v1: security orchestrator that runs Sentinel Cloud plus scoped specialists over an immutable repository commit and retains auditable evidence.",
+    "bin":  {
+                "sentinel-audit":  "./audit-runner.js"
+            },
+    "main":  "audit-runner.js",
+    "files":  [
+                  "adapters/",
+                  "config/",
+                  "correlate/",
+                  "lib/",
+                  "reports/",
+                  "rules/",
+                  "workflow/",
+                  "audit-runner.js",
+                  "README.md",
+                  "LICENSE",
+                  "SECURITY.md",
+                  "CONTRIBUTING.md",
+                  "CHANGELOG.md"
+              ],
+    "engines":  {
+                    "node":  "\u003e=20.0.0"
+                },
+    "scripts":  {
+                    "test":  "node --test \"test/**/*.test.js\"",
+                    "doctor":  "node audit-runner.js doctor --json",
+                    "help":  "node audit-runner.js --help"
+                },
+    "keywords":  [
+                     "sentinel",
+                     "security",
+                     "audit",
+                     "orchestrator",
+                     "sast",
+                     "codeql",
+                     "semgrep"
+                 ],
+    "license":  "Apache-2.0"
 }

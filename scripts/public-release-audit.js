@@ -39,7 +39,7 @@ function walk(dir, acc) {
 function rel(file) { return path.relative(ROOT, file).split(path.sep).join('/'); }
 
 function read(file) {
-  try { return fs.readFileSync(file, 'utf8'); } catch (_) { return null; }
+  try { return fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''); } catch (_) { return null; }
 }
 
 const files = walk(ROOT, []);
