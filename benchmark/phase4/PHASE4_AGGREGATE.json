@@ -1,0 +1,290 @@
+{
+  "generated": "2026-10-08T20:25:22.042Z",
+  "phase": 4,
+  "corpus": "OWASP Benchmark Java v1.2",
+  "totalRecords": 2740,
+  "verdicts": {
+    "TRUE_POSITIVE": 995,
+    "TRUE_NEGATIVE": 805,
+    "FALSE_POSITIVE": 520,
+    "FALSE_NEGATIVE": 420,
+    "SPECIALIST_ERROR": 0,
+    "TIMEOUT": 0,
+    "UNSCANNABLE": 0,
+    "ROUTING_ERROR": 0
+  },
+  "analyzable": 2740,
+  "errors": 0,
+  "overallMetrics": {
+    "P": 1415,
+    "N": 1325,
+    "TPR": 0.70318,
+    "FPR": 0.392453,
+    "FNR": 0.29682,
+    "Precision": 0.656766,
+    "Accuracy": 0.656934,
+    "F1": 0.679181,
+    "OWASPScore": 31.07
+  },
+  "latency": {
+    "medianMs": 71,
+    "meanMs": 71,
+    "p95Ms": 71,
+    "n": 2740
+  },
+  "categoryBreakdown": {
+    "pathtraver": {
+      "cwe": 22,
+      "counts": {
+        "TRUE_POSITIVE": 120,
+        "TRUE_NEGATIVE": 29,
+        "FALSE_POSITIVE": 106,
+        "FALSE_NEGATIVE": 13,
+        "SPECIALIST_ERROR": 0,
+        "TIMEOUT": 0,
+        "UNSCANNABLE": 0
+      },
+      "metrics": {
+        "P": 133,
+        "N": 135,
+        "TPR": 0.902256,
+        "FPR": 0.785185,
+        "FNR": 0.097744,
+        "Precision": 0.530973,
+        "Accuracy": 0.55597,
+        "F1": 0.668524,
+        "OWASPScore": 11.71
+      }
+    },
+    "hash": {
+      "cwe": 328,
+      "counts": {
+        "TRUE_POSITIVE": 89,
+        "TRUE_NEGATIVE": 107,
+        "FALSE_POSITIVE": 0,
+        "FALSE_NEGATIVE": 40,
+        "SPECIALIST_ERROR": 0,
+        "TIMEOUT": 0,
+        "UNSCANNABLE": 0
+      },
+      "metrics": {
+        "P": 129,
+        "N": 107,
+        "TPR": 0.689922,
+        "FPR": 0,
+        "FNR": 0.310078,
+        "Precision": 1,
+        "Accuracy": 0.830508,
+        "F1": 0.816514,
+        "OWASPScore": 68.99
+      }
+    },
+    "trustbound": {
+      "cwe": 501,
+      "counts": {
+        "TRUE_POSITIVE": 68,
+        "TRUE_NEGATIVE": 17,
+        "FALSE_POSITIVE": 26,
+        "FALSE_NEGATIVE": 15,
+        "SPECIALIST_ERROR": 0,
+        "TIMEOUT": 0,
+        "UNSCANNABLE": 0
+      },
+      "metrics": {
+        "P": 83,
+        "N": 43,
+        "TPR": 0.819277,
+        "FPR": 0.604651,
+        "FNR": 0.180723,
+        "Precision": 0.723404,
+        "Accuracy": 0.674603,
+        "F1": 0.768362,
+        "OWASPScore": 21.46
+      }
+    },
+    "crypto": {
+      "cwe": 327,
+      "counts": {
+        "TRUE_POSITIVE": 130,
+        "TRUE_NEGATIVE": 116,
+        "FALSE_POSITIVE": 0,
+        "FALSE_NEGATIVE": 0,
+        "SPECIALIST_ERROR": 0,
+        "TIMEOUT": 0,
+        "UNSCANNABLE": 0
+      },
+      "metrics": {
+        "P": 130,
+        "N": 116,
+        "TPR": 1,
+        "FPR": 0,
+        "FNR": 0,
+        "Precision": 1,
+        "Accuracy": 1,
+        "F1": 1,
+        "OWASPScore": 100
+      }
+    },
+    "cmdi": {
+      "cwe": 78,
+      "counts": {
+        "TRUE_POSITIVE": 112,
+        "TRUE_NEGATIVE": 29,
+        "FALSE_POSITIVE": 96,
+        "FALSE_NEGATIVE": 14,
+        "SPECIALIST_ERROR": 0,
+        "TIMEOUT": 0,
+        "UNSCANNABLE": 0
+      },
+      "metrics": {
+        "P": 126,
+        "N": 125,
+        "TPR": 0.888889,
+        "FPR": 0.768,
+        "FNR": 0.111111,
+        "Precision": 0.538462,
+        "Accuracy": 0.561753,
+        "F1": 0.670659,
+        "OWASPScore": 12.09
+      }
+    },
+    "sqli": {
+      "cwe": 89,
+      "counts": {
+        "TRUE_POSITIVE": 234,
+        "TRUE_NEGATIVE": 89,
+        "FALSE_POSITIVE": 143,
+        "FALSE_NEGATIVE": 38,
+        "SPECIALIST_ERROR": 0,
+        "TIMEOUT": 0,
+        "UNSCANNABLE": 0
+      },
+      "metrics": {
+        "P": 272,
+        "N": 232,
+        "TPR": 0.860294,
+        "FPR": 0.616379,
+        "FNR": 0.139706,
+        "Precision": 0.62069,
+        "Accuracy": 0.640873,
+        "F1": 0.721109,
+        "OWASPScore": 24.39
+      }
+    },
+    "weakrand": {
+      "cwe": 330,
+      "counts": {
+        "TRUE_POSITIVE": 0,
+        "TRUE_NEGATIVE": 275,
+        "FALSE_POSITIVE": 0,
+        "FALSE_NEGATIVE": 218,
+        "SPECIALIST_ERROR": 0,
+        "TIMEOUT": 0,
+        "UNSCANNABLE": 0
+      },
+      "metrics": {
+        "P": 218,
+        "N": 275,
+        "TPR": 0,
+        "FPR": 0,
+        "FNR": 1,
+        "Precision": null,
+        "Accuracy": 0.557809,
+        "F1": null,
+        "OWASPScore": 0
+      }
+    },
+    "ldapi": {
+      "cwe": 90,
+      "counts": {
+        "TRUE_POSITIVE": 26,
+        "TRUE_NEGATIVE": 4,
+        "FALSE_POSITIVE": 28,
+        "FALSE_NEGATIVE": 1,
+        "SPECIALIST_ERROR": 0,
+        "TIMEOUT": 0,
+        "UNSCANNABLE": 0
+      },
+      "metrics": {
+        "P": 27,
+        "N": 32,
+        "TPR": 0.962963,
+        "FPR": 0.875,
+        "FNR": 0.037037,
+        "Precision": 0.481481,
+        "Accuracy": 0.508475,
+        "F1": 0.641975,
+        "OWASPScore": 8.8
+      }
+    },
+    "xss": {
+      "cwe": 80,
+      "counts": {
+        "TRUE_POSITIVE": 202,
+        "TRUE_NEGATIVE": 101,
+        "FALSE_POSITIVE": 108,
+        "FALSE_NEGATIVE": 44,
+        "SPECIALIST_ERROR": 0,
+        "TIMEOUT": 0,
+        "UNSCANNABLE": 0
+      },
+      "metrics": {
+        "P": 246,
+        "N": 209,
+        "TPR": 0.821138,
+        "FPR": 0.516746,
+        "FNR": 0.178862,
+        "Precision": 0.651613,
+        "Accuracy": 0.665934,
+        "F1": 0.726619,
+        "OWASPScore": 30.44
+      }
+    },
+    "securecookie": {
+      "cwe": 614,
+      "counts": {
+        "TRUE_POSITIVE": 0,
+        "TRUE_NEGATIVE": 31,
+        "FALSE_POSITIVE": 0,
+        "FALSE_NEGATIVE": 36,
+        "SPECIALIST_ERROR": 0,
+        "TIMEOUT": 0,
+        "UNSCANNABLE": 0
+      },
+      "metrics": {
+        "P": 36,
+        "N": 31,
+        "TPR": 0,
+        "FPR": 0,
+        "FNR": 1,
+        "Precision": null,
+        "Accuracy": 0.462687,
+        "F1": null,
+        "OWASPScore": 0
+      }
+    },
+    "xpathi": {
+      "cwe": null,
+      "counts": {
+        "TRUE_POSITIVE": 14,
+        "TRUE_NEGATIVE": 7,
+        "FALSE_POSITIVE": 13,
+        "FALSE_NEGATIVE": 1,
+        "SPECIALIST_ERROR": 0,
+        "TIMEOUT": 0,
+        "UNSCANNABLE": 0
+      },
+      "metrics": {
+        "P": 15,
+        "N": 20,
+        "TPR": 0.933333,
+        "FPR": 0.65,
+        "FNR": 0.066667,
+        "Precision": 0.518519,
+        "Accuracy": 0.6,
+        "F1": 0.666667,
+        "OWASPScore": 28.33
+      }
+    }
+  }
+}

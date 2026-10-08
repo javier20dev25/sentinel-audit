@@ -1,0 +1,21 @@
+{
+  "auditVersion": "1.1.0",
+  "auditSha": "d70c6ea8899438b67494d41570084884fe7fbc96",
+  "cliSha": "ae10c223",
+  "oracleSha": "292123e1",
+  "cloudClientSha": "924d25d2",
+  "cloudDeploymentSha": "ebc469a",
+  "semgrepVersion": "1.175.0",
+  "semgrepConfig": "p/java",
+  "codeqlVersion": "NOT_INSTALLED",
+  "model": "DISABLED",
+  "aiEnabled": false,
+  "workers": 8,
+  "timeoutMs": 120000,
+  "phase": 4,
+  "corpus": "OWASP Benchmark Java v1.2",
+  "corpusN": 2740,
+  "groundTruth": "C:\\Users\\sleyt\\benchmark-corpus\\owasp\\expectedresults-1.2.csv",
+  "buildMode": "none",
+  "note": "Standalone runner; does NOT invoke sentinel-audit audit pipeline or Sentinel Cloud."
+}
