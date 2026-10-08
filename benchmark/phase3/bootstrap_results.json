@@ -1,0 +1,19 @@
+{
+  "B": 10000,
+  "p2PointRatePct": 2.012,
+  "p2CI95Pct": [
+    1.062,
+    4.681
+  ],
+  "p3PointRatePct": 2.0548,
+  "p3CI95Pct": [
+    1.758,
+    2.366
+  ],
+  "observedDeltaPP": 0.0428,
+  "deltaCI95PP": [
+    -2.638,
+    1.056
+  ],
+  "includesZero": true
+}

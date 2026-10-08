@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-10-08T19:30:58.233Z",
+  "corpus": {
+    "totalTargets": 4301,
+    "analyzableTargets": 3277,
+    "unscannableTargets": 1024
+  },
+  "metrics": {
+    "scanCompletionRatePct": "76.19",
+    "strictBlockDetectionAllPct": "68.73",
+    "strictBlockDetectionAnalyzablePct": "90.20",
+    "blockPlusReviewAllPct": "73.73",
+    "blockPlusReviewAnalyzablePct": "96.77",
+    "unscannableRatePct": "23.81"
+  },
+  "counts": {
+    "BLOCK": 2956,
+    "REVIEW": 215,
+    "PASS": 106,
+    "NO_ARTIFACT": 1018,
+    "ERROR": 6
+  },
+  "unscannableTaxonomy": {
+    "total": 1024,
+    "extractionFailures": 6,
+    "archiveLayoutMismatch": 1018,
+    "archiveLayoutMismatchPct": "99.41",
+    "details": {
+      "extractionFailuresNote": "Tarball decompression timed out or encountered deeply nested invalid symlinks / file path limits (6 targets).",
+      "archiveLayoutMismatchNote": "NPMStudy scraper saved gzip archives containing tarballs whose internal header preserved the .tgz filename rather than .tar. The parser expected *.tar as the uncompressed stream, skipping the second-stage extraction (1,018 targets)."
+    }
+  },
+  "passTaxonomy": {
+    "total": 106,
+    "completeBlindspotCount": 46,
+    "completeBlindspotPct": "43.40",
+    "suppressedSubthresholdCount": 60,
+    "suppressedSubthresholdPct": "56.60",
+    "alertBuckets": {
+      "0": 46,
+      "1-2": 10,
+      "3-5": 33,
+      "6+": 17
+    },
+    "primaryCauses": [
+      {
+        "category": "Pure Webhook / Callback Exfiltration without Dynamic Sink (46 targets)",
+        "description": "Packages that perform plain HTTP/DNS requests (e.g., Interactsh / Burp Collaborator callbacks in postinstall or main) without eval(), child_process, or syntax obfuscation. While suspicious, single HTTP requests without corroborating sinks fall below the CRITICAL/HIGH blocking threshold to preserve benign precision.",
+        "impact": "Escaped detection as PASS due to absence of dynamic execution markers."
+      },
+      {
+        "category": "Sub-threshold Medium/Low Alerts (60 targets)",
+        "description": "Packages that triggered 1-5 MEDIUM or LOW signals (e.g. NETWORK_ACTIVITY, SNT-MEDI-001, building-block-network-import) but had 0 CRITICAL and 0 HIGH candidates, and lacked dataflow ambiguity triggers.",
+        "impact": "Classified as PASS because Sentinel policy requires either CRITICAL, HIGH, >5 MEDIUM, or ambiguous candidates to escalate to REVIEW/BLOCK."
+      }
+    ]
+  },
+  "funnelStability": {
+    "phase2AEscalationRatePct": 2.012,
+    "phase2ACI95Pct": [
+      1.062,
+      4.681
+    ],
+    "phase3EscalationRatePct": 2.0548,
+    "phase3CI95Pct": [
+      1.758,
+      2.366
+    ],
+    "observedDeltaPP": 0.0428,
+    "deltaCI95PP": [
+      -2.638,
+      1.056
+    ],
+    "includesZero": true,
+    "methodology": "Package-cluster bootstrap resampling with replacement (B=10,000)"
+  }
+}
