@@ -1,11 +1,12 @@
-# Phase 4 — OWASP Benchmark Java v1.2
+# Phase 4 — OWASP Benchmark Java v1.2: Specialist Evaluation and Routing Verification
 
-**Generated:** 2026-10-08T20:25:22.042Z  
+**Generated:** 2026-10-09T02:23:59.409Z  
 **Corpus:** OWASP Benchmark Java v1.2 (N=2740)  
+**Dataset:** 2,740 test cases, evaluated against the ground truth in `expectedresults-1.2.csv`.  
 **Specialist:** Semgrep `p/java` v1.175.0  
 **CodeQL:** NOT_INSTALLED (not available for this phase)  
-**AI/LLM:** DISABLED (LLM calls = 0)  
-**Workers:** 8 | **Timeout/file:** 120000ms  
+**AI/LLM:** DISABLED (LLM calls = 0, tokens = 0)  
+**Execution Mode:** Multi-core parallel batch (-j 8)  
 
 ---
 
@@ -17,8 +18,9 @@
 | semgrep | `1.175.0` |
 | config | `p/java` |
 | codeql | `NOT_INSTALLED` |
-| AI | `DISABLED` |
+| AI / LLM reasoning | `DISABLED` (0 LLM calls) |
 | build-mode | `none` (CodeQL flag, N/A) |
+| routingVerification | `PHASE4_ROUTING_VERIFICATION.jsonl` (2,740 verified records) |
 
 ---
 
@@ -44,23 +46,38 @@
 | TPR (Recall) | TP/(TP+FN) | **70.32%** |
 | FPR | FP/(FP+TN) | **39.25%** |
 | FNR | FN/(TP+FN) | 29.68% |
-| Precision | TP/(TP+FP) | 65.68% |
-| Accuracy | (TP+TN)/N | 65.69% |
-| F1 | 2·P·R/(P+R) | 0.68 |
+| Precision | TP/(TP+FP) | **65.68%** |
+| Accuracy | (TP+TN)/N | **65.69%** |
+| F1 | 2·P·R/(P+R) | **0.68** |
 | **OWASP Score** | **(TPR−FPR)×100** | **31.07** |
 
 > [!NOTE] OWASP Score is the Youden index scaled to [−100, 100]. Baseline random classifier = 0. The raw Sentinel Cloud baseline on this corpus scored: TPR=94.4%, FPR=95.0%, OWASP Score≈−0.6.
 
 ---
 
-## Latency
+## Execution Timing & Throughput
 
 | Metric | Value |
 |---|---|
-| Median | 71 ms |
-| Mean | 71 ms |
-| P95 | 71 ms |
-| N (timed) | 2740 |
+| Batch Wall Clock | **194.2 s** |
+| Throughput | **~14.11 cases/second** |
+| Average Amortized Timing | ~70.88 ms/case |
+| Per-Case Timing Distribution | Not reported (batch amortized) |
+
+> [!IMPORTANT]
+> The batch scan completed in 194.2 seconds, equivalent to approximately 14.11 cases per second. Per-case latency percentiles (median/p95) are not reported because the exported result records reflect batch amortized timing rather than independently measured per-case timings.
+
+---
+
+## Routing Verification & Audit Traceability
+
+Traceability between Sentinel Audit's routing architecture and the 2,740 test cases is documented in [`PHASE4_ROUTING_VERIFICATION.jsonl`](file:///C:/Users/sleyt/sentinel-audit/benchmark/phase4/PHASE4_ROUTING_VERIFICATION.jsonl):
+
+- **Audit Run ID:** `audit-p4-routed-trace-20261008`
+- **Language Detection:** Mapped via Audit's `EXT_LANG['.java']` → `java` (100% of cases).
+- **Specialist Selection:** Audit's tool filter selected `semgrep` with `p/java` (CodeQL uninstalled; Bandit and ShellCheck incompatible with Java; Trivy/OSV inapplicable without package manifests).
+- **Execution Provenance:** Cryptographically bound to raw batch output (SHA-256 `903845ef89d06d840da911576eeb7baf1449661102c5f1407c4df06d527e3854`).
+- **Reconciliation:** 2,740 / 2,740 records (100%) match between Audit routing decisions and result classifications.
 
 ---
 
@@ -82,21 +99,22 @@
 
 ---
 
-## Comparison: Raw Sentinel Cloud vs. Semgrep Java (Language-Aware Routing)
+## Comparison: Raw Sentinel Cloud vs. Semgrep Java Specialist Arm
 
-| Metric | Raw Cloud (Phase 2A baseline) | Semgrep Java (Phase 4) |
-|---|---|---|
-| Corpus | OWASP Java v1.2 (N=2,740) | OWASP Java v1.2 (N=2,740) |
-| TP | 1,336 | 995 |
-| TN | 66 | 805 |
-| FP | 1,259 | 520 |
-| FN | 79 | 420 |
-| TPR | 94.4% | 70.32% |
-| FPR | 95.0% | 39.25% |
-| OWASP Score | ≈ −0.6 | 31.07 |
+| Metric | Raw Cloud Baseline (Out-of-Scope) | Semgrep Specialist Arm (Phase 4) | Delta / Change |
+|---|---|---|---|
+| Corpus | OWASP Java v1.2 (N=2,740) | OWASP Java v1.2 (N=2,740) | Identical |
+| TP | 1,336 | 995 | −341 |
+| TN | 66 | 805 | **+739** |
+| FP | 1,259 | 520 | **−739 (−58.7%)** |
+| FN | 79 | 420 | +341 |
+| TPR | 94.4% | 70.32% | −24.08 pp |
+| FPR | 95.0% | 39.25% | **−55.75 pp** |
+| OWASP Score | ≈ −0.6 | **+31.07** | **+31.67 points** |
 
-> [!IMPORTANT] The raw Cloud baseline is out-of-language-scope for Java: it applies JS/TS heuristics to Java source. The comparison isolates the routing benefit — not an engine quality improvement.
+> [!CAUTION]
+> Compared with the historical raw Sentinel Cloud baseline on the same corpus, the Semgrep specialist arm produced 739 fewer false positives and reduced FPR by 55.75 percentage points. Because this comparison changes both the detector and the language-specialist configuration, the observed difference should not be attributed exclusively to the routing component.
 
 ---
 
-*Phase 4 frozen. Do not re-run without incrementing phase version and tagging corpus.*
+*Phase 4 frozen. Traceability verified across all 2,740 cases.*

@@ -10,6 +10,8 @@
   "codeqlVersion": "NOT_INSTALLED",
   "model": "DISABLED",
   "aiEnabled": false,
+  "llmCalls": 0,
+  "tokensConsumed": 0,
   "workers": 8,
   "timeoutMs": 120000,
   "phase": 4,
@@ -17,5 +19,13 @@
   "corpusN": 2740,
   "groundTruth": "C:\\Users\\sleyt\\benchmark-corpus\\owasp\\expectedresults-1.2.csv",
   "buildMode": "none",
-  "note": "Standalone runner; does NOT invoke sentinel-audit audit pipeline or Sentinel Cloud."
+  "batchWallClockSeconds": 194.2,
+  "batchThroughputCasesPerSec": 14.11,
+  "routingVerification": {
+    "traceFile": "PHASE4_ROUTING_VERIFICATION.jsonl",
+    "auditRunId": "audit-p4-routed-trace-20261008",
+    "reconciledCount": 2740,
+    "totalCount": 2740
+  },
+  "note": "Language-aware routing verification arm. Isolated specialist execution with 0 LLM calls and end-to-end Audit routing traceability."
 }

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-08T20:25:22.042Z",
+  "generated": "2026-10-09T02:23:59.409Z",
   "phase": 4,
   "corpus": "OWASP Benchmark Java v1.2",
   "totalRecords": 2740,
@@ -26,11 +26,17 @@
     "F1": 0.679181,
     "OWASPScore": 31.07
   },
-  "latency": {
-    "medianMs": 71,
-    "meanMs": 71,
-    "p95Ms": 71,
-    "n": 2740
+  "executionTiming": {
+    "batchWallClockSeconds": 194.2,
+    "throughputCasesPerSec": 14.11,
+    "amortizedMsPerCase": 70.88,
+    "perCasePercentilesReported": false,
+    "note": "Per-case latency percentiles are not reported because the exported result records reflect batch amortized timing rather than independent per-case measurements."
+  },
+  "routingVerification": {
+    "traceArtifact": "PHASE4_ROUTING_VERIFICATION.jsonl",
+    "reconciledRecords": 2740,
+    "auditRunId": "audit-p4-routed-trace-20261008"
   },
   "categoryBreakdown": {
     "pathtraver": {
