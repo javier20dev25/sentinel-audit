@@ -148,6 +148,8 @@ for (const entry of manifestEntries) {
     file,
     fileSha256: sha256,
     auditRunId: AUDIT_RUN_ID,
+    verificationType: 'ROUTING_RECONCILIATION',
+    nature: 'Retrospective verification linking Audit EXT_LANG and tool eligibility matrix to the completed batch execution',
     traceId: `TRACE-${crypto.createHash('sha256').update(`${AUDIT_RUN_ID}:${testName}`).digest('hex').slice(0, 16)}`,
     detectedLanguage,
     routeDecision,
