@@ -1,0 +1,305 @@
+{
+  "phase": "Phase Y1 — Calibration Pilot (5 Representative Cases / 10 Snapshots)",
+  "completedAt": "2026-10-09T19:44:46.508Z",
+  "casesEvaluated": 5,
+  "results": [
+    {
+      "caseId": "P5-001",
+      "package": "handlebars",
+      "cwe": "CWE-843",
+      "revision": "vulnerable",
+      "sha": "b2a083136b11e1da9f0f47a11f749a9830a49328",
+      "affectedFiles": [
+        "lib/handlebars/compiler/base.js",
+        "lib/handlebars/compiler/javascript-compiler.js",
+        "lib/handlebars/internal/proto-access.js",
+        "lib/handlebars/runtime.js",
+        "lib/precompiler.js",
+        "spec/compiler.js",
+        "spec/expected/bom.amd.js",
+        "spec/expected/empty.amd.js",
+        "spec/expected/empty.amd.namespace.js",
+        "spec/expected/empty.common.js",
+        "spec/expected/empty.name.amd.js",
+        "spec/expected/empty.root.amd.js",
+        "spec/expected/handlebar.path.amd.js",
+        "spec/expected/namespace.amd.js",
+        "spec/expected/non.default.extension.amd.js",
+        "spec/expected/non.empty.amd.known.helper.js",
+        "spec/expected/partial.template.js",
+        "spec/precompiler.js",
+        "spec/runtime.js",
+        "spec/security.js"
+      ],
+      "codeql": {
+        "findingsCount": 2,
+        "findings": [
+          {
+            "ruleId": "js/prototype-pollution-utility",
+            "message": "Properties are copied from [obj](1) to [target](2) without guarding against prototype pollution.",
+            "locations": [
+              "spec/vendor/require.js"
+            ]
+          },
+          {
+            "ruleId": "js/file-system-race",
+            "message": "The file may have changed since it [was checked](1).",
+            "locations": [
+              "lib/precompiler.js"
+            ]
+          }
+        ]
+      },
+      "semgrep": {
+        "findingsCount": 0,
+        "findings": []
+      }
+    },
+    {
+      "caseId": "P5-001",
+      "package": "handlebars",
+      "cwe": "CWE-843",
+      "revision": "patched",
+      "sha": "68d8df5a88e0a26fe9e6084c5c6aaebe67b07da2",
+      "affectedFiles": [
+        "lib/handlebars/compiler/base.js",
+        "lib/handlebars/compiler/javascript-compiler.js",
+        "lib/handlebars/internal/proto-access.js",
+        "lib/handlebars/runtime.js",
+        "lib/precompiler.js",
+        "spec/compiler.js",
+        "spec/expected/bom.amd.js",
+        "spec/expected/empty.amd.js",
+        "spec/expected/empty.amd.namespace.js",
+        "spec/expected/empty.common.js",
+        "spec/expected/empty.name.amd.js",
+        "spec/expected/empty.root.amd.js",
+        "spec/expected/handlebar.path.amd.js",
+        "spec/expected/namespace.amd.js",
+        "spec/expected/non.default.extension.amd.js",
+        "spec/expected/non.empty.amd.known.helper.js",
+        "spec/expected/partial.template.js",
+        "spec/precompiler.js",
+        "spec/runtime.js",
+        "spec/security.js"
+      ],
+      "codeql": {
+        "findingsCount": 2,
+        "findings": [
+          {
+            "ruleId": "js/prototype-pollution-utility",
+            "message": "Properties are copied from [obj](1) to [target](2) without guarding against prototype pollution.",
+            "locations": [
+              "spec/vendor/require.js"
+            ]
+          },
+          {
+            "ruleId": "js/file-system-race",
+            "message": "The file may have changed since it [was checked](1).",
+            "locations": [
+              "lib/precompiler.js"
+            ]
+          }
+        ]
+      },
+      "semgrep": {
+        "findingsCount": 0,
+        "findings": []
+      }
+    },
+    {
+      "caseId": "P5-008",
+      "package": "sequelize",
+      "cwe": "CWE-89",
+      "revision": "vulnerable",
+      "sha": "75c1fdbc676d73a28a5e0bca49b2a6d4a9f8708c",
+      "affectedFiles": [
+        "lib/dialects/abstract/query-generator.js"
+      ],
+      "codeql": {
+        "findingsCount": 0,
+        "findings": []
+      },
+      "semgrep": {
+        "findingsCount": 0,
+        "findings": []
+      }
+    },
+    {
+      "caseId": "P5-008",
+      "package": "sequelize",
+      "cwe": "CWE-89",
+      "revision": "patched",
+      "sha": "ee4017379db0059566ecb5424274ad4e2d66bc68",
+      "affectedFiles": [
+        "lib/dialects/abstract/query-generator.js"
+      ],
+      "codeql": {
+        "findingsCount": 0,
+        "findings": []
+      },
+      "semgrep": {
+        "findingsCount": 0,
+        "findings": []
+      }
+    },
+    {
+      "caseId": "P5-011",
+      "package": "minimist",
+      "cwe": "CWE-1321",
+      "revision": "vulnerable",
+      "sha": "c0b26618322e94adea26c68e613ef0be482c6c63",
+      "affectedFiles": [
+        "index.js"
+      ],
+      "codeql": {
+        "findingsCount": 1,
+        "findings": [
+          {
+            "ruleId": "js/polynomial-redos",
+            "message": "This [regular expression](1) that depends on [library input](2) may run slow on strings with many repetitions of '9'.",
+            "locations": [
+              "index.js"
+            ]
+          }
+        ]
+      },
+      "semgrep": {
+        "findingsCount": 0,
+        "findings": []
+      }
+    },
+    {
+      "caseId": "P5-011",
+      "package": "minimist",
+      "cwe": "CWE-1321",
+      "revision": "patched",
+      "sha": "34e20b8461118608703d6485326abbb8e35e1703",
+      "affectedFiles": [
+        "index.js"
+      ],
+      "codeql": {
+        "findingsCount": 1,
+        "findings": [
+          {
+            "ruleId": "js/polynomial-redos",
+            "message": "This [regular expression](1) that depends on [library input](2) may run slow on strings with many repetitions of '9'.",
+            "locations": [
+              "index.js"
+            ]
+          }
+        ]
+      },
+      "semgrep": {
+        "findingsCount": 0,
+        "findings": []
+      }
+    },
+    {
+      "caseId": "P5-030",
+      "package": "semver",
+      "cwe": "CWE-1333",
+      "revision": "vulnerable",
+      "sha": "deb5ad51bf58868fa243c1683775305fe9e0e365",
+      "affectedFiles": [
+        "semver.js",
+        "test/index.js",
+        "test/re.js",
+        "test/whitespace.js"
+      ],
+      "codeql": {
+        "findingsCount": 1,
+        "findings": [
+          {
+            "ruleId": "js/polynomial-redos",
+            "message": "This [regular expression](1) that depends on [library input](2) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](3) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](4) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](5) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](6) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](7) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](8) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](9) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](10) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](11) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](12) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](13) may run slow on strings with many repetitions of ' '.\nThis [regular expression](1) that depends on [library input](14) may run slow on strings with many repetitions of ' '.",
+            "locations": [
+              "semver.js"
+            ]
+          }
+        ]
+      },
+      "semgrep": {
+        "findingsCount": 0,
+        "findings": []
+      }
+    },
+    {
+      "caseId": "P5-030",
+      "package": "semver",
+      "cwe": "CWE-1333",
+      "revision": "patched",
+      "sha": "2f8fd41487acf380194579ecb6f8b1bbfe116be0",
+      "affectedFiles": [
+        "semver.js",
+        "test/index.js",
+        "test/re.js",
+        "test/whitespace.js"
+      ],
+      "codeql": {
+        "findingsCount": 0,
+        "findings": []
+      },
+      "semgrep": {
+        "findingsCount": 0,
+        "findings": []
+      }
+    },
+    {
+      "caseId": "P5-043",
+      "package": "multer",
+      "cwe": "CWE-401",
+      "revision": "vulnerable",
+      "sha": "bde1822c232dd7ab2da3d542914d9927cc1675fa",
+      "affectedFiles": [
+        "lib/make-middleware.js",
+        "package.json",
+        "test/express-integration.js"
+      ],
+      "codeql": {
+        "findingsCount": 1,
+        "findings": [
+          {
+            "ruleId": "js/type-confusion-through-parameter-tampering",
+            "message": "Potential type confusion as [this HTTP request parameter](1) may be either an array or a string.",
+            "locations": [
+              "lib/file-appender.js"
+            ]
+          }
+        ]
+      },
+      "semgrep": {
+        "findingsCount": 0,
+        "findings": []
+      }
+    },
+    {
+      "caseId": "P5-043",
+      "package": "multer",
+      "cwe": "CWE-401",
+      "revision": "patched",
+      "sha": "2c8505f207d923dd8de13a9f93a4563e59933665",
+      "affectedFiles": [
+        "lib/make-middleware.js",
+        "package.json",
+        "test/express-integration.js"
+      ],
+      "codeql": {
+        "findingsCount": 1,
+        "findings": [
+          {
+            "ruleId": "js/type-confusion-through-parameter-tampering",
+            "message": "Potential type confusion as [this HTTP request parameter](1) may be either an array or a string.",
+            "locations": [
+              "lib/file-appender.js"
+            ]
+          }
+        ]
+      },
+      "semgrep": {
+        "findingsCount": 0,
+        "findings": []
+      }
+    }
+  ]
+}

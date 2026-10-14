@@ -1,0 +1,572 @@
+{
+  "phase": "Phase Y3 — Blind Evaluation on Package-Disjoint Corpus",
+  "evaluatedAt": "2026-10-10T06:59:42.393Z",
+  "engine": "Sentinel Y v0.1.0-alpha",
+  "totalBlindPairs": 13,
+  "breakdownByPanel": {
+    "panelA_proto": {
+      "total": 7,
+      "discriminated": 1
+    },
+    "panelB_redos": {
+      "total": 6,
+      "discriminated": 0
+    }
+  },
+  "pairedMetrics": {
+    "trueDiscrimination": 1,
+    "persistentFalseAlarm": 3,
+    "falseNegative": 9,
+    "invertedDiscrimination": 0,
+    "pairedDiscriminationRate": "7.69%",
+    "persistentFalseAlarmRate": "23.08%",
+    "falseNegativeRate": "69.23%"
+  },
+  "controlMetrics": {
+    "totalControls": 7,
+    "trueNegatives": 4,
+    "falsePositives": 3,
+    "falsePositiveRateControls": "42.86%"
+  },
+  "headToHeadVsCodeQL": {
+    "sentinelY_discriminated": 1,
+    "sentinelY_rate": "7.69%",
+    "codeql_discriminated": 0,
+    "codeql_rate": "0.00%",
+    "deltaPdr": "7.69%"
+  },
+  "blindPairs": [
+    {
+      "caseId": "P5-007",
+      "panel": "A (Proto)",
+      "package": "mongoose",
+      "cve": "CVE-2023-3696",
+      "rule": "Y-PROTO-001",
+      "file": "lib/document.js",
+      "vulnerableSha": "b336ed83",
+      "fixSha": "e29578d2",
+      "vAlert": true,
+      "pAlert": true,
+      "discriminated": false,
+      "category": "PFA",
+      "vFindingCount": 4,
+      "pFindingCount": 4,
+      "codeqlBaseline": {
+        "vulnAlert": null,
+        "patchAlert": null,
+        "discriminated": false
+      },
+      "sampleFinding": {
+        "ruleId": "Y-PROTO-001",
+        "cwe": "CWE-1321",
+        "verdict": "CONFIRMED",
+        "confidence": "HIGH",
+        "title": "Unsafe recursive object-property assignment (Prototype Pollution)",
+        "file": "lib/document.js",
+        "line": 312,
+        "snippet": "Document[i] = EventEmitter.prototype[i];",
+        "proofWitness": {
+          "sourceLocation": {
+            "file": "lib/document.js",
+            "line": 311,
+            "symbol": "i"
+          },
+          "sinkLocation": {
+            "file": "lib/document.js",
+            "line": 312,
+            "symbol": "i"
+          },
+          "violatedInvariant": "Key must not resolve to __proto__, constructor, or prototype before assignment",
+          "missingGuard": "Complete guard (filtering __proto__, constructor, and prototype) not found"
+        }
+      }
+    },
+    {
+      "caseId": "P5-011",
+      "panel": "A (Proto)",
+      "package": "minimist",
+      "cve": "CVE-2021-44906",
+      "rule": "Y-PROTO-001",
+      "file": "index.js",
+      "vulnerableSha": "c0b26618",
+      "fixSha": "34e20b84",
+      "vAlert": true,
+      "pAlert": true,
+      "discriminated": false,
+      "category": "PFA",
+      "vFindingCount": 11,
+      "pFindingCount": 11,
+      "codeqlBaseline": {
+        "vulnAlert": true,
+        "patchAlert": true,
+        "discriminated": false
+      },
+      "sampleFinding": {
+        "ruleId": "Y-PROTO-001",
+        "cwe": "CWE-1321",
+        "verdict": "CONFIRMED",
+        "confidence": "HIGH",
+        "title": "Unsafe recursive object-property assignment (Prototype Pollution)",
+        "file": "index.js",
+        "line": 31,
+        "snippet": "if (o[key] === undefined) { o[key] = {}; }",
+        "proofWitness": {
+          "sourceLocation": {
+            "file": "index.js",
+            "line": 15,
+            "symbol": "key"
+          },
+          "sinkLocation": {
+            "file": "index.js",
+            "line": 31,
+            "symbol": "key"
+          },
+          "violatedInvariant": "Key must not resolve to __proto__, constructor, or prototype before assignment",
+          "missingGuard": "Complete guard (filtering __proto__, constructor, and prototype) not found"
+        }
+      }
+    },
+    {
+      "caseId": "P5-014",
+      "panel": "A (Proto)",
+      "package": "set-value",
+      "cve": "CVE-2019-10747",
+      "rule": "Y-PROTO-001",
+      "file": "index.js",
+      "vulnerableSha": "7bd5011d",
+      "fixSha": "95e9d992",
+      "vAlert": false,
+      "pAlert": false,
+      "discriminated": false,
+      "category": "FN",
+      "vFindingCount": 0,
+      "pFindingCount": 0,
+      "codeqlBaseline": {
+        "vulnAlert": true,
+        "patchAlert": true,
+        "discriminated": false
+      },
+      "sampleFinding": null
+    },
+    {
+      "caseId": "P5-016",
+      "panel": "A (Proto)",
+      "package": "json-pointer",
+      "cve": "CVE-2022-4742",
+      "rule": "Y-PROTO-001",
+      "file": "index.js",
+      "vulnerableSha": "9b5ea8e3",
+      "fixSha": "859c9984",
+      "vAlert": true,
+      "pAlert": true,
+      "discriminated": false,
+      "category": "PFA",
+      "vFindingCount": 1,
+      "pFindingCount": 1,
+      "codeqlBaseline": {
+        "vulnAlert": true,
+        "patchAlert": true,
+        "discriminated": false
+      },
+      "sampleFinding": {
+        "ruleId": "Y-PROTO-001",
+        "cwe": "CWE-1321",
+        "verdict": "CONFIRMED",
+        "confidence": "HIGH",
+        "title": "Unsafe recursive object-property assignment (Prototype Pollution)",
+        "file": "index.js",
+        "line": 34,
+        "snippet": "wrapped[name] = api[name].bind(wrapped, obj);",
+        "proofWitness": {
+          "sourceLocation": {
+            "file": "index.js",
+            "line": 32,
+            "symbol": "name"
+          },
+          "sinkLocation": {
+            "file": "index.js",
+            "line": 34,
+            "symbol": "name"
+          },
+          "violatedInvariant": "Key must not resolve to __proto__, constructor, or prototype before assignment",
+          "missingGuard": "Complete guard (filtering __proto__, constructor, and prototype) not found"
+        }
+      }
+    },
+    {
+      "caseId": "P5-018",
+      "panel": "A (Proto)",
+      "package": "lodash",
+      "cve": "CVE-2018-16487",
+      "rule": "Y-PROTO-001",
+      "file": "lodash.js",
+      "vulnerableSha": "67389a8c",
+      "fixSha": "90e6199a",
+      "vAlert": false,
+      "pAlert": false,
+      "discriminated": false,
+      "category": "FN",
+      "vFindingCount": 0,
+      "pFindingCount": 0,
+      "codeqlBaseline": {
+        "vulnAlert": null,
+        "patchAlert": null,
+        "discriminated": false
+      },
+      "sampleFinding": null
+    },
+    {
+      "caseId": "P5-029",
+      "panel": "A (Proto)",
+      "package": "json5",
+      "cve": "CVE-2022-46175",
+      "rule": "Y-PROTO-001",
+      "file": "src/parse.js",
+      "vulnerableSha": "072eb402",
+      "fixSha": "62a65408",
+      "vAlert": true,
+      "pAlert": false,
+      "discriminated": true,
+      "category": "TD",
+      "vFindingCount": 1,
+      "pFindingCount": 0,
+      "codeqlBaseline": {
+        "vulnAlert": false,
+        "patchAlert": false,
+        "discriminated": false
+      },
+      "sampleFinding": {
+        "ruleId": "Y-PROTO-001",
+        "cwe": "CWE-1321",
+        "verdict": "CONFIRMED",
+        "confidence": "HIGH",
+        "title": "Unsafe recursive object-property assignment (Prototype Pollution)",
+        "file": "src/parse.js",
+        "line": 50,
+        "snippet": "value[key] = replacement",
+        "proofWitness": {
+          "sourceLocation": {
+            "file": "src/parse.js",
+            "line": 45,
+            "symbol": "key"
+          },
+          "sinkLocation": {
+            "file": "src/parse.js",
+            "line": 50,
+            "symbol": "key"
+          },
+          "violatedInvariant": "Key must not resolve to __proto__, constructor, or prototype before assignment",
+          "missingGuard": "Complete guard (filtering __proto__, constructor, and prototype) not found"
+        }
+      }
+    },
+    {
+      "caseId": "P5-038",
+      "panel": "A (Proto)",
+      "package": "async",
+      "cve": "CVE-2021-43138",
+      "rule": "Y-PROTO-001",
+      "file": "lib/internal/iterator.js",
+      "vulnerableSha": "f1d8383b",
+      "fixSha": "8f7f9034",
+      "vAlert": false,
+      "pAlert": false,
+      "discriminated": false,
+      "category": "FN",
+      "vFindingCount": 0,
+      "pFindingCount": 0,
+      "codeqlBaseline": {
+        "vulnAlert": false,
+        "patchAlert": false,
+        "discriminated": false
+      },
+      "sampleFinding": null
+    },
+    {
+      "caseId": "P5-020",
+      "panel": "B (ReDoS)",
+      "package": "moment",
+      "cve": "CVE-2017-18214",
+      "rule": "Y-REDOS-001",
+      "file": "src/lib/parse/regex.js",
+      "vulnerableSha": "328d51e7",
+      "fixSha": "69ed9d44",
+      "vAlert": false,
+      "pAlert": false,
+      "discriminated": false,
+      "category": "FN",
+      "vFindingCount": 0,
+      "pFindingCount": 0,
+      "codeqlBaseline": {
+        "vulnAlert": false,
+        "patchAlert": false,
+        "discriminated": false
+      },
+      "sampleFinding": null
+    },
+    {
+      "caseId": "P5-027",
+      "panel": "B (ReDoS)",
+      "package": "ansi-regex",
+      "cve": "CVE-2021-3807",
+      "rule": "Y-REDOS-001",
+      "file": "index.js",
+      "vulnerableSha": "0a8cc199",
+      "fixSha": "419250fa",
+      "vAlert": false,
+      "pAlert": false,
+      "discriminated": false,
+      "category": "FN",
+      "vFindingCount": 0,
+      "pFindingCount": 0,
+      "codeqlBaseline": {
+        "vulnAlert": false,
+        "patchAlert": false,
+        "discriminated": false
+      },
+      "sampleFinding": null
+    },
+    {
+      "caseId": "P5-028",
+      "panel": "B (ReDoS)",
+      "package": "braces",
+      "cve": "CVE-2024-4068",
+      "rule": "Y-REDOS-001",
+      "file": "index.js",
+      "vulnerableSha": "190510f7",
+      "fixSha": "415d660c",
+      "vAlert": false,
+      "pAlert": false,
+      "discriminated": false,
+      "category": "FN",
+      "vFindingCount": 0,
+      "pFindingCount": 0,
+      "codeqlBaseline": {
+        "vulnAlert": null,
+        "patchAlert": null,
+        "discriminated": false
+      },
+      "sampleFinding": null
+    },
+    {
+      "caseId": "P5-030",
+      "panel": "B (ReDoS)",
+      "package": "semver",
+      "cve": "CVE-2022-25883",
+      "rule": "Y-REDOS-001",
+      "file": "semver.js",
+      "vulnerableSha": "deb5ad51",
+      "fixSha": "2f8fd414",
+      "vAlert": false,
+      "pAlert": false,
+      "discriminated": false,
+      "category": "FN",
+      "vFindingCount": 0,
+      "pFindingCount": 0,
+      "codeqlBaseline": {
+        "vulnAlert": null,
+        "patchAlert": null,
+        "discriminated": false
+      },
+      "sampleFinding": null
+    },
+    {
+      "caseId": "P5-031",
+      "panel": "B (ReDoS)",
+      "package": "semver",
+      "cve": "CVE-2015-8855",
+      "rule": "Y-REDOS-001",
+      "file": "semver.js",
+      "vulnerableSha": "a685e01b",
+      "fixSha": "5c4c9f6e",
+      "vAlert": false,
+      "pAlert": false,
+      "discriminated": false,
+      "category": "FN",
+      "vFindingCount": 0,
+      "pFindingCount": 0,
+      "codeqlBaseline": {
+        "vulnAlert": true,
+        "patchAlert": true,
+        "discriminated": false
+      },
+      "sampleFinding": null
+    },
+    {
+      "caseId": "P5-039",
+      "panel": "B (ReDoS)",
+      "package": "debug",
+      "cve": "CVE-2017-20165",
+      "rule": "Y-REDOS-001",
+      "file": "src/node.js",
+      "vulnerableSha": "47747f32",
+      "fixSha": "c38a0166",
+      "vAlert": false,
+      "pAlert": false,
+      "discriminated": false,
+      "category": "FN",
+      "vFindingCount": 0,
+      "pFindingCount": 0,
+      "codeqlBaseline": {
+        "vulnAlert": null,
+        "patchAlert": null,
+        "discriminated": false
+      },
+      "sampleFinding": null
+    }
+  ],
+  "controls": [
+    {
+      "controlId": "CTRL-01",
+      "panel": "C (Control)",
+      "package": "axios",
+      "file": "lib/adapters/http.js",
+      "sha": "d19040bd",
+      "hasAlert": false,
+      "findingCount": 0,
+      "category": "TN",
+      "findings": []
+    },
+    {
+      "controlId": "CTRL-02",
+      "panel": "C (Control)",
+      "package": "node-fetch",
+      "file": "src/index.js",
+      "sha": "1ef4b560",
+      "hasAlert": false,
+      "findingCount": 0,
+      "category": "TN",
+      "findings": []
+    },
+    {
+      "controlId": "CTRL-03",
+      "panel": "C (Control)",
+      "package": "jsonwebtoken",
+      "file": "index.js",
+      "sha": "1bb584bc",
+      "hasAlert": true,
+      "findingCount": 1,
+      "category": "FP",
+      "findings": [
+        {
+          "ruleId": "Y-PROTO-001",
+          "cwe": "CWE-1321",
+          "verdict": "CONFIRMED",
+          "confidence": "HIGH",
+          "title": "Unsafe recursive object-property assignment (Prototype Pollution)",
+          "file": "index.js",
+          "line": 36,
+          "snippet": "header[k] = options.header[k];",
+          "proofWitness": {
+            "sourceLocation": {
+              "file": "index.js",
+              "line": 35,
+              "symbol": "k"
+            },
+            "sinkLocation": {
+              "file": "index.js",
+              "line": 36,
+              "symbol": "k"
+            },
+            "violatedInvariant": "Key must not resolve to __proto__, constructor, or prototype before assignment",
+            "missingGuard": "Complete guard (filtering __proto__, constructor, and prototype) not found"
+          }
+        }
+      ]
+    },
+    {
+      "controlId": "CTRL-04",
+      "panel": "C (Control)",
+      "package": "nodemailer",
+      "file": "lib/nodemailer.js",
+      "sha": "ba31c64c",
+      "hasAlert": false,
+      "findingCount": 0,
+      "category": "TN",
+      "findings": []
+    },
+    {
+      "controlId": "CTRL-05",
+      "panel": "C (Control)",
+      "package": "ejs",
+      "file": "lib/ejs.js",
+      "sha": "49264e00",
+      "hasAlert": true,
+      "findingCount": 1,
+      "category": "FP",
+      "findings": [
+        {
+          "ruleId": "Y-PROTO-001",
+          "cwe": "CWE-1321",
+          "verdict": "CONFIRMED",
+          "confidence": "HIGH",
+          "title": "Unsafe recursive object-property assignment (Prototype Pollution)",
+          "file": "lib/ejs.js",
+          "line": 282,
+          "snippet": "opts[p] = data[p];",
+          "proofWitness": {
+            "sourceLocation": {
+              "file": "lib/ejs.js",
+              "line": 275,
+              "symbol": "p"
+            },
+            "sinkLocation": {
+              "file": "lib/ejs.js",
+              "line": 282,
+              "symbol": "p"
+            },
+            "violatedInvariant": "Key must not resolve to __proto__, constructor, or prototype before assignment",
+            "missingGuard": "Complete guard (filtering __proto__, constructor, and prototype) not found"
+          }
+        }
+      ]
+    },
+    {
+      "controlId": "CTRL-06",
+      "panel": "C (Control)",
+      "package": "body-parser",
+      "file": "lib/types/urlencoded.js",
+      "sha": "b2695c44",
+      "hasAlert": false,
+      "findingCount": 0,
+      "category": "TN",
+      "findings": []
+    },
+    {
+      "controlId": "CTRL-07",
+      "panel": "C (Control)",
+      "package": "socket.io",
+      "file": "lib/manager.js",
+      "sha": "67b4eb9a",
+      "hasAlert": true,
+      "findingCount": 1,
+      "category": "FP",
+      "findings": [
+        {
+          "ruleId": "Y-PROTO-001",
+          "cwe": "CWE-1321",
+          "verdict": "CONFIRMED",
+          "confidence": "HIGH",
+          "title": "Unsafe recursive object-property assignment (Prototype Pollution)",
+          "file": "lib/manager.js",
+          "line": 96,
+          "snippet": "this.settings[i] = options[i];",
+          "proofWitness": {
+            "sourceLocation": {
+              "file": "lib/manager.js",
+              "line": 95,
+              "symbol": "i"
+            },
+            "sinkLocation": {
+              "file": "lib/manager.js",
+              "line": 96,
+              "symbol": "i"
+            },
+            "violatedInvariant": "Key must not resolve to __proto__, constructor, or prototype before assignment",
+            "missingGuard": "Complete guard (filtering __proto__, constructor, and prototype) not found"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{"block":"counterexample","id":"CE-01","family":"PROTOTYPE_POLLUTION","ruleId":"Y-PROTO-001","fired":true,"verdicts":["CANDIDATE"],"confidence":["LOW"],"forbidConfirmed":true,"hasConfirmed":false,"pass":true}
+{"block":"counterexample","id":"CE-02","family":"PROTOTYPE_POLLUTION","ruleId":"Y-PROTO-001","fired":true,"verdicts":["CANDIDATE"],"confidence":["MEDIUM"],"forbidConfirmed":true,"hasConfirmed":false,"pass":true}
+{"block":"counterexample","id":"CE-03","family":"PROTOTYPE_POLLUTION","ruleId":"Y-PROTO-001","fired":true,"verdicts":["CANDIDATE"],"confidence":["LOW"],"forbidConfirmed":true,"hasConfirmed":false,"pass":true}
+{"block":"counterexample","id":"CE-04","family":"REDOS","ruleId":"Y-REDOS-001","fired":true,"verdicts":["CONFIRMED"],"confidence":["HIGH"],"forbidConfirmed":false,"hasConfirmed":true,"pass":true}
+{"block":"counterexample","id":"CE-05","family":"REDOS","ruleId":"Y-REDOS-001","fired":true,"verdicts":["CANDIDATE"],"confidence":["MEDIUM"],"forbidConfirmed":false,"hasConfirmed":false,"pass":true}
+{"block":"regression","id":"REG-deep-extend","package":"deep-extend","file":"lib/deep-extend.js","ruleId":"Y-PROTO-001","findingCount":9,"confirmed":true,"candidateOnly":false,"verdicts":["CANDIDATE","CONFIRMED"],"diagnostic":false,"readError":null,"pass":true}
+{"block":"regression","id":"REG-mixin-deep","package":"mixin-deep","file":"index.js","ruleId":"Y-PROTO-001","findingCount":3,"confirmed":true,"candidateOnly":false,"verdicts":["CONFIRMED","CANDIDATE"],"diagnostic":false,"readError":null,"pass":true}
+{"block":"regression","id":"REG-json5","package":"json5","file":"src/parse.js","ruleId":"Y-PROTO-001","findingCount":1,"confirmed":true,"candidateOnly":false,"verdicts":["CONFIRMED"],"diagnostic":false,"readError":null,"pass":true}
+{"block":"regression","id":"REG-tough-cookie","package":"tough-cookie","file":"lib/cookie.js","ruleId":"Y-REDOS-001","findingCount":2,"confirmed":true,"candidateOnly":false,"verdicts":["CONFIRMED"],"diagnostic":false,"readError":null,"pass":true}
+{"block":"regression","id":"REG-cross-spawn","package":"cross-spawn","file":"lib/util/escape.js","ruleId":"Y-REDOS-001","findingCount":2,"confirmed":true,"candidateOnly":false,"verdicts":["CONFIRMED"],"diagnostic":false,"readError":null,"pass":true}
+{"block":"benign_control","id":"BEN-shallow-copy","note":"shallow property copy on plain dictionary","findingCount":1,"confirmedCount":0,"verdicts":["CANDIDATE"],"pass":true}
+{"block":"benign_control","id":"BEN-null-proto","note":"null-prototype object map","findingCount":1,"confirmedCount":0,"verdicts":["CANDIDATE"],"pass":true}
+{"block":"benign_control","id":"BEN-regex-anchored","note":"anchored linear regex","findingCount":0,"confirmedCount":0,"verdicts":[],"pass":true}
+{"block":"benign_control","id":"BEN-regex-bounded","note":"bounded quantifier without nesting","findingCount":0,"confirmedCount":0,"verdicts":[],"pass":true}
+{"block":"benign_control","id":"BEN-guarded-merge","note":"full prototype guard","findingCount":0,"confirmedCount":0,"verdicts":[],"pass":true}
+{"block":"unknown","id":"UNK-comment-only","crashed":false,"findingCount":0,"confirmedCount":0,"pass":true}
+{"block":"unknown","id":"UNK-empty","crashed":false,"findingCount":0,"confirmedCount":0,"pass":true}
+{"block":"unknown","id":"UNK-partial-syntax","crashed":false,"findingCount":0,"confirmedCount":0,"pass":true}
+{"block":"determinism","id":"DET-ce-repeat","runsCompared":2,"stable":true,"pass":true}

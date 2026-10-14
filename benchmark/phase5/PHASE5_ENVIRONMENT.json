@@ -1,0 +1,103 @@
+{
+  "phase": "Phase 5 — Real-World Vulnerability Benchmark (Pilot 50)",
+  "schemaVersion": "1.0.0",
+  "createdAt": "2026-10-09T03:18:00Z",
+  "experimentStatus": "IN_PROGRESS",
+
+  "frozenEngines": {
+    "sentinelAuditCoreRuntime": {
+      "sha": "012e095b583f6f1c4295eb4feea91456bc9321c2",
+      "role": "Frozen detection engine v1.1.0 — MUST NOT change during campaign"
+    },
+    "sentinelAuditHarnessAndArtifacts": {
+      "sha": "ea8f667405d91fd281d8ed62b0f03ba3fdb78d0d",
+      "role": "Phase 2–5 evaluation harnesses (sentinel-audit main)"
+    },
+    "sentinelCli": {
+      "sha": "ae10c223db766a041cb8a3dda561485769b47877",
+      "role": "Local SAST engine"
+    },
+    "sentinelOracle": {
+      "sha": "292123e1e2be22781c0184eb444c1b6be9f1840a",
+      "role": "PR policy + lite scanner"
+    },
+    "sentinelCloudClient": {
+      "sha": "924d25d2",
+      "role": "Transport layer"
+    },
+    "sentinelCloud": {
+      "sha": "ebc469a",
+      "role": "Hosted intelligence backend"
+    },
+    "sentinelEcosystem": {
+      "sha": "dbf9cb67e32e134072bacfbf12b3d6f66b7f76ac",
+      "role": "Blueprint + governance (local only, no remote)"
+    }
+  },
+
+  "runtimeEnvironment": {
+    "os": "Windows",
+    "nodeVersion": "v24.13.1",
+    "npmVersion": "11.8.0",
+    "gitVersion": "2.53.0.windows.1"
+  },
+
+  "experimentDesign": {
+    "corpusTarget": 50,
+    "expandTarget": 200,
+    "primaryEcosystem": "npm",
+    "secondaryEcosystems": ["maven", "pypi"],
+    "groundTruthClasses": [
+      "VERIFIED_VULNERABLE",
+      "VERIFIED_PATCHED",
+      "INSUFFICIENT_GROUND_TRUTH",
+      "AMBIGUOUS_PATCH"
+    ],
+    "primaryConfusionMatrix": "VERIFIED_VULNERABLE + VERIFIED_PATCHED only",
+    "verdictLabels": {
+      "truePositive": "TP_VULNERABLE — Sentinel alerts on vulnerable revision",
+      "falseNegative": "FN_VULNERABLE — Sentinel misses on vulnerable revision",
+      "alertPatched": "ALERT_PATCHED — Sentinel alerts on patched revision (false positive for this CVE)",
+      "cleanPatched": "CLEAN_PATCHED — Sentinel clean on patched revision (true negative for this CVE)"
+    },
+    "measurementGroups": [
+      "code_vulnerabilities — Sentinel finds the defect in source",
+      "dependency_vulnerabilities — Sentinel flags the affected version"
+    ],
+    "noCodeExecution": true,
+    "allowedOperations": ["git clone --no-checkout", "git checkout <sha>", "static file read"],
+    "forbiddenOperations": ["npm install", "npm run", "mvn", "gradle", "node <script>", "execute binaries"]
+  },
+
+  "sources": {
+    "githubAdvisoryDatabase": "https://github.com/advisories",
+    "osvDev": "https://api.osv.dev/v1/",
+    "githubSecurityLab": "https://securitylab.github.com/advisories/",
+    "cveFixes": "https://github.com/secureIT-project/CVEfixes"
+  },
+
+  "pilotAcceptanceGates": [
+    "G1: All 50 manifest entries have advisory ID, vulnerable SHA, fix SHA, affected file paths",
+    "G2: All vulnerable-revision clones completed without code execution",
+    "G3: All patched-revision clones completed without code execution",
+    "G4: Sentinel Audit ran on all 50 vulnerable revisions producing routing/decisions.json",
+    "G5: Sentinel Audit ran on all 50 patched revisions producing routing/decisions.json",
+    "G6: PHASE5_RESULTS.jsonl contains 100 records (50 vulnerable + 50 patched)",
+    "G7: PHASE5_METRICS.json arithmetic verified independently",
+    "G8: No frozen engine SHA changed between corpus build and final scan"
+  ],
+
+  "outputFiles": {
+    "manifest": "PHASE5_MANIFEST.json",
+    "results": "PHASE5_RESULTS.jsonl",
+    "metrics": "PHASE5_METRICS.json",
+    "environment": "PHASE5_ENVIRONMENT.json",
+    "errors": "PHASE5_ERRORS.jsonl",
+    "groundTruth": "PHASE5_GROUND_TRUTH.json",
+    "summary": "PHASE5_SUMMARY.md"
+  },
+
+  "llmCalls": 0,
+  "tokensConsumed": 0,
+  "notes": "Engine freeze is absolute. If any engine must change, create a new experimental version and new campaign. Never overwrite Phase 1–4 artifacts."
+}

@@ -1,0 +1,463 @@
+{
+  "phase": "Phase Y1 — Discovery Cohort (N=26 Missed Vulnerabilities)",
+  "generatedAt": "2026-10-09T18:39:19.530Z",
+  "totalCases": 26,
+  "operationalExclusionsCount": 3,
+  "operationalExclusions": [
+    "P5-003",
+    "P5-006",
+    "P5-050"
+  ],
+  "cases": [
+    {
+      "id": "P5-002",
+      "packageName": "vm2",
+      "advisoryId": "GHSA-248r-7h7q-cr24",
+      "cves": [
+        "CVE-2026-45411"
+      ],
+      "cwe": "CWE-668",
+      "summary": "vm2 Has a Sandbox Breakout Using Async Generator",
+      "repoUrl": "https://github.com/patriksimek/vm2",
+      "vulnerableSha": "7a552e89e88bf34e0c3a33916aa7900efd9fd2f4",
+      "fixSha": "093494c0c3ef2390d2e56909f9d56e290e6f18b0",
+      "affectedSourceFiles": [
+        "lib/setup-sandbox.js",
+        "package.json",
+        "test/ghsa/GHSA-248r-7h7q-cr24/repro.js"
+      ]
+    },
+    {
+      "id": "P5-008",
+      "packageName": "sequelize",
+      "advisoryId": "GHSA-2598-2f59-rmhq",
+      "cves": [
+        "CVE-2019-10749"
+      ],
+      "cwe": "CWE-89",
+      "summary": "SQL Injection in sequelize",
+      "repoUrl": "https://github.com/sequelize/sequelize",
+      "vulnerableSha": "75c1fdbc676d73a28a5e0bca49b2a6d4a9f8708c",
+      "fixSha": "ee4017379db0059566ecb5424274ad4e2d66bc68",
+      "affectedSourceFiles": [
+        "lib/dialects/abstract/query-generator.js"
+      ]
+    },
+    {
+      "id": "P5-010",
+      "packageName": "jsonwebtoken",
+      "advisoryId": "GHSA-c7hr-j4mj-j2w6",
+      "cves": [
+        "CVE-2015-9235"
+      ],
+      "cwe": "CWE-20",
+      "summary": "Verification Bypass in jsonwebtoken",
+      "repoUrl": "https://github.com/auth0/node-jsonwebtoken",
+      "vulnerableSha": "f9f3c34f8478b1b81070bf0a6da3fd48f2ee70be",
+      "fixSha": "1bb584bc382295eeb7ee8c4452a673a77a68b687",
+      "affectedSourceFiles": [
+        "index.js",
+        "test/wrong_alg.tests.js"
+      ]
+    },
+    {
+      "id": "P5-011",
+      "packageName": "minimist",
+      "advisoryId": "GHSA-xvch-5gv4-984h",
+      "cves": [
+        "CVE-2021-44906"
+      ],
+      "cwe": "CWE-1321",
+      "summary": "Prototype Pollution in minimist",
+      "repoUrl": "https://github.com/minimistjs/minimist",
+      "vulnerableSha": "c0b26618322e94adea26c68e613ef0be482c6c63",
+      "fixSha": "34e20b8461118608703d6485326abbb8e35e1703",
+      "affectedSourceFiles": [
+        "index.js"
+      ]
+    },
+    {
+      "id": "P5-013",
+      "packageName": "deep-extend",
+      "advisoryId": "GHSA-hr2v-3952-633q",
+      "cves": [
+        "CVE-2018-3750"
+      ],
+      "cwe": "CWE-20",
+      "summary": "Prototype Pollution in deep-extend",
+      "repoUrl": "https://github.com/unclechu/node-deep-extend",
+      "vulnerableSha": "9653940a75c2ef2b1a503b24cbadd707cccffa8c",
+      "fixSha": "9423fae877e2ab6b4aecc4db79a0ed63039d4703",
+      "affectedSourceFiles": [
+        "lib/deep-extend.js",
+        "test/index.spec.js"
+      ]
+    },
+    {
+      "id": "P5-014",
+      "packageName": "set-value",
+      "advisoryId": "GHSA-4g88-fppr-53pp",
+      "cves": [
+        "CVE-2019-10747"
+      ],
+      "cwe": "CWE-1321",
+      "summary": "Prototype Pollution in set-value",
+      "repoUrl": "https://github.com/jonschlinkert/set-value",
+      "vulnerableSha": "7bd5011d82e583305a191a9a062abfe177ec29ad",
+      "fixSha": "95e9d9923f8a8b4a01da1ea138fcc39ec7b6b15f",
+      "affectedSourceFiles": [
+        "index.js",
+        "package.json"
+      ]
+    },
+    {
+      "id": "P5-015",
+      "packageName": "mixin-deep",
+      "advisoryId": "GHSA-fhjf-83wg-r2j9",
+      "cves": [
+        "CVE-2019-10746"
+      ],
+      "cwe": "CWE-88",
+      "summary": "Prototype Pollution in mixin-deep",
+      "repoUrl": "https://github.com/jonschlinkert/mixin-deep",
+      "vulnerableSha": "9925af763440a50891358d00db0e6a5accc50ee6",
+      "fixSha": "8f464c8ce9761a8c9c2b3457eaeee9d404fa7af9",
+      "affectedSourceFiles": [
+        "index.js",
+        "package.json"
+      ]
+    },
+    {
+      "id": "P5-016",
+      "packageName": "json-pointer",
+      "advisoryId": "GHSA-6xrf-q977-5vgc",
+      "cves": [
+        "CVE-2022-4742"
+      ],
+      "cwe": "CWE-1321",
+      "summary": "json-pointer vulnerable to Prototype Pollution",
+      "repoUrl": "https://github.com/manuelstofer/json-pointer",
+      "vulnerableSha": "9b5ea8e3b20f9e3065860cf3b018b47708e8794d",
+      "fixSha": "859c9984b6c407fc2d5a0a7e47c7274daa681941",
+      "affectedSourceFiles": [
+        "index.js",
+        "test/test.js"
+      ]
+    },
+    {
+      "id": "P5-020",
+      "packageName": "moment",
+      "advisoryId": "GHSA-446m-mv8f-q348",
+      "cves": [
+        "CVE-2017-18214"
+      ],
+      "cwe": "CWE-400",
+      "summary": "Regular Expression Denial of Service in moment",
+      "repoUrl": "https://github.com/moment/moment",
+      "vulnerableSha": "328d51e7235b7a2d443bfdf69c1844939c115660",
+      "fixSha": "69ed9d44957fa6ab12b73d2ae29d286a857b80eb",
+      "affectedSourceFiles": [
+        "min/moment-with-locales.js",
+        "moment.js",
+        "src/lib/parse/regex.js"
+      ]
+    },
+    {
+      "id": "P5-021",
+      "packageName": "moment",
+      "advisoryId": "GHSA-8hfj-j24r-96c4",
+      "cves": [
+        "CVE-2022-24785"
+      ],
+      "cwe": "CWE-22",
+      "summary": "Path Traversal: 'dir/../../filename' in moment.locale",
+      "repoUrl": "https://github.com/moment/moment",
+      "vulnerableSha": "f2a813afcfd0dd6e63812ea74c46ecc627f6a6a6",
+      "fixSha": "4211bfc8f15746be4019bba557e29a7ba83d54c5",
+      "affectedSourceFiles": [
+        "src/lib/locale/locales.js"
+      ]
+    },
+    {
+      "id": "P5-022",
+      "packageName": "serialize-javascript",
+      "advisoryId": "GHSA-5c6j-r48x-rmvq",
+      "cves": [],
+      "cwe": "CWE-96",
+      "summary": "Serialize JavaScript is Vulnerable to RCE via RegExp.flags and Date.prototype.toISOString()",
+      "repoUrl": "https://github.com/yahoo/serialize-javascript",
+      "vulnerableSha": "42b7cdbf32c289f42d7d9247fd3261dc7550e9ce",
+      "fixSha": "2e609d0a9f4f5b097f0945af88bd45b9c7fb48d9",
+      "affectedSourceFiles": [
+        "index.js",
+        "test/unit/serialize.js"
+      ]
+    },
+    {
+      "id": "P5-027",
+      "packageName": "ansi-regex",
+      "advisoryId": "GHSA-93q8-gq69-wqmw",
+      "cves": [
+        "CVE-2021-3807"
+      ],
+      "cwe": "CWE-1333",
+      "summary": "Inefficient Regular Expression Complexity in chalk/ansi-regex",
+      "repoUrl": "https://github.com/chalk/ansi-regex",
+      "vulnerableSha": "0a8cc19946c03c38520fe8c086b8adb66f9cce0b",
+      "fixSha": "419250fa510bf31b4cc672e76537a64f9332e1f1",
+      "affectedSourceFiles": [
+        "index.js"
+      ]
+    },
+    {
+      "id": "P5-029",
+      "packageName": "json5",
+      "advisoryId": "GHSA-9c47-m6qq-7p4h",
+      "cves": [
+        "CVE-2022-46175"
+      ],
+      "cwe": "CWE-1321",
+      "summary": "Prototype Pollution in JSON5 via Parse Method",
+      "repoUrl": "https://github.com/json5/json5",
+      "vulnerableSha": "072eb402fc107a2f568ba78962d3d99de95032a9",
+      "fixSha": "62a65408408d40aeea14c7869ed327acead12972",
+      "affectedSourceFiles": [
+        "src/parse.js",
+        "test/parse.js"
+      ]
+    },
+    {
+      "id": "P5-031",
+      "packageName": "semver",
+      "advisoryId": "GHSA-x6fg-f45m-jf5q",
+      "cves": [
+        "CVE-2015-8855"
+      ],
+      "cwe": "CWE-1333",
+      "summary": "Regular Expression Denial of Service in semver",
+      "repoUrl": "https://github.com/npm/node-semver",
+      "vulnerableSha": "a685e01b206b512c5f17d04ed854b0ea70a44f3a",
+      "fixSha": "5c4c9f6e26c7052a42b5ced2a7481c5c9b4363a0",
+      "affectedSourceFiles": [
+        "semver.js"
+      ]
+    },
+    {
+      "id": "P5-033",
+      "packageName": "tough-cookie",
+      "advisoryId": "GHSA-g7q5-pjjr-gqvp",
+      "cves": [
+        "CVE-2017-15010"
+      ],
+      "cwe": "CWE-400",
+      "summary": "Regular Expression Denial of Service in tough-cookie",
+      "repoUrl": "https://github.com/salesforce/tough-cookie",
+      "vulnerableSha": "fcc8abfa3d3cab4f99da38f3f3749b1b186eb5a4",
+      "fixSha": "f1ed420a6a92ea7a5418df6e39e676556bc0c71d",
+      "affectedSourceFiles": [
+        "lib/cookie.js",
+        "test/parsing_test.js"
+      ]
+    },
+    {
+      "id": "P5-036",
+      "packageName": "sequelize",
+      "advisoryId": "GHSA-2777-2vq8-c4v4",
+      "cves": [
+        "CVE-2019-11069"
+      ],
+      "cwe": "CWE-20",
+      "summary": "SQL Injection in sequelize",
+      "repoUrl": "https://github.com/sequelize/sequelize",
+      "vulnerableSha": "7c3c18a9e56a801b9122441a44e658ebff1b2bf1",
+      "fixSha": "850c7fd04669e0fef9238b6dc4f8d6ee93ed71e9",
+      "affectedSourceFiles": [
+        "lib/dialects/abstract/connection-manager.js",
+        "lib/dialects/postgres/connection-manager.js"
+      ]
+    },
+    {
+      "id": "P5-037",
+      "packageName": "jsonwebtoken",
+      "advisoryId": "GHSA-8cf7-32gw-wr33",
+      "cves": [
+        "CVE-2022-23539"
+      ],
+      "cwe": "CWE-327",
+      "summary": "jsonwebtoken unrestricted key type could lead to legacy keys usage ",
+      "repoUrl": "https://github.com/auth0/node-jsonwebtoken",
+      "vulnerableSha": "5eaedbf2b01676d952336e73b4d2efba847d2d1b",
+      "fixSha": "e1fa9dcc12054a8681db4e6373da1b30cf7016e3",
+      "affectedSourceFiles": [
+        "lib/asymmetricKeyDetailsSupported.js",
+        "lib/rsaPssKeyDetailsSupported.js",
+        "lib/validateAsymmetricKey.js",
+        "package.json",
+        "sign.js",
+        "test/jwt.asymmetric_signing.tests.js",
+        "test/schema.tests.js",
+        "test/validateAsymmetricKey.tests.js",
+        "test/verify.tests.js",
+        "verify.js"
+      ]
+    },
+    {
+      "id": "P5-038",
+      "packageName": "async",
+      "advisoryId": "GHSA-fwr7-v2mv-hh25",
+      "cves": [
+        "CVE-2021-43138"
+      ],
+      "cwe": "CWE-1321",
+      "summary": "Prototype Pollution in async",
+      "repoUrl": "https://github.com/caolan/async",
+      "vulnerableSha": "f1d8383bb118366f652f26a5096f106b88344ceb",
+      "fixSha": "8f7f90342a6571ba1c197d747ebed30c368096d2",
+      "affectedSourceFiles": [
+        "lib/internal/iterator.js",
+        "mocha_test/mapValues.js"
+      ]
+    },
+    {
+      "id": "P5-041",
+      "packageName": "cross-spawn",
+      "advisoryId": "GHSA-3xgq-45jj-v275",
+      "cves": [
+        "CVE-2024-21538"
+      ],
+      "cwe": "CWE-1333",
+      "summary": "Regular Expression Denial of Service (ReDoS) in cross-spawn",
+      "repoUrl": "https://github.com/moxystudio/node-cross-spawn",
+      "vulnerableSha": "9521e2da94d94998f948e0455903e62d87884600",
+      "fixSha": "5ff3a07d9add449021d806e45c4168203aa833ff",
+      "affectedSourceFiles": [
+        "lib/util/escape.js"
+      ]
+    },
+    {
+      "id": "P5-042",
+      "packageName": "body-parser",
+      "advisoryId": "GHSA-qwcr-r2fm-qrc7",
+      "cves": [
+        "CVE-2024-45590"
+      ],
+      "cwe": "CWE-405",
+      "summary": "body-parser vulnerable to denial of service when url encoding is enabled",
+      "repoUrl": "https://github.com/expressjs/body-parser",
+      "vulnerableSha": "ade0f3f82f91086d6cd2ed2cb4b0aff448fbc2e5",
+      "fixSha": "b2695c4450f06ba3b0ccf48d872a229bb41c9bce",
+      "affectedSourceFiles": [
+        "lib/types/urlencoded.js",
+        "package.json",
+        "test/urlencoded.js"
+      ]
+    },
+    {
+      "id": "P5-043",
+      "packageName": "multer",
+      "advisoryId": "GHSA-44fp-w29j-9vj5",
+      "cves": [
+        "CVE-2025-47935"
+      ],
+      "cwe": "CWE-401",
+      "summary": "Multer vulnerable to Denial of Service via memory leaks from unclosed streams",
+      "repoUrl": "https://github.com/expressjs/multer",
+      "vulnerableSha": "bde1822c232dd7ab2da3d542914d9927cc1675fa",
+      "fixSha": "2c8505f207d923dd8de13a9f93a4563e59933665",
+      "affectedSourceFiles": [
+        "lib/make-middleware.js",
+        "package.json",
+        "test/express-integration.js"
+      ]
+    },
+    {
+      "id": "P5-044",
+      "packageName": "multer",
+      "advisoryId": "GHSA-4pg4-qvpc-4q3h",
+      "cves": [
+        "CVE-2025-47944"
+      ],
+      "cwe": "CWE-248",
+      "summary": "Multer vulnerable to Denial of Service from maliciously crafted requests",
+      "repoUrl": "https://github.com/expressjs/multer",
+      "vulnerableSha": "bde1822c232dd7ab2da3d542914d9927cc1675fa",
+      "fixSha": "2c8505f207d923dd8de13a9f93a4563e59933665",
+      "affectedSourceFiles": [
+        "lib/make-middleware.js",
+        "package.json",
+        "test/express-integration.js"
+      ]
+    },
+    {
+      "id": "P5-046",
+      "packageName": "nodemailer",
+      "advisoryId": "GHSA-2x7j-588g-ccc2",
+      "cves": [
+        "CVE-2026-92596"
+      ],
+      "cwe": "CWE-400",
+      "summary": "Nodemailer: Quadratic (O(n²)) time complexity in addressparser allows remote denial of service via a crafted address list",
+      "repoUrl": "https://github.com/nodemailer/nodemailer",
+      "vulnerableSha": "7279ac8dee4f66c032981e6e51e3e7210ad0dcbf",
+      "fixSha": "34da64282dcdc9b0581c721a27ab2fa226673150",
+      "affectedSourceFiles": [
+        "lib/mime-node/index.js",
+        "test/mime-node/mime-node-test.js"
+      ]
+    },
+    {
+      "id": "P5-047",
+      "packageName": "xmldom",
+      "advisoryId": "GHSA-27p8-2357-5qqv",
+      "cves": [
+        "CVE-2026-83608"
+      ],
+      "cwe": "CWE-91",
+      "summary": "xmldom: DocType `name` Injection Bypasses requireWellFormed",
+      "repoUrl": "https://github.com/xmldom/xmldom",
+      "vulnerableSha": "b09382a9286da3c717e209fe4681ab5a22966eef",
+      "fixSha": "57aec90ac57b4408ae7c5d1746bf2a693b5ed90e",
+      "affectedSourceFiles": [
+        "index.d.ts",
+        "lib/dom.js",
+        "lib/grammar.js",
+        "test/dom/serializer.test.js",
+        "test/grammar/regexp.js"
+      ]
+    },
+    {
+      "id": "P5-048",
+      "packageName": "xmldom",
+      "advisoryId": "GHSA-2v35-w6hq-6mfw",
+      "cves": [
+        "CVE-2026-41673"
+      ],
+      "cwe": "CWE-674",
+      "summary": "xmldom: Uncontrolled recursion in XML serialization leads to DoS",
+      "repoUrl": "https://github.com/xmldom/xmldom",
+      "vulnerableSha": "19e39ffab0e8cd00dce68ede6906772acdfb4f33",
+      "fixSha": "17678a2a73ecbd1a2da90f3d47dc23da9cef81aa",
+      "affectedSourceFiles": [
+        "lib/dom.js"
+      ]
+    },
+    {
+      "id": "P5-049",
+      "packageName": "xmldom",
+      "advisoryId": "GHSA-4w3w-2rp5-g8jm",
+      "cves": [
+        "CVE-2026-83605"
+      ],
+      "cwe": "CWE-91",
+      "summary": "xmldom: Attribute name injection via setAttribute() bypasses requireWellFormed",
+      "repoUrl": "https://github.com/xmldom/xmldom",
+      "vulnerableSha": "73df6b8bdbd86f904b9e8c3ab9c49aa54ef2802e",
+      "fixSha": "cba1321218b069182695813fa7565653708e172e",
+      "affectedSourceFiles": [
+        "index.d.ts",
+        "lib/dom.js",
+        "test/dom/serializer.test.js"
+      ]
+    }
+  ]
+}

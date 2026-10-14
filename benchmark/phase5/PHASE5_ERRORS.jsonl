@@ -1,0 +1,8 @@
+{"ts":"2026-10-09T03:36:07.265Z","phase":"clone","repoUrl":"https://github.com/vercel/next.js","error":"Cloning into bare repository 'C:\\Users\\sleyt\\sentinel-audit\\benchmark\\phase5\\clones\\vercel_next.js'...\n"}
+{"ts":"2026-10-09T03:36:07.267Z","phase":"filter_clone","advisory":"GHSA-2xp9-vwfh-vxw4","reason":"clone_failed"}
+{"ts":"2026-10-09T03:49:05.129Z","phase":"checkout","id":"P5-003","revision":"vulnerable","sha":"fe2fcca2a1e693548993eccc624489dc4cb586b4","reason":"worktree_failed"}
+{"ts":"2026-10-09T03:49:13.889Z","phase":"checkout","id":"P5-004","revision":"vulnerable","sha":"9ecd4d2956fd915507eca018ddc1fea727fbba93","reason":"worktree_failed"}
+{"ts":"2026-10-09T03:49:15.073Z","phase":"checkout","id":"P5-004","revision":"patched","sha":"2812e9338665659b183aa7226518c307044957d3","reason":"worktree_failed"}
+{"ts":"2026-10-09T03:50:26.905Z","phase":"checkout","id":"P5-003","revision":"vulnerable","sha":"fe2fcca2a1e693548993eccc624489dc4cb586b4","reason":"worktree_failed"}
+{"ts":"2026-10-09T03:50:46.736Z","phase":"checkout","id":"P5-006","revision":"vulnerable","sha":"cc10e0dc441f469330c1af2822d171fcd6fa8f89","reason":"worktree_failed"}
+{"ts":"2026-10-09T03:59:49.696Z","phase":"checkout","id":"P5-050","revision":"vulnerable","sha":"1c199a5e4a158685007c006820e6eaec94796528","reason":"worktree_failed"}

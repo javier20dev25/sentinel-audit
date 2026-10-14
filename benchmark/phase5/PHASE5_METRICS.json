@@ -1,0 +1,228 @@
+{
+  "phase": "Phase 5 — Real-World Vulnerability Benchmark (Pilot 50)",
+  "timestamp": "2026-10-09T18:06:11.391Z",
+  "evaluationSummary": {
+    "totalVulnerabilitiesEvaluated": 50,
+    "totalRevisionsScanned": 100,
+    "vulnerableRevisions": 50,
+    "patchedRevisions": 50
+  },
+  "vulnerableRevisionMetrics": {
+    "TP": 21,
+    "FN": 26,
+    "errors": 3,
+    "detectionRateStrict": 0.44680851063829785,
+    "detectionRatePercentage": "44.68%"
+  },
+  "patchedRevisionMetrics": {
+    "ALERT_PATCHED": 24,
+    "CLEAN_PATCHED": 26,
+    "errors": 0,
+    "patchedAlertRate": 0.48,
+    "patchedAlertRatePercentage": "48.00%",
+    "patchedCleanRate": 0.52,
+    "patchedCleanRatePercentage": "52.00%"
+  },
+  "pairedDiscriminationMetrics": {
+    "pairedBothCorrect": 0,
+    "pairedBothAlerted": 21,
+    "pairedBothClean": 25,
+    "pairedInverted": 1,
+    "pairedDiscriminationRate": 0,
+    "pairedDiscriminationPercentage": "0.00%"
+  },
+  "breakdownBySeverity": {
+    "CRITICAL": {
+      "total": 14,
+      "tp": 6,
+      "fn": 8,
+      "detectionRate": 0.42857142857142855
+    },
+    "UNKNOWN": {
+      "total": 3,
+      "tp": 0,
+      "fn": 0,
+      "detectionRate": 0
+    },
+    "HIGH": {
+      "total": 33,
+      "tp": 15,
+      "fn": 18,
+      "detectionRate": 0.45454545454545453
+    }
+  },
+  "breakdownByCwe": {
+    "CWE-843": {
+      "total": 1,
+      "tp": 1,
+      "fn": 0,
+      "detectionRate": 1
+    },
+    "CWE-668": {
+      "total": 1,
+      "tp": 0,
+      "fn": 1,
+      "detectionRate": 0
+    },
+    "CWE-UNKNOWN": {
+      "total": 3,
+      "tp": 0,
+      "fn": 0,
+      "detectionRate": 0
+    },
+    "CWE-770": {
+      "total": 1,
+      "tp": 1,
+      "fn": 0,
+      "detectionRate": 1
+    },
+    "CWE-94": {
+      "total": 2,
+      "tp": 2,
+      "fn": 0,
+      "detectionRate": 1
+    },
+    "CWE-1321": {
+      "total": 6,
+      "tp": 1,
+      "fn": 5,
+      "detectionRate": 0.16666666666666666
+    },
+    "CWE-89": {
+      "total": 2,
+      "tp": 1,
+      "fn": 1,
+      "detectionRate": 0.5
+    },
+    "CWE-20": {
+      "total": 4,
+      "tp": 1,
+      "fn": 3,
+      "detectionRate": 0.25
+    },
+    "CWE-88": {
+      "total": 2,
+      "tp": 1,
+      "fn": 1,
+      "detectionRate": 0.5
+    },
+    "CWE-77": {
+      "total": 1,
+      "tp": 1,
+      "fn": 0,
+      "detectionRate": 1
+    },
+    "CWE-400": {
+      "total": 4,
+      "tp": 1,
+      "fn": 3,
+      "detectionRate": 0.25
+    },
+    "CWE-918": {
+      "total": 1,
+      "tp": 1,
+      "fn": 0,
+      "detectionRate": 1
+    },
+    "CWE-22": {
+      "total": 2,
+      "tp": 1,
+      "fn": 1,
+      "detectionRate": 0.5
+    },
+    "CWE-96": {
+      "total": 1,
+      "tp": 0,
+      "fn": 1,
+      "detectionRate": 0
+    },
+    "CWE-173": {
+      "total": 1,
+      "tp": 1,
+      "fn": 0,
+      "detectionRate": 1
+    },
+    "CWE-248": {
+      "total": 2,
+      "tp": 1,
+      "fn": 1,
+      "detectionRate": 0.5
+    },
+    "CWE-1333": {
+      "total": 5,
+      "tp": 2,
+      "fn": 3,
+      "detectionRate": 0.4
+    },
+    "CWE-1050": {
+      "total": 1,
+      "tp": 1,
+      "fn": 0,
+      "detectionRate": 1
+    },
+    "CWE-476": {
+      "total": 1,
+      "tp": 1,
+      "fn": 0,
+      "detectionRate": 1
+    },
+    "CWE-674": {
+      "total": 2,
+      "tp": 1,
+      "fn": 1,
+      "detectionRate": 0.5
+    },
+    "CWE-327": {
+      "total": 1,
+      "tp": 0,
+      "fn": 1,
+      "detectionRate": 0
+    },
+    "CWE-269": {
+      "total": 1,
+      "tp": 1,
+      "fn": 0,
+      "detectionRate": 1
+    },
+    "CWE-405": {
+      "total": 1,
+      "tp": 0,
+      "fn": 1,
+      "detectionRate": 0
+    },
+    "CWE-401": {
+      "total": 1,
+      "tp": 0,
+      "fn": 1,
+      "detectionRate": 0
+    },
+    "CWE-330": {
+      "total": 1,
+      "tp": 1,
+      "fn": 0,
+      "detectionRate": 1
+    },
+    "CWE-91": {
+      "total": 2,
+      "tp": 0,
+      "fn": 2,
+      "detectionRate": 0
+    }
+  },
+  "routingVerification": {
+    "resultsWithLiveRoutingLog": 97,
+    "resultsWithSpecialistJobs": 97,
+    "routingTraceType": "LIVE_PIPELINE_EXECUTION"
+  },
+  "pilotAcceptanceGates": {
+    "G1_manifestComplete": true,
+    "G2_vulnerableScanned": true,
+    "G3_patchedScanned": true,
+    "G4_totalResultsRecorded": true,
+    "G5_arithmeticVerified": true,
+    "G6_noCodeExecution": true,
+    "G7_engineShaFrozen": true,
+    "G8_liveRoutingLogged": true
+  },
+  "overallPilotVerdict": "PASS"
+}

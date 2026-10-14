@@ -1,0 +1,35 @@
+{
+  "phase": "Phase Y1 — Reference Tool Environment Pinning",
+  "recordedAt": "2026-10-09T19:05:00.000Z",
+  "tools": {
+    "codeql": {
+      "productName": "CodeQL",
+      "vendor": "GitHub",
+      "version": "2.27.1",
+      "sha": "938af3639d0709b587251e45d9f8d2bdc3505696",
+      "binaryPath": "C:\\Users\\sleyt\\AppData\\Local\\opencode\\tools\\codeql\\codeql.cmd",
+      "packs": {
+        "codeql/javascript-queries": "2.4.6",
+        "packPath": "C:\\Users\\sleyt\\.codeql\\packages\\codeql\\javascript-queries\\2.4.6"
+      },
+      "suites": {
+        "default": "codeql/javascript-queries:codeql-suites/javascript-code-scanning.qls",
+        "securityExtended": "codeql/javascript-queries:codeql-suites/javascript-security-extended.qls"
+      },
+      "executionMode": "STATIC_NO_BUILD (database create --language=javascript-typescript --no-run-untrusted-code)"
+    },
+    "semgrep": {
+      "productName": "Semgrep OSS",
+      "vendor": "Semgrep Inc.",
+      "version": "1.175.0",
+      "ruleset": "p/javascript",
+      "executionMode": "STATIC_NO_BUILD (semgrep scan --config p/javascript --json)"
+    }
+  },
+  "constraints": {
+    "noCodeExecution": true,
+    "noBuildCommands": true,
+    "maxWorkers": 2,
+    "timeoutMs": 180000
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "auditDate": "2026-10-09T18:38:05.920Z",
+  "runnerScript": "C:/Users/sleyt/sentinel-audit/benchmark/phase5/scanner.js",
+  "invokedBinary": "C:\\Users\\sleyt\\AppData\\Roaming\\npm\\sentinel.cmd",
+  "frozenDeclarations": {
+    "sentinelAuditCore": "012e095b583f6f1c4295eb4feea91456bc9321c2",
+    "sentinelCli": "ae10c223db766a041cb8a3dda561485769b47877",
+    "sentinelCloud": "ebc469a"
+  },
+  "effectiveEnvironment": {
+    "sentinelAuditRepoSha": "ea8f667405d91fd281d8ed62b0f03ba3fdb78d0d",
+    "sentinelAuditWorkingTreeClean": false,
+    "sentinelCliRepoSha": "ae10c223db766a041cb8a3dda561485769b47877",
+    "sentinelCliWorkingTreeClean": true,
+    "sentinelCloudRepoSha": "ebc469ae9797f269f4cc20c1b322260e97bc0b7a",
+    "sentinelEcosystemRepoSha": "dbf9cb67e32e134072bacfbf12b3d6f66b7f76ac"
+  },
+  "routingAudit": {
+    "declaredRoutingInResults": "STATIC_SPECIALIST_ROUTED (sentinel-cli)",
+    "actualExecutedEngine": "sentinel.cmd scan <target> --json",
+    "routingProvenanceType": "LIVE_SAST_INVOCATION",
+    "semgrepIntegrationPresent": true,
+    "codeqlIntegrationPresent": false,
+    "aiEscalationDisabled": true
+  },
+  "operationalExclusions": [
+    {
+      "id": "P5-003",
+      "package": "body-parser",
+      "reason": "CHECKOUT_FAILED"
+    },
+    {
+      "id": "P5-006",
+      "package": "express",
+      "reason": "CHECKOUT_FAILED"
+    },
+    {
+      "id": "P5-050",
+      "package": "postcss",
+      "reason": "CHECKOUT_FAILED"
+    }
+  ]
+}

@@ -1,0 +1,203 @@
+{
+  "audit": "Phase Y3.1 — Full Execution and Pipeline Integrity Audit",
+  "auditedAt": "2026-10-10T02:18:00.000Z",
+  "auditor": "Sentinel Y Evidence Audit Team",
+  "evaluationScope": {
+    "totalCohortPairs": 13,
+    "fullyMeasuredPairs": 6,
+    "unmeasuredPairs": 7,
+    "measurementStatusBreakdown": {
+      "MEASURED_BOTH_REVISIONS": 6,
+      "UNMEASURED_BOTH_REVISIONS": 5,
+      "PARTIAL_RUN_PATCH_MISSING": 1,
+      "EXECUTION_FAILED_OR_TIMEOUT": 1
+    }
+  },
+  "pipelineIntegrityVerification": {
+    "spawnSyncReturnCodesChecked": false,
+    "sarifAbsenceFallbackBug": "Confirmed in run_reference_campaign.js and ad-hoc scripts: if SARIF file does not exist due to CLI crash, timeout, or DB failure, findings array defaults to empty, erroneously reporting zero findings as NO_ALERT rather than EXECUTION_FAILURE.",
+    "toolEnvironment": {
+      "codeqlBin": "C:\\Users\\sleyt\\AppData\\Local\\opencode\\tools\\codeql\\codeql.cmd",
+      "codeqlVersion": "2.27.1",
+      "queryPack": "codeql/javascript-queries@2.4.6",
+      "suite": "codeql/javascript-queries:codeql-suites/javascript-security-extended.qls",
+      "noBuildMode": true
+    }
+  },
+  "caseExecutionRecords": [
+    {
+      "caseId": "P5-007",
+      "package": "mongoose",
+      "cve": "CVE-2023-3696",
+      "vulnStatus": "UNMEASURED",
+      "patchStatus": "UNMEASURED",
+      "pairStatus": "UNMEASURED",
+      "vulnSarifPath": null,
+      "patchSarifPath": null,
+      "sarifValid": false,
+      "reason": "Large monorepo holdout. Not included in Phase Y1 26-case batch. No persistent SARIF in reference_runs."
+    },
+    {
+      "caseId": "P5-011",
+      "package": "minimist",
+      "cve": "CVE-2021-44906",
+      "vulnStatus": "MEASURED",
+      "patchStatus": "MEASURED",
+      "pairStatus": "MEASURED",
+      "vulnSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-011_vulnerable.sarif",
+      "patchSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-011_patched.sarif",
+      "sarifValid": true,
+      "vulnInScopeCount": 1,
+      "patchInScopeCount": 1,
+      "ruleIds": ["js/polynomial-redos"],
+      "classification": "PERSISTENT_ALERT"
+    },
+    {
+      "caseId": "P5-014",
+      "package": "set-value",
+      "cve": "CVE-2019-10747",
+      "vulnStatus": "MEASURED",
+      "patchStatus": "MEASURED",
+      "pairStatus": "MEASURED",
+      "vulnSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-014_vulnerable.sarif",
+      "patchSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-014_patched.sarif",
+      "sarifValid": true,
+      "vulnInScopeCount": 4,
+      "patchInScopeCount": 3,
+      "ruleIds": ["js/prototype-polluting-assignment", "js/prototype-pollution-utility"],
+      "classification": "PERSISTENT_ALERT"
+    },
+    {
+      "caseId": "P5-016",
+      "package": "json-pointer",
+      "cve": "CVE-2022-4742",
+      "vulnStatus": "MEASURED",
+      "patchStatus": "MEASURED",
+      "pairStatus": "MEASURED",
+      "vulnSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-016_vulnerable.sarif",
+      "patchSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-016_patched.sarif",
+      "sarifValid": true,
+      "vulnInScopeCount": 3,
+      "patchInScopeCount": 3,
+      "ruleIds": ["js/prototype-polluting-assignment"],
+      "classification": "PERSISTENT_ALERT"
+    },
+    {
+      "caseId": "P5-018",
+      "package": "lodash",
+      "cve": "CVE-2018-16487",
+      "vulnStatus": "UNMEASURED",
+      "patchStatus": "UNMEASURED",
+      "pairStatus": "UNMEASURED",
+      "vulnSarifPath": null,
+      "patchSarifPath": null,
+      "sarifValid": false,
+      "reason": "Large monorepo holdout. Not included in Phase Y1 batch. No persistent SARIF in reference_runs."
+    },
+    {
+      "caseId": "P5-020",
+      "package": "moment",
+      "cve": "CVE-2017-18214",
+      "vulnStatus": "UNMEASURED",
+      "patchStatus": "UNMEASURED",
+      "pairStatus": "UNMEASURED",
+      "vulnSarifPath": null,
+      "patchSarifPath": null,
+      "sarifValid": false,
+      "reason": "Initial Phase Y1 run did not generate persistent SARIF files (DB create or analyze timeout). Improperly recorded as 0 findings in matrix."
+    },
+    {
+      "caseId": "P5-027",
+      "package": "ansi-regex",
+      "cve": "CVE-2021-3807",
+      "vulnStatus": "MEASURED",
+      "patchStatus": "UNMEASURED",
+      "pairStatus": "UNMEASURED",
+      "vulnSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-027_vulnerable.sarif",
+      "patchSarifPath": null,
+      "sarifValid": false,
+      "reason": "Patched snapshot SARIF missing (worktree wt_P5-027_patched left dangling). Only vulnerable revision was executed. Pair cannot be considered measured."
+    },
+    {
+      "caseId": "P5-028",
+      "package": "braces",
+      "cve": "CVE-2024-4068",
+      "vulnStatus": "UNMEASURED",
+      "patchStatus": "UNMEASURED",
+      "pairStatus": "UNMEASURED",
+      "vulnSarifPath": null,
+      "patchSarifPath": null,
+      "sarifValid": false,
+      "reason": "Ad-hoc task execution deleted SARIF and DB files on completion. No persistent evidence artifacts preserved in repository ledger."
+    },
+    {
+      "caseId": "P5-029",
+      "package": "json5",
+      "cve": "CVE-2022-46175",
+      "vulnStatus": "MEASURED",
+      "patchStatus": "MEASURED",
+      "pairStatus": "MEASURED",
+      "vulnSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-029_vulnerable.sarif",
+      "patchSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-029_patched.sarif",
+      "sarifValid": true,
+      "vulnInScopeCount": 0,
+      "patchInScopeCount": 0,
+      "ruleIds": [],
+      "classification": "NO_ALERT"
+    },
+    {
+      "caseId": "P5-030",
+      "package": "semver",
+      "cve": "CVE-2022-25883",
+      "vulnStatus": "UNMEASURED",
+      "patchStatus": "UNMEASURED",
+      "pairStatus": "UNMEASURED",
+      "vulnSarifPath": null,
+      "patchSarifPath": null,
+      "sarifValid": false,
+      "reason": "Ephemeral run in Task 4428 deleted SARIF on disk without persistent archiving. Must be treated as UNMEASURED until audited artifacts are preserved."
+    },
+    {
+      "caseId": "P5-031",
+      "package": "semver",
+      "cve": "CVE-2015-8855",
+      "vulnStatus": "MEASURED",
+      "patchStatus": "MEASURED",
+      "pairStatus": "MEASURED",
+      "vulnSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-031_vulnerable.sarif",
+      "patchSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-031_patched.sarif",
+      "sarifValid": true,
+      "vulnInScopeCount": 3,
+      "patchInScopeCount": 3,
+      "ruleIds": ["js/polynomial-redos", "js/useless-regexp-character-escape"],
+      "classification": "PERSISTENT_ALERT"
+    },
+    {
+      "caseId": "P5-038",
+      "package": "async",
+      "cve": "CVE-2021-43138",
+      "vulnStatus": "MEASURED",
+      "patchStatus": "MEASURED",
+      "pairStatus": "MEASURED",
+      "vulnSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-038_vulnerable.sarif",
+      "patchSarifPath": "benchmark/phase_y1/reference_runs/codeql_P5-038_patched.sarif",
+      "sarifValid": true,
+      "vulnInScopeCount": 0,
+      "patchInScopeCount": 0,
+      "ruleIds": [],
+      "classification": "NO_ALERT"
+    },
+    {
+      "caseId": "P5-039",
+      "package": "debug",
+      "cve": "CVE-2017-20165",
+      "vulnStatus": "UNMEASURED",
+      "patchStatus": "UNMEASURED",
+      "pairStatus": "UNMEASURED",
+      "vulnSarifPath": null,
+      "patchSarifPath": null,
+      "sarifValid": false,
+      "reason": "Ephemeral run in Task 4394/4410 deleted SARIF on disk without persistent archiving. Must be treated as UNMEASURED until audited artifacts are preserved."
+    }
+  ]
+}

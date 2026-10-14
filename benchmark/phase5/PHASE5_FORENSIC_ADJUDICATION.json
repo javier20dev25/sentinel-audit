@@ -1,0 +1,572 @@
+{
+  "phase": "Phase 5 — Forensic Adjudication of Apparent True Positives",
+  "generatedAt": "2026-10-09T18:37:12.180Z",
+  "totalApparentTps": 21,
+  "summaryByClassification": {
+    "CVE_SPECIFIC_DETECTION": 0,
+    "UNRELATED_SECURITY_ALERT": 21,
+    "OUT_OF_SCOPE": 0,
+    "AMBIGUOUS": 0
+  },
+  "cases": [
+    {
+      "id": "P5-001",
+      "packageName": "handlebars",
+      "advisoryId": "GHSA-2w6w-674q-4c4q",
+      "cves": [
+        "CVE-2026-33937"
+      ],
+      "cwe": "CWE-843",
+      "vulnerableSha": "b2a083136b11e1da9f0f47a11f749a9830a49328",
+      "fixSha": "68d8df5a88e0a26fe9e6084c5c6aaebe67b07da2",
+      "affectedSourceFiles": [
+        "lib/handlebars/compiler/base.js",
+        "lib/handlebars/compiler/javascript-compiler.js",
+        "lib/handlebars/internal/proto-access.js",
+        "lib/handlebars/runtime.js",
+        "lib/precompiler.js",
+        "spec/compiler.js",
+        "spec/expected/bom.amd.js",
+        "spec/expected/empty.amd.js",
+        "spec/expected/empty.amd.namespace.js",
+        "spec/expected/empty.common.js",
+        "spec/expected/empty.name.amd.js",
+        "spec/expected/empty.root.amd.js",
+        "spec/expected/handlebar.path.amd.js",
+        "spec/expected/namespace.amd.js",
+        "spec/expected/non.default.extension.amd.js",
+        "spec/expected/non.empty.amd.known.helper.js",
+        "spec/expected/partial.template.js",
+        "spec/precompiler.js",
+        "spec/runtime.js",
+        "spec/security.js"
+      ],
+      "matchedFindingsVuln": 1,
+      "matchedFindingsPatch": 1,
+      "commitTitle": "Fix security issues",
+      "diffSummary": " 20 files changed, 541 insertions(+), 38 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "AST type confusion vulnerability in parser logic. Sentinel flagged process spawning / exec in helper script.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-004",
+      "packageName": "tar",
+      "advisoryId": "GHSA-23hp-3jrh-7fpw",
+      "cves": [
+        "CVE-2026-59873"
+      ],
+      "cwe": "CWE-770",
+      "vulnerableSha": "9ecd4d2956fd915507eca018ddc1fea727fbba93",
+      "fixSha": "2812e9338665659b183aa7226518c307044957d3",
+      "affectedSourceFiles": [
+        "src/options.ts",
+        "src/parse.ts",
+        "test/extract.ts",
+        "test/parse.js",
+        "test/unpack.js"
+      ],
+      "matchedFindingsVuln": 2,
+      "matchedFindingsPatch": 2,
+      "commitTitle": "add maxDecompressionRatio guard against explosive decompression",
+      "diffSummary": " 6 files changed, 251 insertions(+), 7 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Argument injection or command injection vulnerability. Sentinel flagged existing child_process or regex exec in codebase.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-005",
+      "packageName": "underscore",
+      "advisoryId": "GHSA-cf4h-3jhx-xvhq",
+      "cves": [
+        "CVE-2021-23358"
+      ],
+      "cwe": "CWE-94",
+      "vulnerableSha": "ef646ccbbbd971e82719c83fc69f56a5585b3a01",
+      "fixSha": "4c73526d43838ad6ab43a6134728776632adeb66",
+      "affectedSourceFiles": [
+        "modules/template.js",
+        "underscore-esm.js",
+        "underscore.js"
+      ],
+      "matchedFindingsVuln": 5,
+      "matchedFindingsPatch": 5,
+      "commitTitle": "Fix #2911",
+      "diffSummary": " 5 files changed, 59 insertions(+), 14 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "File uses legitimate Function/eval template compilation sink (flagged by SAST-EVAL). The CVE was unescaped variable interpolation in the template parser.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-007",
+      "packageName": "mongoose",
+      "advisoryId": "GHSA-9m93-w8w6-76hh",
+      "cves": [
+        "CVE-2023-3696"
+      ],
+      "cwe": "CWE-1321",
+      "vulnerableSha": "b336ed83a02e1fa627b3997b4fa3b88754abd99e",
+      "fixSha": "e29578d2ec18a68aeb4717d66dd5eb66bae53de1",
+      "affectedSourceFiles": [
+        "lib/document.js",
+        "test/document.test.js"
+      ],
+      "matchedFindingsVuln": 1,
+      "matchedFindingsPatch": 1,
+      "commitTitle": "fix: avoid prototype pollution on init",
+      "diffSummary": " 2 files changed, 22 insertions(+)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Prototype pollution vulnerability via object merge/extend logic. Sentinel flagged background sinks in the file, not prototype key validation.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-009",
+      "packageName": "sequelize",
+      "advisoryId": "GHSA-5v9h-q3gj-c32x",
+      "cves": [
+        "CVE-2016-1000225"
+      ],
+      "cwe": "CWE-89",
+      "vulnerableSha": "c38aa5f7f7fedd5bb6c9b9306e7161f719ab4121",
+      "fixSha": "14e3deaf3ad27f12900e5275db1d448844c9de3e",
+      "affectedSourceFiles": [
+        "lib/data-types.js",
+        "lib/dialects/abstract/query-generator.js",
+        "lib/dialects/postgres/data-types.js",
+        "lib/dialects/postgres/query-generator.js",
+        "lib/dialects/postgres/query.js",
+        "lib/instance.js",
+        "lib/model.js",
+        "package.json",
+        "test/integration/dialects/postgres/dao.test.js",
+        "test/unit/sql/data-types.test.js"
+      ],
+      "matchedFindingsVuln": 1,
+      "matchedFindingsPatch": 1,
+      "commitTitle": "Adding GEOMETRY for Postgres.",
+      "diffSummary": " 11 files changed, 156 insertions(+), 10 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-012",
+      "packageName": "nodemailer",
+      "advisoryId": "GHSA-48ww-j4fc-435p",
+      "cves": [
+        "CVE-2020-7769"
+      ],
+      "cwe": "CWE-88",
+      "vulnerableSha": "7e7b2b23ed9a56ce60245bf1c7a444e5981a259b",
+      "fixSha": "ba31c64c910d884579875c52d57ac45acc47aa54",
+      "affectedSourceFiles": [
+        "Gruntfile.js",
+        "lib/dkim/message-parser.js",
+        "lib/fetch/cookies.js",
+        "lib/fetch/index.js",
+        "lib/mailer/mail-message.js",
+        "lib/mime-funcs/mime-types.js",
+        "lib/nodemailer.js",
+        "lib/sendmail-transport/index.js",
+        "lib/shared/index.js",
+        "lib/smtp-connection/http-proxy-client.js",
+        "lib/smtp-connection/index.js",
+        "lib/well-known/index.js",
+        "lib/well-known/services.json",
+        "lib/xoauth2/index.js",
+        "package.json",
+        "test/base64/base64-test.js",
+        "test/dkim/dkim-test.js",
+        "test/dkim/message-parser-test.js",
+        "test/dkim/relaxed-body-test.js",
+        "test/dkim/sign-test.js",
+        "test/ethereal-test.js",
+        "test/fetch/cookies-test.js",
+        "test/fetch/fetch-test.js",
+        "test/json-transport/json-transport-test.js",
+        "test/qp/qp-test.js",
+        "test/sendmail/le-unix.test.js",
+        "test/sendmail/le-windows-test.js",
+        "test/sendmail/sendmail-test.js",
+        "test/ses-transport/ses-transport-test.js",
+        "test/shared/shared-test.js",
+        "test/smtp-connection/http-proxy-client-test.js",
+        "test/smtp-connection/smtp-connection-test.js",
+        "test/smtp-connection/xoauth2-mock-server.js",
+        "test/smtp-pool/smtp-pool-test.js",
+        "test/smtp-transport/smtp-tranport-test.js",
+        "test/stream-transport/stream-transport-test.js",
+        "test/well-known/well-known-test.js",
+        "test/xoauth2/server.js",
+        "test/xoauth2/xoauth2-test.js"
+      ],
+      "matchedFindingsVuln": 37,
+      "matchedFindingsPatch": 37,
+      "commitTitle": "v6.4.16",
+      "diffSummary": " 40 files changed, 662 insertions(+), 677 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Argument injection or command injection vulnerability. Sentinel flagged existing child_process or regex exec in codebase.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-017",
+      "packageName": "lodash",
+      "advisoryId": "GHSA-35jh-r3h4-6jhm",
+      "cves": [
+        "CVE-2021-23337",
+        "CVE-2026-4800"
+      ],
+      "cwe": "CWE-77",
+      "vulnerableSha": "ded9bc66583ed0b4e3b7dc906206d40757b4a90a",
+      "fixSha": "3469357cff396a26c363f8c1b5a91dde28ba4b1c",
+      "affectedSourceFiles": [
+        "lodash.js",
+        "test/test.js"
+      ],
+      "matchedFindingsVuln": 2,
+      "matchedFindingsPatch": 2,
+      "commitTitle": "Prevent command injection through `_.template`'s `variable` option",
+      "diffSummary": " 2 files changed, 28 insertions(+), 1 deletion(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Argument injection or command injection vulnerability. Sentinel flagged existing child_process or regex exec in codebase.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-018",
+      "packageName": "lodash",
+      "advisoryId": "GHSA-4xc9-xhrj-v574",
+      "cves": [
+        "CVE-2018-16487"
+      ],
+      "cwe": "CWE-400",
+      "vulnerableSha": "67389a8c78975d97505fa15aa79bec6397749807",
+      "fixSha": "90e6199a161b6445b01454517b40ef65ebecd2ad",
+      "affectedSourceFiles": [
+        "lodash.js",
+        "test/test.js"
+      ],
+      "matchedFindingsVuln": 2,
+      "matchedFindingsPatch": 2,
+      "commitTitle": "Ensure Object.prototype is not augmented by _.merge.",
+      "diffSummary": " 2 files changed, 34 insertions(+), 14 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-019",
+      "packageName": "axios",
+      "advisoryId": "GHSA-3pq3-5fj3-cg6v",
+      "cves": [
+        "CVE-2026-101898"
+      ],
+      "cwe": "CWE-918",
+      "vulnerableSha": "e0a02dd16671deabe2b809334d4c2ebede29a233",
+      "fixSha": "d19040bda7a8be2f82c3c6e1a5bc03917daee39a",
+      "affectedSourceFiles": [
+        "lib/adapters/fetch.js",
+        "lib/adapters/http.js",
+        "lib/core/Axios.js",
+        "lib/core/dispatchRequest.js",
+        "lib/helpers/Http2Sessions.js",
+        "lib/helpers/fromDataURI.js",
+        "lib/helpers/resolveConfig.js",
+        "lib/helpers/shouldBypassProxy.js",
+        "lib/helpers/toFormData.js",
+        "lib/utils.js",
+        "tests/unit/adapters/fetch.test.js",
+        "tests/unit/adapters/http.test.js",
+        "tests/unit/fromDataURI.test.js",
+        "tests/unit/helpers/Http2Sessions.test.js",
+        "tests/unit/helpers/resolveConfig.test.js",
+        "tests/unit/helpers/shouldBypassProxy.test.js",
+        "tests/unit/prototypePollution.test.js",
+        "tests/unit/toFormData.test.js",
+        "tests/unit/utils/isX.test.js"
+      ],
+      "matchedFindingsVuln": 15,
+      "matchedFindingsPatch": 15,
+      "commitTitle": "fix: harden runtime option handling (#11141)",
+      "diffSummary": " 23 files changed, 1586 insertions(+), 149 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-023",
+      "packageName": "node-fetch",
+      "advisoryId": "GHSA-r683-j2x4-v87g",
+      "cves": [
+        "CVE-2022-0235"
+      ],
+      "cwe": "CWE-173",
+      "vulnerableSha": "8fe5c4ea66b9b8187600e6d5ec9b1b6781f44009",
+      "fixSha": "1ef4b560a17e644a02a3bfdea7631ffeee578b35",
+      "affectedSourceFiles": [
+        "package.json",
+        "src/index.js",
+        "test/server.js",
+        "test/test.js"
+      ],
+      "matchedFindingsVuln": 3,
+      "matchedFindingsPatch": 3,
+      "commitTitle": "backport of #1449 (#1453)",
+      "diffSummary": " 4 files changed, 94 insertions(+), 11 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-024",
+      "packageName": "handlebars",
+      "advisoryId": "GHSA-3cqr-58rm-57f8",
+      "cves": [
+        "CVE-2019-20920"
+      ],
+      "cwe": "CWE-94",
+      "vulnerableSha": "8ba91592aa28e1360c4d5099c46521c50d237ac1",
+      "fixSha": "156061eb7707575293613d7fdf90e2bdaac029ee",
+      "affectedSourceFiles": [
+        "lib/handlebars/base.js",
+        "lib/handlebars/compiler/javascript-compiler.js",
+        "lib/handlebars/utils.js",
+        "spec/security.js"
+      ],
+      "matchedFindingsVuln": 1,
+      "matchedFindingsPatch": 1,
+      "commitTitle": "backport fixes from 4.x",
+      "diffSummary": " 4 files changed, 31 insertions(+), 8 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-025",
+      "packageName": "ejs",
+      "advisoryId": "GHSA-6x77-rpqf-j6mw",
+      "cves": [
+        "CVE-2017-1000189"
+      ],
+      "cwe": "CWE-20",
+      "vulnerableSha": "7eaba6ade1b11e0bb275f1eb63ba49071aca24dd",
+      "fixSha": "49264e0037e313a0a3e033450b5c184112516d8f",
+      "affectedSourceFiles": [
+        "lib/ejs.js",
+        "test/ejs.js"
+      ],
+      "matchedFindingsVuln": 1,
+      "matchedFindingsPatch": 1,
+      "commitTitle": "Blacklist a few other unsafe opts from passing in data obj",
+      "diffSummary": " 2 files changed, 25 insertions(+), 7 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-026",
+      "packageName": "vm2",
+      "advisoryId": "GHSA-2v2p-6j97-cjg9",
+      "cves": [
+        "CVE-2026-100722"
+      ],
+      "cwe": "CWE-248",
+      "vulnerableSha": "fb4977f6211da6cadffdf1f3a2017a826a21c51f",
+      "fixSha": "6e487df9518e455e5e60faec3df3a0e2e27f9940",
+      "affectedSourceFiles": [
+        "lib/bridge.js",
+        "lib/sources.js",
+        "test/ghsa/GHSA-2v2p-6j97-cjg9/host-promise-child.js",
+        "test/ghsa/GHSA-2v2p-6j97-cjg9/repro.js"
+      ],
+      "matchedFindingsVuln": 4,
+      "matchedFindingsPatch": 6,
+      "commitTitle": "fix(GHSA-2v2p-6j97-cjg9): mark every host promise handled at the delivery chokepoint",
+      "diffSummary": " 7 files changed, 564 insertions(+), 7 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-028",
+      "packageName": "braces",
+      "advisoryId": "GHSA-grv7-fg5c-xmjg",
+      "cves": [
+        "CVE-2024-4068"
+      ],
+      "cwe": "CWE-1050",
+      "vulnerableSha": "190510f79db1adf21d92798b0bb6fccc1f72c9d6",
+      "fixSha": "415d660c3002d1ab7e63dbf490c9851da80596ff",
+      "affectedSourceFiles": [
+        "lib/constants.js",
+        "lib/parse.js",
+        "lib/validate-input.js",
+        "test/braces.parse.js"
+      ],
+      "matchedFindingsVuln": 2,
+      "matchedFindingsPatch": 2,
+      "commitTitle": "Snyk js braces 6838727 (#40)",
+      "diffSummary": " 6 files changed, 24 insertions(+), 79 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-030",
+      "packageName": "semver",
+      "advisoryId": "GHSA-c2qf-rxjj-qqgw",
+      "cves": [
+        "CVE-2022-25883"
+      ],
+      "cwe": "CWE-1333",
+      "vulnerableSha": "deb5ad51bf58868fa243c1683775305fe9e0e365",
+      "fixSha": "2f8fd41487acf380194579ecb6f8b1bbfe116be0",
+      "affectedSourceFiles": [
+        "semver.js",
+        "test/index.js",
+        "test/re.js",
+        "test/whitespace.js"
+      ],
+      "matchedFindingsVuln": 2,
+      "matchedFindingsPatch": 3,
+      "commitTitle": "fix: better handling of whitespace (#585)",
+      "diffSummary": " 4 files changed, 156 insertions(+), 27 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "ReDoS vulnerability in regex pattern. Sentinel does not compute regex automata polynomial complexity; alert triggered on file presence/API call.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-032",
+      "packageName": "tar",
+      "advisoryId": "GHSA-34x7-hfp2-rc4v",
+      "cves": [
+        "CVE-2026-24842"
+      ],
+      "cwe": "CWE-22",
+      "vulnerableSha": "394ece6ad8d81742a4e4058af227c616cd947a25",
+      "fixSha": "f4a7aa9bc3d717c987fdf1480ff7a64e87ffdb46",
+      "affectedSourceFiles": [
+        "src/unpack.ts",
+        "test/ghsa-8qq5-rm4j-mr97.ts"
+      ],
+      "matchedFindingsVuln": 1,
+      "matchedFindingsPatch": 1,
+      "commitTitle": "fix: properly sanitize hard links containing ..",
+      "diffSummary": " 2 files changed, 22 insertions(+), 1 deletion(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-034",
+      "packageName": "ws",
+      "advisoryId": "GHSA-3h5v-q93c-6h6q",
+      "cves": [
+        "CVE-2024-37890"
+      ],
+      "cwe": "CWE-476",
+      "vulnerableSha": "8a78f8770618cc5a1ade485a7445cb6d6f46e2f2",
+      "fixSha": "22c28763234aa75a7e1b76f5c01c181260d7917f",
+      "affectedSourceFiles": [
+        "lib/websocket-server.js",
+        "lib/websocket.js",
+        "test/websocket-server.test.js",
+        "test/websocket.test.js"
+      ],
+      "matchedFindingsVuln": 3,
+      "matchedFindingsPatch": 3,
+      "commitTitle": "[security] Fix crash when the Upgrade header cannot be read (#2231)",
+      "diffSummary": " 4 files changed, 73 insertions(+), 2 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-035",
+      "packageName": "underscore",
+      "advisoryId": "GHSA-qpx9-hpmf-5gmw",
+      "cves": [
+        "CVE-2026-27601"
+      ],
+      "cwe": "CWE-674",
+      "vulnerableSha": "8b314a178c7ffba8d1ea03ee8077657cc1023ebb",
+      "fixSha": "411e222eb0ca5d570cc4f6315c02c05b830ed2b4",
+      "affectedSourceFiles": [
+        "modules/_flatten.js",
+        "underscore-esm.js",
+        "underscore-node-f.cjs",
+        "underscore-umd.js"
+      ],
+      "matchedFindingsVuln": 6,
+      "matchedFindingsPatch": 6,
+      "commitTitle": "Make internal flatten nonrecursive",
+      "diffSummary": " 7 files changed, 87 insertions(+), 79 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-039",
+      "packageName": "debug",
+      "advisoryId": "GHSA-9vvw-cc9w-f27h",
+      "cves": [
+        "CVE-2017-20165"
+      ],
+      "cwe": "CWE-1333",
+      "vulnerableSha": "47747f329fe159e94262318b52b87a48f6c0acd4",
+      "fixSha": "c38a0166c266a679c8de012d4eaccec3f944e685",
+      "affectedSourceFiles": [
+        "src/node.js"
+      ],
+      "matchedFindingsVuln": 4,
+      "matchedFindingsPatch": 4,
+      "commitTitle": "remove ReDoS regexp in %o formatter (#504)",
+      "diffSummary": " 1 file changed, 3 insertions(+), 1 deletion(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "ReDoS vulnerability in regex pattern. Sentinel does not compute regex automata polynomial complexity; alert triggered on file presence/API call.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-040",
+      "packageName": "shelljs",
+      "advisoryId": "GHSA-4rq4-32rv-6wp6",
+      "cves": [
+        "CVE-2022-0144"
+      ],
+      "cwe": "CWE-269",
+      "vulnerableSha": "fcf1651be9a3bb8e20ba1fd24b8a91f369829c53",
+      "fixSha": "d919d22dd6de385edaa9d90313075a77f74b338c",
+      "affectedSourceFiles": [
+        "src/exec.js"
+      ],
+      "matchedFindingsVuln": 15,
+      "matchedFindingsPatch": 16,
+      "commitTitle": "fix(exec): lockdown file permissions (#1060)",
+      "diffSummary": " 1 file changed, 19 insertions(+), 1 deletion(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    },
+    {
+      "id": "P5-045",
+      "packageName": "socket.io",
+      "advisoryId": "GHSA-qv2v-m59f-v5fw",
+      "cves": [
+        "CVE-2017-16031"
+      ],
+      "cwe": "CWE-330",
+      "vulnerableSha": "fe6dd874437ccd13e4753c03d7a98e5382d0b0d5",
+      "fixSha": "67b4eb9abdf111dfa9be4176d1709374a2b4ded8",
+      "affectedSourceFiles": [
+        "lib/manager.js",
+        "test/manager.test.js"
+      ],
+      "matchedFindingsVuln": 1,
+      "matchedFindingsPatch": 1,
+      "commitTitle": "Making ID generation securely random",
+      "diffSummary": " 2 files changed, 92 insertions(+), 6 deletions(-)",
+      "adjudicatedClassification": "UNRELATED_SECURITY_ALERT",
+      "justification": "Alert stems from generic behavioral pattern/sink resident in the affected file (e.g. dynamic code evaluation, process spawning, network communication, or regex exec), not the specific vulnerability weakness logic.",
+      "sameAlertOnPatched": true
+    }
+  ]
+}

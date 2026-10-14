@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SentinelYProspectiveManifestEntryV1",
+  "type": "object",
+  "required": [
+    "opaqueCaseId",
+    "evaluationPanel",
+    "mechanismFamily",
+    "targetEcosystem",
+    "packageName",
+    "repoUrl",
+    "vulnerableCommitSha",
+    "remediatedCommitSha",
+    "affectedSourceFiles",
+    "cveId",
+    "ghsaId",
+    "publishedAt",
+    "groundTruthRemediationDiffHash",
+    "adversarialHardNegativeFlag"
+  ],
+  "properties": {
+    "opaqueCaseId": {
+      "type": "string",
+      "pattern": "^CASE-[0-9]{4}-[A-Z0-9]{4}$",
+      "description": "Randomized opaque identifier to prevent keyword matching or memorization prior to unblinding."
+    },
+    "evaluationPanel": {
+      "type": "string",
+      "enum": ["PROTOTYPE_POLLUTION_VULNERABLE", "REDOS_VULNERABLE", "BENIGN_HARD_NEGATIVE_CONTROL"]
+    },
+    "mechanismFamily": {
+      "type": "string",
+      "enum": [
+        "PROTO_RECURSIVE_MERGE",
+        "PROTO_DYNAMIC_PROPERTY_WRITE",
+        "PROTO_PATH_TRAVERSAL_SETTER",
+        "PROTO_OBJECT_ASSIGN_UNFILTERED",
+        "REDOS_NESTED_QUANTIFIERS",
+        "REDOS_OVERLAPPING_ALTERNATION",
+        "REDOS_ADJACENT_DELIMITERS",
+        "REDOS_UNANCHORED_GREEDY_PREFIX",
+        "BENIGN_SHALLOW_OPTION_MERGE",
+        "BENIGN_SCHEMA_FIELD_VALIDATION",
+        "BENIGN_SAFE_LOOKAHEAD_REGEX",
+        "BENIGN_FINITE_LENGTH_REGEX"
+      ]
+    },
+    "targetEcosystem": {
+      "type": "string",
+      "enum": ["npm", "pypi"]
+    },
+    "packageName": {
+      "type": "string"
+    },
+    "repoUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "vulnerableCommitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "remediatedCommitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "affectedSourceFiles": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "cveId": {
+      "type": ["string", "null"],
+      "pattern": "^CVE-[0-9]{4}-[0-9]{4,}$"
+    },
+    "ghsaId": {
+      "type": ["string", "null"],
+      "pattern": "^GHSA-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}$"
+    },
+    "publishedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "groundTruthRemediationDiffHash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "adversarialHardNegativeFlag": {
+      "type": "boolean",
+      "description": "True if control features superficial syntactical similarity to known vulnerability sinks."
+    }
+  },
+  "additionalProperties": false
+}

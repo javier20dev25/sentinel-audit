@@ -3,3 +3,12 @@ node_modules/
 *.log
 tmp-extract/
 scratch/
+
+# Benchmark heavy artifacts (not source): git clones, CodeQL databases, archives
+benchmark/**/clones/
+benchmark/**/reference_runs/
+benchmark/phase_y1/calibration/db_*/
+benchmark/phase5/worktrees/
+*.bqrs
+*.pack
+*.idx

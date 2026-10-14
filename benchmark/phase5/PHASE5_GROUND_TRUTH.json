@@ -1,0 +1,762 @@
+{
+  "phase": "Phase 5",
+  "generatedAt": "2026-10-09T03:41:54.317Z",
+  "entries": [
+    {
+      "id": "P5-001",
+      "advisoryId": "GHSA-2w6w-674q-4c4q",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "b2a083136b11e1da9f0f47a11f749a9830a49328",
+      "fixSha": "68d8df5a88e0a26fe9e6084c5c6aaebe67b07da2",
+      "affectedFiles": [
+        "lib/handlebars/compiler/base.js",
+        "lib/handlebars/compiler/javascript-compiler.js",
+        "lib/handlebars/internal/proto-access.js",
+        "lib/handlebars/runtime.js",
+        "lib/precompiler.js",
+        "spec/compiler.js",
+        "spec/expected/bom.amd.js",
+        "spec/expected/empty.amd.js",
+        "spec/expected/empty.amd.namespace.js",
+        "spec/expected/empty.common.js",
+        "spec/expected/empty.name.amd.js",
+        "spec/expected/empty.root.amd.js",
+        "spec/expected/handlebar.path.amd.js",
+        "spec/expected/namespace.amd.js",
+        "spec/expected/non.default.extension.amd.js",
+        "spec/expected/non.empty.amd.known.helper.js",
+        "spec/expected/partial.template.js",
+        "spec/precompiler.js",
+        "spec/runtime.js",
+        "spec/security.js"
+      ],
+      "expectedCwe": "CWE-843",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-002",
+      "advisoryId": "GHSA-248r-7h7q-cr24",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "7a552e89e88bf34e0c3a33916aa7900efd9fd2f4",
+      "fixSha": "093494c0c3ef2390d2e56909f9d56e290e6f18b0",
+      "affectedFiles": [
+        "lib/setup-sandbox.js",
+        "package.json",
+        "test/ghsa/GHSA-248r-7h7q-cr24/repro.js"
+      ],
+      "expectedCwe": "CWE-668",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-003",
+      "advisoryId": "GHSA-27g9-p43v-cw3v",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "fe2fcca2a1e693548993eccc624489dc4cb586b4",
+      "fixSha": "c7df2e21d2c74038a1f1750f40f9fe603ec69c6a",
+      "affectedFiles": [
+        "lib/setup-sandbox.js",
+        "test/ghsa/GHSA-27g9-p43v-cw3v/repro.js"
+      ],
+      "expectedCwe": "CWE-693",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-004",
+      "advisoryId": "GHSA-23hp-3jrh-7fpw",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "9ecd4d2956fd915507eca018ddc1fea727fbba93",
+      "fixSha": "2812e9338665659b183aa7226518c307044957d3",
+      "affectedFiles": [
+        "src/options.ts",
+        "src/parse.ts",
+        "test/extract.ts",
+        "test/parse.js",
+        "test/unpack.js"
+      ],
+      "expectedCwe": "CWE-770",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-005",
+      "advisoryId": "GHSA-cf4h-3jhx-xvhq",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "ef646ccbbbd971e82719c83fc69f56a5585b3a01",
+      "fixSha": "4c73526d43838ad6ab43a6134728776632adeb66",
+      "affectedFiles": [
+        "modules/template.js",
+        "underscore-esm.js",
+        "underscore.js"
+      ],
+      "expectedCwe": "CWE-94",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-006",
+      "advisoryId": "GHSA-8687-vv9j-hgph",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "cc10e0dc441f469330c1af2822d171fcd6fa8f89",
+      "fixSha": "f3eca5b94d822225c04e96cbeed9f095afb3c31c",
+      "affectedFiles": [
+        "lib/cast.js"
+      ],
+      "expectedCwe": "CWE-20",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-007",
+      "advisoryId": "GHSA-9m93-w8w6-76hh",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "b336ed83a02e1fa627b3997b4fa3b88754abd99e",
+      "fixSha": "e29578d2ec18a68aeb4717d66dd5eb66bae53de1",
+      "affectedFiles": [
+        "lib/document.js",
+        "test/document.test.js"
+      ],
+      "expectedCwe": "CWE-1321",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-008",
+      "advisoryId": "GHSA-2598-2f59-rmhq",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "75c1fdbc676d73a28a5e0bca49b2a6d4a9f8708c",
+      "fixSha": "ee4017379db0059566ecb5424274ad4e2d66bc68",
+      "affectedFiles": [
+        "lib/dialects/abstract/query-generator.js"
+      ],
+      "expectedCwe": "CWE-89",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-009",
+      "advisoryId": "GHSA-5v9h-q3gj-c32x",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "c38aa5f7f7fedd5bb6c9b9306e7161f719ab4121",
+      "fixSha": "14e3deaf3ad27f12900e5275db1d448844c9de3e",
+      "affectedFiles": [
+        "lib/data-types.js",
+        "lib/dialects/abstract/query-generator.js",
+        "lib/dialects/postgres/data-types.js",
+        "lib/dialects/postgres/query-generator.js",
+        "lib/dialects/postgres/query.js",
+        "lib/instance.js",
+        "lib/model.js",
+        "package.json",
+        "test/integration/dialects/postgres/dao.test.js",
+        "test/unit/sql/data-types.test.js"
+      ],
+      "expectedCwe": "CWE-89",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-010",
+      "advisoryId": "GHSA-c7hr-j4mj-j2w6",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "f9f3c34f8478b1b81070bf0a6da3fd48f2ee70be",
+      "fixSha": "1bb584bc382295eeb7ee8c4452a673a77a68b687",
+      "affectedFiles": [
+        "index.js",
+        "test/wrong_alg.tests.js"
+      ],
+      "expectedCwe": "CWE-20",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-011",
+      "advisoryId": "GHSA-xvch-5gv4-984h",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "c0b26618322e94adea26c68e613ef0be482c6c63",
+      "fixSha": "34e20b8461118608703d6485326abbb8e35e1703",
+      "affectedFiles": [
+        "index.js"
+      ],
+      "expectedCwe": "CWE-1321",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-012",
+      "advisoryId": "GHSA-48ww-j4fc-435p",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "7e7b2b23ed9a56ce60245bf1c7a444e5981a259b",
+      "fixSha": "ba31c64c910d884579875c52d57ac45acc47aa54",
+      "affectedFiles": [
+        "Gruntfile.js",
+        "lib/dkim/message-parser.js",
+        "lib/fetch/cookies.js",
+        "lib/fetch/index.js",
+        "lib/mailer/mail-message.js",
+        "lib/mime-funcs/mime-types.js",
+        "lib/nodemailer.js",
+        "lib/sendmail-transport/index.js",
+        "lib/shared/index.js",
+        "lib/smtp-connection/http-proxy-client.js",
+        "lib/smtp-connection/index.js",
+        "lib/well-known/index.js",
+        "lib/well-known/services.json",
+        "lib/xoauth2/index.js",
+        "package.json",
+        "test/base64/base64-test.js",
+        "test/dkim/dkim-test.js",
+        "test/dkim/message-parser-test.js",
+        "test/dkim/relaxed-body-test.js",
+        "test/dkim/sign-test.js",
+        "test/ethereal-test.js",
+        "test/fetch/cookies-test.js",
+        "test/fetch/fetch-test.js",
+        "test/json-transport/json-transport-test.js",
+        "test/qp/qp-test.js",
+        "test/sendmail/le-unix.test.js",
+        "test/sendmail/le-windows-test.js",
+        "test/sendmail/sendmail-test.js",
+        "test/ses-transport/ses-transport-test.js",
+        "test/shared/shared-test.js",
+        "test/smtp-connection/http-proxy-client-test.js",
+        "test/smtp-connection/smtp-connection-test.js",
+        "test/smtp-connection/xoauth2-mock-server.js",
+        "test/smtp-pool/smtp-pool-test.js",
+        "test/smtp-transport/smtp-tranport-test.js",
+        "test/stream-transport/stream-transport-test.js",
+        "test/well-known/well-known-test.js",
+        "test/xoauth2/server.js",
+        "test/xoauth2/xoauth2-test.js"
+      ],
+      "expectedCwe": "CWE-88",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-013",
+      "advisoryId": "GHSA-hr2v-3952-633q",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "9653940a75c2ef2b1a503b24cbadd707cccffa8c",
+      "fixSha": "9423fae877e2ab6b4aecc4db79a0ed63039d4703",
+      "affectedFiles": [
+        "lib/deep-extend.js",
+        "test/index.spec.js"
+      ],
+      "expectedCwe": "CWE-20",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-014",
+      "advisoryId": "GHSA-4g88-fppr-53pp",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "7bd5011d82e583305a191a9a062abfe177ec29ad",
+      "fixSha": "95e9d9923f8a8b4a01da1ea138fcc39ec7b6b15f",
+      "affectedFiles": [
+        "index.js",
+        "package.json"
+      ],
+      "expectedCwe": "CWE-1321",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-015",
+      "advisoryId": "GHSA-fhjf-83wg-r2j9",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "9925af763440a50891358d00db0e6a5accc50ee6",
+      "fixSha": "8f464c8ce9761a8c9c2b3457eaeee9d404fa7af9",
+      "affectedFiles": [
+        "index.js",
+        "package.json"
+      ],
+      "expectedCwe": "CWE-88",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-016",
+      "advisoryId": "GHSA-6xrf-q977-5vgc",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "9b5ea8e3b20f9e3065860cf3b018b47708e8794d",
+      "fixSha": "859c9984b6c407fc2d5a0a7e47c7274daa681941",
+      "affectedFiles": [
+        "index.js",
+        "test/test.js"
+      ],
+      "expectedCwe": "CWE-1321",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-017",
+      "advisoryId": "GHSA-35jh-r3h4-6jhm",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "ded9bc66583ed0b4e3b7dc906206d40757b4a90a",
+      "fixSha": "3469357cff396a26c363f8c1b5a91dde28ba4b1c",
+      "affectedFiles": [
+        "lodash.js",
+        "test/test.js"
+      ],
+      "expectedCwe": "CWE-77",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-018",
+      "advisoryId": "GHSA-4xc9-xhrj-v574",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "67389a8c78975d97505fa15aa79bec6397749807",
+      "fixSha": "90e6199a161b6445b01454517b40ef65ebecd2ad",
+      "affectedFiles": [
+        "lodash.js",
+        "test/test.js"
+      ],
+      "expectedCwe": "CWE-400",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-019",
+      "advisoryId": "GHSA-3pq3-5fj3-cg6v",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "e0a02dd16671deabe2b809334d4c2ebede29a233",
+      "fixSha": "d19040bda7a8be2f82c3c6e1a5bc03917daee39a",
+      "affectedFiles": [
+        "lib/adapters/fetch.js",
+        "lib/adapters/http.js",
+        "lib/core/Axios.js",
+        "lib/core/dispatchRequest.js",
+        "lib/helpers/Http2Sessions.js",
+        "lib/helpers/fromDataURI.js",
+        "lib/helpers/resolveConfig.js",
+        "lib/helpers/shouldBypassProxy.js",
+        "lib/helpers/toFormData.js",
+        "lib/utils.js",
+        "tests/unit/adapters/fetch.test.js",
+        "tests/unit/adapters/http.test.js",
+        "tests/unit/fromDataURI.test.js",
+        "tests/unit/helpers/Http2Sessions.test.js",
+        "tests/unit/helpers/resolveConfig.test.js",
+        "tests/unit/helpers/shouldBypassProxy.test.js",
+        "tests/unit/prototypePollution.test.js",
+        "tests/unit/toFormData.test.js",
+        "tests/unit/utils/isX.test.js"
+      ],
+      "expectedCwe": "CWE-918",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-020",
+      "advisoryId": "GHSA-446m-mv8f-q348",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "328d51e7235b7a2d443bfdf69c1844939c115660",
+      "fixSha": "69ed9d44957fa6ab12b73d2ae29d286a857b80eb",
+      "affectedFiles": [
+        "min/moment-with-locales.js",
+        "moment.js",
+        "src/lib/parse/regex.js"
+      ],
+      "expectedCwe": "CWE-400",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-021",
+      "advisoryId": "GHSA-8hfj-j24r-96c4",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "f2a813afcfd0dd6e63812ea74c46ecc627f6a6a6",
+      "fixSha": "4211bfc8f15746be4019bba557e29a7ba83d54c5",
+      "affectedFiles": [
+        "src/lib/locale/locales.js"
+      ],
+      "expectedCwe": "CWE-22",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-022",
+      "advisoryId": "GHSA-5c6j-r48x-rmvq",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "42b7cdbf32c289f42d7d9247fd3261dc7550e9ce",
+      "fixSha": "2e609d0a9f4f5b097f0945af88bd45b9c7fb48d9",
+      "affectedFiles": [
+        "index.js",
+        "test/unit/serialize.js"
+      ],
+      "expectedCwe": "CWE-96",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-023",
+      "advisoryId": "GHSA-r683-j2x4-v87g",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "8fe5c4ea66b9b8187600e6d5ec9b1b6781f44009",
+      "fixSha": "1ef4b560a17e644a02a3bfdea7631ffeee578b35",
+      "affectedFiles": [
+        "package.json",
+        "src/index.js",
+        "test/server.js",
+        "test/test.js"
+      ],
+      "expectedCwe": "CWE-173",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-024",
+      "advisoryId": "GHSA-3cqr-58rm-57f8",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "8ba91592aa28e1360c4d5099c46521c50d237ac1",
+      "fixSha": "156061eb7707575293613d7fdf90e2bdaac029ee",
+      "affectedFiles": [
+        "lib/handlebars/base.js",
+        "lib/handlebars/compiler/javascript-compiler.js",
+        "lib/handlebars/utils.js",
+        "spec/security.js"
+      ],
+      "expectedCwe": "CWE-94",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-025",
+      "advisoryId": "GHSA-6x77-rpqf-j6mw",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "7eaba6ade1b11e0bb275f1eb63ba49071aca24dd",
+      "fixSha": "49264e0037e313a0a3e033450b5c184112516d8f",
+      "affectedFiles": [
+        "lib/ejs.js",
+        "test/ejs.js"
+      ],
+      "expectedCwe": "CWE-20",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-026",
+      "advisoryId": "GHSA-2v2p-6j97-cjg9",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "fb4977f6211da6cadffdf1f3a2017a826a21c51f",
+      "fixSha": "6e487df9518e455e5e60faec3df3a0e2e27f9940",
+      "affectedFiles": [
+        "lib/bridge.js",
+        "lib/sources.js",
+        "test/ghsa/GHSA-2v2p-6j97-cjg9/host-promise-child.js",
+        "test/ghsa/GHSA-2v2p-6j97-cjg9/repro.js"
+      ],
+      "expectedCwe": "CWE-248",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-027",
+      "advisoryId": "GHSA-93q8-gq69-wqmw",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "0a8cc19946c03c38520fe8c086b8adb66f9cce0b",
+      "fixSha": "419250fa510bf31b4cc672e76537a64f9332e1f1",
+      "affectedFiles": [
+        "index.js"
+      ],
+      "expectedCwe": "CWE-1333",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-028",
+      "advisoryId": "GHSA-grv7-fg5c-xmjg",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "190510f79db1adf21d92798b0bb6fccc1f72c9d6",
+      "fixSha": "415d660c3002d1ab7e63dbf490c9851da80596ff",
+      "affectedFiles": [
+        "lib/constants.js",
+        "lib/parse.js",
+        "lib/validate-input.js",
+        "test/braces.parse.js"
+      ],
+      "expectedCwe": "CWE-1050",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-029",
+      "advisoryId": "GHSA-9c47-m6qq-7p4h",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "072eb402fc107a2f568ba78962d3d99de95032a9",
+      "fixSha": "62a65408408d40aeea14c7869ed327acead12972",
+      "affectedFiles": [
+        "src/parse.js",
+        "test/parse.js"
+      ],
+      "expectedCwe": "CWE-1321",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-030",
+      "advisoryId": "GHSA-c2qf-rxjj-qqgw",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "deb5ad51bf58868fa243c1683775305fe9e0e365",
+      "fixSha": "2f8fd41487acf380194579ecb6f8b1bbfe116be0",
+      "affectedFiles": [
+        "semver.js",
+        "test/index.js",
+        "test/re.js",
+        "test/whitespace.js"
+      ],
+      "expectedCwe": "CWE-1333",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-031",
+      "advisoryId": "GHSA-x6fg-f45m-jf5q",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "a685e01b206b512c5f17d04ed854b0ea70a44f3a",
+      "fixSha": "5c4c9f6e26c7052a42b5ced2a7481c5c9b4363a0",
+      "affectedFiles": [
+        "semver.js"
+      ],
+      "expectedCwe": "CWE-1333",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-032",
+      "advisoryId": "GHSA-34x7-hfp2-rc4v",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "394ece6ad8d81742a4e4058af227c616cd947a25",
+      "fixSha": "f4a7aa9bc3d717c987fdf1480ff7a64e87ffdb46",
+      "affectedFiles": [
+        "src/unpack.ts",
+        "test/ghsa-8qq5-rm4j-mr97.ts"
+      ],
+      "expectedCwe": "CWE-22",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-033",
+      "advisoryId": "GHSA-g7q5-pjjr-gqvp",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "fcc8abfa3d3cab4f99da38f3f3749b1b186eb5a4",
+      "fixSha": "f1ed420a6a92ea7a5418df6e39e676556bc0c71d",
+      "affectedFiles": [
+        "lib/cookie.js",
+        "test/parsing_test.js"
+      ],
+      "expectedCwe": "CWE-400",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-034",
+      "advisoryId": "GHSA-3h5v-q93c-6h6q",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "8a78f8770618cc5a1ade485a7445cb6d6f46e2f2",
+      "fixSha": "22c28763234aa75a7e1b76f5c01c181260d7917f",
+      "affectedFiles": [
+        "lib/websocket-server.js",
+        "lib/websocket.js",
+        "test/websocket-server.test.js",
+        "test/websocket.test.js"
+      ],
+      "expectedCwe": "CWE-476",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-035",
+      "advisoryId": "GHSA-qpx9-hpmf-5gmw",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "8b314a178c7ffba8d1ea03ee8077657cc1023ebb",
+      "fixSha": "411e222eb0ca5d570cc4f6315c02c05b830ed2b4",
+      "affectedFiles": [
+        "modules/_flatten.js",
+        "underscore-esm.js",
+        "underscore-node-f.cjs",
+        "underscore-umd.js"
+      ],
+      "expectedCwe": "CWE-674",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-036",
+      "advisoryId": "GHSA-2777-2vq8-c4v4",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "7c3c18a9e56a801b9122441a44e658ebff1b2bf1",
+      "fixSha": "850c7fd04669e0fef9238b6dc4f8d6ee93ed71e9",
+      "affectedFiles": [
+        "lib/dialects/abstract/connection-manager.js",
+        "lib/dialects/postgres/connection-manager.js"
+      ],
+      "expectedCwe": "CWE-20",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-037",
+      "advisoryId": "GHSA-8cf7-32gw-wr33",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "5eaedbf2b01676d952336e73b4d2efba847d2d1b",
+      "fixSha": "e1fa9dcc12054a8681db4e6373da1b30cf7016e3",
+      "affectedFiles": [
+        "lib/asymmetricKeyDetailsSupported.js",
+        "lib/rsaPssKeyDetailsSupported.js",
+        "lib/validateAsymmetricKey.js",
+        "package.json",
+        "sign.js",
+        "test/jwt.asymmetric_signing.tests.js",
+        "test/schema.tests.js",
+        "test/validateAsymmetricKey.tests.js",
+        "test/verify.tests.js",
+        "verify.js"
+      ],
+      "expectedCwe": "CWE-327",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-038",
+      "advisoryId": "GHSA-fwr7-v2mv-hh25",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "f1d8383bb118366f652f26a5096f106b88344ceb",
+      "fixSha": "8f7f90342a6571ba1c197d747ebed30c368096d2",
+      "affectedFiles": [
+        "lib/internal/iterator.js",
+        "mocha_test/mapValues.js"
+      ],
+      "expectedCwe": "CWE-1321",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-039",
+      "advisoryId": "GHSA-9vvw-cc9w-f27h",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "47747f329fe159e94262318b52b87a48f6c0acd4",
+      "fixSha": "c38a0166c266a679c8de012d4eaccec3f944e685",
+      "affectedFiles": [
+        "src/node.js"
+      ],
+      "expectedCwe": "CWE-1333",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-040",
+      "advisoryId": "GHSA-4rq4-32rv-6wp6",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "fcf1651be9a3bb8e20ba1fd24b8a91f369829c53",
+      "fixSha": "d919d22dd6de385edaa9d90313075a77f74b338c",
+      "affectedFiles": [
+        "src/exec.js"
+      ],
+      "expectedCwe": "CWE-269",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-041",
+      "advisoryId": "GHSA-3xgq-45jj-v275",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "9521e2da94d94998f948e0455903e62d87884600",
+      "fixSha": "5ff3a07d9add449021d806e45c4168203aa833ff",
+      "affectedFiles": [
+        "lib/util/escape.js"
+      ],
+      "expectedCwe": "CWE-1333",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-042",
+      "advisoryId": "GHSA-qwcr-r2fm-qrc7",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "ade0f3f82f91086d6cd2ed2cb4b0aff448fbc2e5",
+      "fixSha": "b2695c4450f06ba3b0ccf48d872a229bb41c9bce",
+      "affectedFiles": [
+        "lib/types/urlencoded.js",
+        "package.json",
+        "test/urlencoded.js"
+      ],
+      "expectedCwe": "CWE-405",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-043",
+      "advisoryId": "GHSA-44fp-w29j-9vj5",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "bde1822c232dd7ab2da3d542914d9927cc1675fa",
+      "fixSha": "2c8505f207d923dd8de13a9f93a4563e59933665",
+      "affectedFiles": [
+        "lib/make-middleware.js",
+        "package.json",
+        "test/express-integration.js"
+      ],
+      "expectedCwe": "CWE-401",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-044",
+      "advisoryId": "GHSA-4pg4-qvpc-4q3h",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "bde1822c232dd7ab2da3d542914d9927cc1675fa",
+      "fixSha": "2c8505f207d923dd8de13a9f93a4563e59933665",
+      "affectedFiles": [
+        "lib/make-middleware.js",
+        "package.json",
+        "test/express-integration.js"
+      ],
+      "expectedCwe": "CWE-248",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-045",
+      "advisoryId": "GHSA-qv2v-m59f-v5fw",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "fe6dd874437ccd13e4753c03d7a98e5382d0b0d5",
+      "fixSha": "67b4eb9abdf111dfa9be4176d1709374a2b4ded8",
+      "affectedFiles": [
+        "lib/manager.js",
+        "test/manager.test.js"
+      ],
+      "expectedCwe": "CWE-330",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-046",
+      "advisoryId": "GHSA-2x7j-588g-ccc2",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "7279ac8dee4f66c032981e6e51e3e7210ad0dcbf",
+      "fixSha": "34da64282dcdc9b0581c721a27ab2fa226673150",
+      "affectedFiles": [
+        "lib/mime-node/index.js",
+        "test/mime-node/mime-node-test.js"
+      ],
+      "expectedCwe": "CWE-400",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-047",
+      "advisoryId": "GHSA-27p8-2357-5qqv",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "b09382a9286da3c717e209fe4681ab5a22966eef",
+      "fixSha": "57aec90ac57b4408ae7c5d1746bf2a693b5ed90e",
+      "affectedFiles": [
+        "index.d.ts",
+        "lib/dom.js",
+        "lib/grammar.js",
+        "test/dom/serializer.test.js",
+        "test/grammar/regexp.js"
+      ],
+      "expectedCwe": "CWE-91",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-048",
+      "advisoryId": "GHSA-2v35-w6hq-6mfw",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "19e39ffab0e8cd00dce68ede6906772acdfb4f33",
+      "fixSha": "17678a2a73ecbd1a2da90f3d47dc23da9cef81aa",
+      "affectedFiles": [
+        "lib/dom.js"
+      ],
+      "expectedCwe": "CWE-674",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-049",
+      "advisoryId": "GHSA-4w3w-2rp5-g8jm",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "73df6b8bdbd86f904b9e8c3ab9c49aa54ef2802e",
+      "fixSha": "cba1321218b069182695813fa7565653708e172e",
+      "affectedFiles": [
+        "index.d.ts",
+        "lib/dom.js",
+        "test/dom/serializer.test.js"
+      ],
+      "expectedCwe": "CWE-91",
+      "measurementGroup": "code_vulnerabilities"
+    },
+    {
+      "id": "P5-050",
+      "advisoryId": "GHSA-25mp-g6fv-mqxx",
+      "groundTruth": "VERIFIED_VULNERABLE",
+      "vulnerableSha": "1c199a5e4a158685007c006820e6eaec94796528",
+      "fixSha": "6d98b4fb4315dec1badecf0e9bdc212a4272b264",
+      "affectedFiles": [
+        "packages/next/build/swc/index.js",
+        "packages/next/server/next-server.ts",
+        "test/integration/production/test/security.js"
+      ],
+      "expectedCwe": "CWE-20",
+      "measurementGroup": "code_vulnerabilities"
+    }
+  ]
+}

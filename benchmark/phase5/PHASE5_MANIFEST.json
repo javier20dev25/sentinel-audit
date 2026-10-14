@@ -1,0 +1,1929 @@
+{
+  "phase": "Phase 5 — Real-World Vulnerability Benchmark",
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-10-09T03:41:54.302Z",
+  "ecosystem": "npm",
+  "corpusSize": 50,
+  "groundTruthSummary": {
+    "VERIFIED_VULNERABLE": 50,
+    "VERIFIED_PATCHED": 0,
+    "INSUFFICIENT_GROUND_TRUTH": 0,
+    "AMBIGUOUS_PATCH": 0
+  },
+  "entries": [
+    {
+      "id": "P5-001",
+      "advisoryId": "GHSA-2w6w-674q-4c4q",
+      "cves": [
+        "CVE-2026-33937"
+      ],
+      "packageName": "handlebars",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-843",
+      "summary": "Handlebars.js has JavaScript Injection via AST Type Confusion",
+      "repoUrl": "https://github.com/handlebars-lang/handlebars.js",
+      "vulnerableSha": "b2a083136b11e1da9f0f47a11f749a9830a49328",
+      "fixSha": "68d8df5a88e0a26fe9e6084c5c6aaebe67b07da2",
+      "affectedSourceFiles": [
+        "lib/handlebars/compiler/base.js",
+        "lib/handlebars/compiler/javascript-compiler.js",
+        "lib/handlebars/internal/proto-access.js",
+        "lib/handlebars/runtime.js",
+        "lib/precompiler.js",
+        "spec/compiler.js",
+        "spec/expected/bom.amd.js",
+        "spec/expected/empty.amd.js",
+        "spec/expected/empty.amd.namespace.js",
+        "spec/expected/empty.common.js",
+        "spec/expected/empty.name.amd.js",
+        "spec/expected/empty.root.amd.js",
+        "spec/expected/handlebar.path.amd.js",
+        "spec/expected/namespace.amd.js",
+        "spec/expected/non.default.extension.amd.js",
+        "spec/expected/non.empty.amd.known.helper.js",
+        "spec/expected/partial.template.js",
+        "spec/precompiler.js",
+        "spec/runtime.js",
+        "spec/security.js"
+      ],
+      "allAffectedFiles": [
+        "lib/handlebars/compiler/base.js",
+        "lib/handlebars/compiler/javascript-compiler.js",
+        "lib/handlebars/internal/proto-access.js",
+        "lib/handlebars/runtime.js",
+        "lib/precompiler.js",
+        "spec/compiler.js",
+        "spec/expected/bom.amd.js",
+        "spec/expected/empty.amd.js",
+        "spec/expected/empty.amd.namespace.js",
+        "spec/expected/empty.common.js",
+        "spec/expected/empty.name.amd.js",
+        "spec/expected/empty.root.amd.js",
+        "spec/expected/handlebar.path.amd.js",
+        "spec/expected/namespace.amd.js",
+        "spec/expected/non.default.extension.amd.js",
+        "spec/expected/non.empty.amd.known.helper.js",
+        "spec/expected/partial.template.js",
+        "spec/precompiler.js",
+        "spec/runtime.js",
+        "spec/security.js"
+      ],
+      "patchDiffHash": "0b23d7135e32c8cced2843a0931bf5ac48024dce6e390e0d2b4d1bac1cccc7d3",
+      "fileHashes": {
+        "lib/handlebars/compiler/base.js": {
+          "vulnerableRevision": "a21a57bff908da3b28f3373aaa2d35f154f925d20d9b5d0b45d0e0bf9e822d24",
+          "fixRevision": "b98504b717c701f5aa32de8930e0d211b9707efe8f79c4160deb9b5aeb7504bc"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\handlebars-lang_handlebars.js",
+      "createdAt": "2026-10-09T03:33:18.317Z"
+    },
+    {
+      "id": "P5-002",
+      "advisoryId": "GHSA-248r-7h7q-cr24",
+      "cves": [
+        "CVE-2026-45411"
+      ],
+      "packageName": "vm2",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-668",
+      "summary": "vm2 Has a Sandbox Breakout Using Async Generator",
+      "repoUrl": "https://github.com/patriksimek/vm2",
+      "vulnerableSha": "7a552e89e88bf34e0c3a33916aa7900efd9fd2f4",
+      "fixSha": "093494c0c3ef2390d2e56909f9d56e290e6f18b0",
+      "affectedSourceFiles": [
+        "lib/setup-sandbox.js",
+        "package.json",
+        "test/ghsa/GHSA-248r-7h7q-cr24/repro.js"
+      ],
+      "allAffectedFiles": [
+        "CHANGELOG.md",
+        "docs/ATTACKS.md",
+        "lib/setup-sandbox.js",
+        "package.json",
+        "test/ghsa/GHSA-248r-7h7q-cr24/repro.js"
+      ],
+      "patchDiffHash": "39f9eb8fb5bbd90340472e5f44722ea26f22847a35a02600a66fbb561440d137",
+      "fileHashes": {
+        "lib/setup-sandbox.js": {
+          "vulnerableRevision": "a0e07bfc62c005ab628db1ec82b352bba347d8d1174aea3945056da59c7ae516",
+          "fixRevision": "f47615e3bfada25f38d7ae8965bd4e3c977716b783b240097d3a4d6a7b584979"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\patriksimek_vm2",
+      "createdAt": "2026-10-09T03:33:22.296Z"
+    },
+    {
+      "id": "P5-003",
+      "advisoryId": "GHSA-27g9-p43v-cw3v",
+      "cves": [
+        "CVE-2026-92944"
+      ],
+      "packageName": "vm2",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-693",
+      "summary": "vm2 sandbox escape on Node.js 26 through a stale PromiseThenLookupChain protector",
+      "repoUrl": "https://github.com/patriksimek/vm2",
+      "vulnerableSha": "fe2fcca2a1e693548993eccc624489dc4cb586b4",
+      "fixSha": "c7df2e21d2c74038a1f1750f40f9fe603ec69c6a",
+      "affectedSourceFiles": [
+        "lib/setup-sandbox.js",
+        "test/ghsa/GHSA-27g9-p43v-cw3v/repro.js"
+      ],
+      "allAffectedFiles": [
+        "CHANGELOG.md",
+        "docs/ATTACKS.md",
+        "lib/setup-sandbox.js",
+        "test/ghsa/GHSA-27g9-p43v-cw3v/repro.js"
+      ],
+      "patchDiffHash": "bfbf8c7c958cb40005f48b7fdec37da90c13f4369fc3dc533b99ee53757597b7",
+      "fileHashes": {
+        "lib/setup-sandbox.js": {
+          "vulnerableRevision": "552cfdd85d0f20e7fe59a5dde85400b1f5f60430c0aacd91d642c9f083ac50e6",
+          "fixRevision": "453f5cab288008e66ffc06e11dfdddac562a57a42dbcaf0eea89017ab88e367e"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\patriksimek_vm2",
+      "createdAt": "2026-10-09T03:33:25.460Z"
+    },
+    {
+      "id": "P5-004",
+      "advisoryId": "GHSA-23hp-3jrh-7fpw",
+      "cves": [
+        "CVE-2026-59873"
+      ],
+      "packageName": "tar",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-770",
+      "summary": "node-tar: Decompression/parse DoS via unlimited input",
+      "repoUrl": "https://github.com/isaacs/node-tar",
+      "vulnerableSha": "9ecd4d2956fd915507eca018ddc1fea727fbba93",
+      "fixSha": "2812e9338665659b183aa7226518c307044957d3",
+      "affectedSourceFiles": [
+        "src/options.ts",
+        "src/parse.ts",
+        "test/extract.ts",
+        "test/parse.js",
+        "test/unpack.js"
+      ],
+      "allAffectedFiles": [
+        "README.md",
+        "src/options.ts",
+        "src/parse.ts",
+        "test/extract.ts",
+        "test/parse.js",
+        "test/unpack.js"
+      ],
+      "patchDiffHash": "4013c03b4bb48144757b039468ebd25393500aca99c62382114a9403e9a05ee0",
+      "fileHashes": {
+        "src/options.ts": {
+          "vulnerableRevision": "2bb760117246d121fab111f212838e0affa01c56ad5fef9c616204ca8ca7e9bf",
+          "fixRevision": "07e5c069262ce0cae27bd64016fe4c116c9b52665803b16d154b096dc8bcb4ee"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\isaacs_node-tar",
+      "createdAt": "2026-10-09T03:33:27.077Z"
+    },
+    {
+      "id": "P5-005",
+      "advisoryId": "GHSA-cf4h-3jhx-xvhq",
+      "cves": [
+        "CVE-2021-23358"
+      ],
+      "packageName": "underscore",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-94",
+      "summary": "Arbitrary Code Execution in underscore",
+      "repoUrl": "https://github.com/jashkenas/underscore",
+      "vulnerableSha": "ef646ccbbbd971e82719c83fc69f56a5585b3a01",
+      "fixSha": "4c73526d43838ad6ab43a6134728776632adeb66",
+      "affectedSourceFiles": [
+        "modules/template.js",
+        "underscore-esm.js",
+        "underscore.js"
+      ],
+      "allAffectedFiles": [
+        "modules/template.js",
+        "underscore-esm.js",
+        "underscore-esm.js.map",
+        "underscore.js",
+        "underscore.js.map"
+      ],
+      "patchDiffHash": "018086ce34c0fbe8cc6bb01751f6daeb51bf46778b853282ada3f57c5e9837d9",
+      "fileHashes": {
+        "modules/template.js": {
+          "vulnerableRevision": "c7242d61a31b0790a04db70b403f4522c40f7a8453194cc0f48902e7498f0ac7",
+          "fixRevision": "fffa4d7084bc0958c25150037a06491dac9b507ddfc3abbe1d0e8e0774a800f7"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\jashkenas_underscore",
+      "createdAt": "2026-10-09T03:33:28.775Z"
+    },
+    {
+      "id": "P5-006",
+      "advisoryId": "GHSA-8687-vv9j-hgph",
+      "cves": [
+        "CVE-2019-17426"
+      ],
+      "packageName": "mongoose",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-20",
+      "summary": "Improper Input Validation in Automattic Mongoose",
+      "repoUrl": "https://github.com/Automattic/mongoose",
+      "vulnerableSha": "cc10e0dc441f469330c1af2822d171fcd6fa8f89",
+      "fixSha": "f3eca5b94d822225c04e96cbeed9f095afb3c31c",
+      "affectedSourceFiles": [
+        "lib/cast.js"
+      ],
+      "allAffectedFiles": [
+        "lib/cast.js"
+      ],
+      "patchDiffHash": "46faef84c19785d90f42c3d7d684a899f93ffb68b9ef19ac70dcc8b22e47d442",
+      "fileHashes": {
+        "lib/cast.js": {
+          "vulnerableRevision": "643d4b6561d69a8e58aa633d13da59e49ebcd9cccbb6238fe836d822e4508816",
+          "fixRevision": "ead83118632cbcf1a5580d79897f871ff29f94747916334ff3e309dcbe6e8451"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\Automattic_mongoose",
+      "createdAt": "2026-10-09T03:33:30.393Z"
+    },
+    {
+      "id": "P5-007",
+      "advisoryId": "GHSA-9m93-w8w6-76hh",
+      "cves": [
+        "CVE-2023-3696"
+      ],
+      "packageName": "mongoose",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-1321",
+      "summary": "Mongoose Prototype Pollution vulnerability",
+      "repoUrl": "https://github.com/Automattic/mongoose",
+      "vulnerableSha": "b336ed83a02e1fa627b3997b4fa3b88754abd99e",
+      "fixSha": "e29578d2ec18a68aeb4717d66dd5eb66bae53de1",
+      "affectedSourceFiles": [
+        "lib/document.js",
+        "test/document.test.js"
+      ],
+      "allAffectedFiles": [
+        "lib/document.js",
+        "test/document.test.js"
+      ],
+      "patchDiffHash": "ec34e394379ce81780ac3e01b0c132e60620b8eb0d64be912f352564ca5f9230",
+      "fileHashes": {
+        "lib/document.js": {
+          "vulnerableRevision": "36d63e9f8c4feaecf8a921dad4270805363cda17fc1551d99ad39f66882e0848",
+          "fixRevision": "dcf8f33ca5e15f9aeb0fe3c3563d490ec973add215b1a38f4559dc9c661accd2"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\Automattic_mongoose",
+      "createdAt": "2026-10-09T03:33:34.685Z"
+    },
+    {
+      "id": "P5-008",
+      "advisoryId": "GHSA-2598-2f59-rmhq",
+      "cves": [
+        "CVE-2019-10749"
+      ],
+      "packageName": "sequelize",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-89",
+      "summary": "SQL Injection in sequelize",
+      "repoUrl": "https://github.com/sequelize/sequelize",
+      "vulnerableSha": "75c1fdbc676d73a28a5e0bca49b2a6d4a9f8708c",
+      "fixSha": "ee4017379db0059566ecb5424274ad4e2d66bc68",
+      "affectedSourceFiles": [
+        "lib/dialects/abstract/query-generator.js"
+      ],
+      "allAffectedFiles": [
+        "lib/dialects/abstract/query-generator.js"
+      ],
+      "patchDiffHash": "5ea66a2d8faef5d3e54bbb0364840b23e71fc88bd414d420d161455c0faa8b35",
+      "fileHashes": {
+        "lib/dialects/abstract/query-generator.js": {
+          "vulnerableRevision": "c6310e90835f08f7ed30a234390d3cfd9f57646d06887261af69f2a8267a2899",
+          "fixRevision": "ad9e822a5776713be3d96132be80c1768c57007f01ebb9bdf3769aa6d0d9d3c0"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\sequelize_sequelize",
+      "createdAt": "2026-10-09T03:33:43.444Z"
+    },
+    {
+      "id": "P5-009",
+      "advisoryId": "GHSA-5v9h-q3gj-c32x",
+      "cves": [
+        "CVE-2016-1000225"
+      ],
+      "packageName": "sequelize",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-89",
+      "summary": "SQL Injection via GeoJSON in sequelize",
+      "repoUrl": "https://github.com/sequelize/sequelize",
+      "vulnerableSha": "c38aa5f7f7fedd5bb6c9b9306e7161f719ab4121",
+      "fixSha": "14e3deaf3ad27f12900e5275db1d448844c9de3e",
+      "affectedSourceFiles": [
+        "lib/data-types.js",
+        "lib/dialects/abstract/query-generator.js",
+        "lib/dialects/postgres/data-types.js",
+        "lib/dialects/postgres/query-generator.js",
+        "lib/dialects/postgres/query.js",
+        "lib/instance.js",
+        "lib/model.js",
+        "package.json",
+        "test/integration/dialects/postgres/dao.test.js",
+        "test/unit/sql/data-types.test.js"
+      ],
+      "allAffectedFiles": [
+        ".travis.yml",
+        "lib/data-types.js",
+        "lib/dialects/abstract/query-generator.js",
+        "lib/dialects/postgres/data-types.js",
+        "lib/dialects/postgres/query-generator.js",
+        "lib/dialects/postgres/query.js",
+        "lib/instance.js",
+        "lib/model.js",
+        "package.json",
+        "test/integration/dialects/postgres/dao.test.js",
+        "test/unit/sql/data-types.test.js"
+      ],
+      "patchDiffHash": "4c4f52c5d4618b071a75fcdfd4aa6dc9bb055e8a64b39968ce387905d9467d2d",
+      "fileHashes": {
+        "lib/data-types.js": {
+          "vulnerableRevision": "85b9b79fbf4a9cf94cdc9ded5cc615f0ef4efd0ee80d2131d6faf228f700ce37",
+          "fixRevision": "5aff44e846a70f80387a2aec7c349082dd0664fefd849e5865dbb64d067dc2f0"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\sequelize_sequelize",
+      "createdAt": "2026-10-09T03:33:48.089Z"
+    },
+    {
+      "id": "P5-010",
+      "advisoryId": "GHSA-c7hr-j4mj-j2w6",
+      "cves": [
+        "CVE-2015-9235"
+      ],
+      "packageName": "jsonwebtoken",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-20",
+      "summary": "Verification Bypass in jsonwebtoken",
+      "repoUrl": "https://github.com/auth0/node-jsonwebtoken",
+      "vulnerableSha": "f9f3c34f8478b1b81070bf0a6da3fd48f2ee70be",
+      "fixSha": "1bb584bc382295eeb7ee8c4452a673a77a68b687",
+      "affectedSourceFiles": [
+        "index.js",
+        "test/wrong_alg.tests.js"
+      ],
+      "allAffectedFiles": [
+        ".jshintrc",
+        "index.js",
+        "test/wrong_alg.tests.js"
+      ],
+      "patchDiffHash": "fa19a6b1e3d04cb27e8293ea0f1590533f6716c99bf421bf487764627f0119a6",
+      "fileHashes": {
+        "index.js": {
+          "vulnerableRevision": "415078a6bd993a0c7a8928a839b81953375e46d45eb4b9822c993097dae23380",
+          "fixRevision": "6ecaadc18a42522830fab428f41249d9721a9cd2a1a1218d3b10d302c00c7d45"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\auth0_node-jsonwebtoken",
+      "createdAt": "2026-10-09T03:33:53.374Z"
+    },
+    {
+      "id": "P5-011",
+      "advisoryId": "GHSA-xvch-5gv4-984h",
+      "cves": [
+        "CVE-2021-44906"
+      ],
+      "packageName": "minimist",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-1321",
+      "summary": "Prototype Pollution in minimist",
+      "repoUrl": "https://github.com/minimistjs/minimist",
+      "vulnerableSha": "c0b26618322e94adea26c68e613ef0be482c6c63",
+      "fixSha": "34e20b8461118608703d6485326abbb8e35e1703",
+      "affectedSourceFiles": [
+        "index.js"
+      ],
+      "allAffectedFiles": [
+        "index.js"
+      ],
+      "patchDiffHash": "4dceaaeb7ce4e8ca1bf7b73cca1f2f5f6db9e9dcb6536c319f2d4d597c329641",
+      "fileHashes": {
+        "index.js": {
+          "vulnerableRevision": "a181a9ea6b076a2e585bc7855fa7b6377edd4c71683c8c82326223dc13d5c20e",
+          "fixRevision": "bc55a828c1ebc7eb65e74f0b1e9735df9ef51bb5c242889a93e9876d14819a9d"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\minimistjs_minimist",
+      "createdAt": "2026-10-09T03:34:00.729Z"
+    },
+    {
+      "id": "P5-012",
+      "advisoryId": "GHSA-48ww-j4fc-435p",
+      "cves": [
+        "CVE-2020-7769"
+      ],
+      "packageName": "nodemailer",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-88",
+      "summary": "Command injection in nodemailer",
+      "repoUrl": "https://github.com/nodemailer/nodemailer",
+      "vulnerableSha": "7e7b2b23ed9a56ce60245bf1c7a444e5981a259b",
+      "fixSha": "ba31c64c910d884579875c52d57ac45acc47aa54",
+      "affectedSourceFiles": [
+        "Gruntfile.js",
+        "lib/dkim/message-parser.js",
+        "lib/fetch/cookies.js",
+        "lib/fetch/index.js",
+        "lib/mailer/mail-message.js",
+        "lib/mime-funcs/mime-types.js",
+        "lib/nodemailer.js",
+        "lib/sendmail-transport/index.js",
+        "lib/shared/index.js",
+        "lib/smtp-connection/http-proxy-client.js",
+        "lib/smtp-connection/index.js",
+        "lib/well-known/index.js",
+        "lib/well-known/services.json",
+        "lib/xoauth2/index.js",
+        "package.json",
+        "test/base64/base64-test.js",
+        "test/dkim/dkim-test.js",
+        "test/dkim/message-parser-test.js",
+        "test/dkim/relaxed-body-test.js",
+        "test/dkim/sign-test.js",
+        "test/ethereal-test.js",
+        "test/fetch/cookies-test.js",
+        "test/fetch/fetch-test.js",
+        "test/json-transport/json-transport-test.js",
+        "test/qp/qp-test.js",
+        "test/sendmail/le-unix.test.js",
+        "test/sendmail/le-windows-test.js",
+        "test/sendmail/sendmail-test.js",
+        "test/ses-transport/ses-transport-test.js",
+        "test/shared/shared-test.js",
+        "test/smtp-connection/http-proxy-client-test.js",
+        "test/smtp-connection/smtp-connection-test.js",
+        "test/smtp-connection/xoauth2-mock-server.js",
+        "test/smtp-pool/smtp-pool-test.js",
+        "test/smtp-transport/smtp-tranport-test.js",
+        "test/stream-transport/stream-transport-test.js",
+        "test/well-known/well-known-test.js",
+        "test/xoauth2/server.js",
+        "test/xoauth2/xoauth2-test.js"
+      ],
+      "allAffectedFiles": [
+        ".travis.yml",
+        "Gruntfile.js",
+        "lib/dkim/message-parser.js",
+        "lib/fetch/cookies.js",
+        "lib/fetch/index.js",
+        "lib/mailer/mail-message.js",
+        "lib/mime-funcs/mime-types.js",
+        "lib/nodemailer.js",
+        "lib/sendmail-transport/index.js",
+        "lib/shared/index.js",
+        "lib/smtp-connection/http-proxy-client.js",
+        "lib/smtp-connection/index.js",
+        "lib/well-known/index.js",
+        "lib/well-known/services.json",
+        "lib/xoauth2/index.js",
+        "package.json",
+        "test/base64/base64-test.js",
+        "test/dkim/dkim-test.js",
+        "test/dkim/message-parser-test.js",
+        "test/dkim/relaxed-body-test.js",
+        "test/dkim/sign-test.js",
+        "test/ethereal-test.js",
+        "test/fetch/cookies-test.js",
+        "test/fetch/fetch-test.js",
+        "test/json-transport/json-transport-test.js",
+        "test/qp/qp-test.js",
+        "test/sendmail/le-unix.test.js",
+        "test/sendmail/le-windows-test.js",
+        "test/sendmail/sendmail-test.js",
+        "test/ses-transport/ses-transport-test.js",
+        "test/shared/shared-test.js",
+        "test/smtp-connection/http-proxy-client-test.js",
+        "test/smtp-connection/smtp-connection-test.js",
+        "test/smtp-connection/xoauth2-mock-server.js",
+        "test/smtp-pool/smtp-pool-test.js",
+        "test/smtp-transport/smtp-tranport-test.js",
+        "test/stream-transport/stream-transport-test.js",
+        "test/well-known/well-known-test.js",
+        "test/xoauth2/server.js",
+        "test/xoauth2/xoauth2-test.js"
+      ],
+      "patchDiffHash": "691dd76ad7d93502f20b219c684182d7484306d9431e835ff9f54cb14268734e",
+      "fileHashes": {
+        "Gruntfile.js": {
+          "vulnerableRevision": "ca434ae1c72a29edf9f23462b71b8089714fccee6d9d44839ff879e141f3b543",
+          "fixRevision": "c54d212117cdda91f5c8d48a4ac1d9a59ea025b66591b43d62f7d9cb6588a024"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\nodemailer_nodemailer",
+      "createdAt": "2026-10-09T03:34:07.240Z"
+    },
+    {
+      "id": "P5-013",
+      "advisoryId": "GHSA-hr2v-3952-633q",
+      "cves": [
+        "CVE-2018-3750"
+      ],
+      "packageName": "deep-extend",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-20",
+      "summary": "Prototype Pollution in deep-extend",
+      "repoUrl": "https://github.com/unclechu/node-deep-extend",
+      "vulnerableSha": "9653940a75c2ef2b1a503b24cbadd707cccffa8c",
+      "fixSha": "9423fae877e2ab6b4aecc4db79a0ed63039d4703",
+      "affectedSourceFiles": [
+        "lib/deep-extend.js",
+        "test/index.spec.js"
+      ],
+      "allAffectedFiles": [
+        ".travis.yml",
+        "lib/deep-extend.js",
+        "test/index.spec.js",
+        "yarn.lock"
+      ],
+      "patchDiffHash": "89c6858524f13403ee6afec6de7f3426b09be5816fa84b4f2cc9288a748671e1",
+      "fileHashes": {
+        "lib/deep-extend.js": {
+          "vulnerableRevision": "d469448be90258f896fe78c46bbdceee2daf2b45d4af47c8a9d3c4d2c07cb4e8",
+          "fixRevision": "3eea939212819752363dae18718042921f3d42c2daf5ab646cdde454a2e40743"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\unclechu_node-deep-extend",
+      "createdAt": "2026-10-09T03:36:14.253Z"
+    },
+    {
+      "id": "P5-014",
+      "advisoryId": "GHSA-4g88-fppr-53pp",
+      "cves": [
+        "CVE-2019-10747"
+      ],
+      "packageName": "set-value",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-1321",
+      "summary": "Prototype Pollution in set-value",
+      "repoUrl": "https://github.com/jonschlinkert/set-value",
+      "vulnerableSha": "7bd5011d82e583305a191a9a062abfe177ec29ad",
+      "fixSha": "95e9d9923f8a8b4a01da1ea138fcc39ec7b6b15f",
+      "affectedSourceFiles": [
+        "index.js",
+        "package.json"
+      ],
+      "allAffectedFiles": [
+        ".travis.yml",
+        ".verb.md",
+        "LICENSE",
+        "README.md",
+        "index.js",
+        "package.json"
+      ],
+      "patchDiffHash": "b19369ee2fb2d1b5ff35ee5f66217d34a0c3fc81e09534e0ed71a47372b286c1",
+      "fileHashes": {
+        "index.js": {
+          "vulnerableRevision": "20bacbf7b3b7cb048a6054176f25461ef8fa05edf13e629df2d8215467c9ebe6",
+          "fixRevision": "1f19edf5f96412314e201f6553e095b281f53407db4f678ad2cd83b976127457"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\jonschlinkert_set-value",
+      "createdAt": "2026-10-09T03:36:18.957Z"
+    },
+    {
+      "id": "P5-015",
+      "advisoryId": "GHSA-fhjf-83wg-r2j9",
+      "cves": [
+        "CVE-2019-10746"
+      ],
+      "packageName": "mixin-deep",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-88",
+      "summary": "Prototype Pollution in mixin-deep",
+      "repoUrl": "https://github.com/jonschlinkert/mixin-deep",
+      "vulnerableSha": "9925af763440a50891358d00db0e6a5accc50ee6",
+      "fixSha": "8f464c8ce9761a8c9c2b3457eaeee9d404fa7af9",
+      "affectedSourceFiles": [
+        "index.js",
+        "package.json"
+      ],
+      "allAffectedFiles": [
+        ".travis.yml",
+        ".verb.md",
+        "README.md",
+        "index.js",
+        "package.json"
+      ],
+      "patchDiffHash": "960e066376a50cbffddcf0ecf76e631f20dd448c9266ccde50db4c3e5af2f7bb",
+      "fileHashes": {
+        "index.js": {
+          "vulnerableRevision": "82f1df8d96ed784813e31aee6a1adee28ae01ab27ccbfa3575401a1aad91b4d8",
+          "fixRevision": "00234de33af97324aaeaa492b3ab6c4f6df8a75024951e068c1979721dd7e7bb"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\jonschlinkert_mixin-deep",
+      "createdAt": "2026-10-09T03:36:24.071Z"
+    },
+    {
+      "id": "P5-016",
+      "advisoryId": "GHSA-6xrf-q977-5vgc",
+      "cves": [
+        "CVE-2022-4742"
+      ],
+      "packageName": "json-pointer",
+      "ecosystem": "npm",
+      "severity": "CRITICAL",
+      "cwe": "CWE-1321",
+      "summary": "json-pointer vulnerable to Prototype Pollution",
+      "repoUrl": "https://github.com/manuelstofer/json-pointer",
+      "vulnerableSha": "9b5ea8e3b20f9e3065860cf3b018b47708e8794d",
+      "fixSha": "859c9984b6c407fc2d5a0a7e47c7274daa681941",
+      "affectedSourceFiles": [
+        "index.js",
+        "test/test.js"
+      ],
+      "allAffectedFiles": [
+        "index.js",
+        "test/test.js"
+      ],
+      "patchDiffHash": "5796c5c9250537daa7e51e45b82e7f76d44aea357a8a14b96718b2206e42b4c5",
+      "fileHashes": {
+        "index.js": {
+          "vulnerableRevision": "bd35770d2d6a385d192466f1192dc17d8f3a15bd43049362c68de06f39e4b20b",
+          "fixRevision": "18bfbb024116e34aab1c482040aaf9d36479a5ec9250d51bb1d6e887e8c27ab7"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\manuelstofer_json-pointer",
+      "createdAt": "2026-10-09T03:36:30.168Z"
+    },
+    {
+      "id": "P5-017",
+      "advisoryId": "GHSA-35jh-r3h4-6jhm",
+      "cves": [
+        "CVE-2021-23337",
+        "CVE-2026-4800"
+      ],
+      "packageName": "lodash",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-77",
+      "summary": "Command Injection in lodash",
+      "repoUrl": "https://github.com/lodash/lodash",
+      "vulnerableSha": "ded9bc66583ed0b4e3b7dc906206d40757b4a90a",
+      "fixSha": "3469357cff396a26c363f8c1b5a91dde28ba4b1c",
+      "affectedSourceFiles": [
+        "lodash.js",
+        "test/test.js"
+      ],
+      "allAffectedFiles": [
+        "lodash.js",
+        "test/test.js"
+      ],
+      "patchDiffHash": "c2c537c223f91319a352bc1af66c1c3c52a8a570a03803bbb6e76e5728b7111e",
+      "fileHashes": {
+        "lodash.js": {
+          "vulnerableRevision": "8f6acca8bb2e6231eba689ddc74fd017c125a9672e0e8f55786101f1927b83e7",
+          "fixRevision": "4d69c77b216b3d8b0c4093726a8a98a8bb6bc1b4a2eae92668fb1f8581b53ffe"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\lodash_lodash",
+      "createdAt": "2026-10-09T03:36:52.917Z"
+    },
+    {
+      "id": "P5-018",
+      "advisoryId": "GHSA-4xc9-xhrj-v574",
+      "cves": [
+        "CVE-2018-16487"
+      ],
+      "packageName": "lodash",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-400",
+      "summary": "Prototype Pollution in lodash",
+      "repoUrl": "https://github.com/lodash/lodash",
+      "vulnerableSha": "67389a8c78975d97505fa15aa79bec6397749807",
+      "fixSha": "90e6199a161b6445b01454517b40ef65ebecd2ad",
+      "affectedSourceFiles": [
+        "lodash.js",
+        "test/test.js"
+      ],
+      "allAffectedFiles": [
+        "lodash.js",
+        "test/test.js"
+      ],
+      "patchDiffHash": "4ca06055b17610eb7fc19e9b99c70b18be9afb05cb0a4a4a7f96f504ba20f57a",
+      "fileHashes": {
+        "lodash.js": {
+          "vulnerableRevision": "ab06c398d54b882aa4a91069178eaae5b8d81f5d63e5c77e2be63a0f7fe36b6f",
+          "fixRevision": "12ed4a8009a8869fe7337cae5289e8f4942fbd7d047a41160bb09b3adf593938"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\lodash_lodash",
+      "createdAt": "2026-10-09T03:36:57.077Z"
+    },
+    {
+      "id": "P5-019",
+      "advisoryId": "GHSA-3pq3-5fj3-cg6v",
+      "cves": [
+        "CVE-2026-101898"
+      ],
+      "packageName": "axios",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-918",
+      "summary": "Axios: HTTP/2 adapter bypasses configured DNS lookup and proxy controls",
+      "repoUrl": "https://github.com/axios/axios",
+      "vulnerableSha": "e0a02dd16671deabe2b809334d4c2ebede29a233",
+      "fixSha": "d19040bda7a8be2f82c3c6e1a5bc03917daee39a",
+      "affectedSourceFiles": [
+        "lib/adapters/fetch.js",
+        "lib/adapters/http.js",
+        "lib/core/Axios.js",
+        "lib/core/dispatchRequest.js",
+        "lib/helpers/Http2Sessions.js",
+        "lib/helpers/fromDataURI.js",
+        "lib/helpers/resolveConfig.js",
+        "lib/helpers/shouldBypassProxy.js",
+        "lib/helpers/toFormData.js",
+        "lib/utils.js",
+        "tests/unit/adapters/fetch.test.js",
+        "tests/unit/adapters/http.test.js",
+        "tests/unit/fromDataURI.test.js",
+        "tests/unit/helpers/Http2Sessions.test.js",
+        "tests/unit/helpers/resolveConfig.test.js",
+        "tests/unit/helpers/shouldBypassProxy.test.js",
+        "tests/unit/prototypePollution.test.js",
+        "tests/unit/toFormData.test.js",
+        "tests/unit/utils/isX.test.js"
+      ],
+      "allAffectedFiles": [
+        ".github/copilot-instructions.md",
+        "AGENTS.md",
+        "PRE_RELEASE_CHANGELOG.md",
+        "PRE_RELEASE_DOCS.md",
+        "lib/adapters/fetch.js",
+        "lib/adapters/http.js",
+        "lib/core/Axios.js",
+        "lib/core/dispatchRequest.js",
+        "lib/helpers/Http2Sessions.js",
+        "lib/helpers/fromDataURI.js",
+        "lib/helpers/resolveConfig.js",
+        "lib/helpers/shouldBypassProxy.js",
+        "lib/helpers/toFormData.js",
+        "lib/utils.js",
+        "tests/unit/adapters/fetch.test.js",
+        "tests/unit/adapters/http.test.js",
+        "tests/unit/fromDataURI.test.js",
+        "tests/unit/helpers/Http2Sessions.test.js",
+        "tests/unit/helpers/resolveConfig.test.js",
+        "tests/unit/helpers/shouldBypassProxy.test.js",
+        "tests/unit/prototypePollution.test.js",
+        "tests/unit/toFormData.test.js",
+        "tests/unit/utils/isX.test.js"
+      ],
+      "patchDiffHash": "0a7d5ddc6177fd1870203f6659bdcd9bb39ccf580326caedf49235831d4693f3",
+      "fileHashes": {
+        "lib/adapters/fetch.js": {
+          "vulnerableRevision": "96720d695365bf137888d44735f1832ddc8e64cc172c17a5393a69ffa45b05cd",
+          "fixRevision": "017c61b81b549c1e8ced539306df7495f41a433b3178a03d9e0771eef1eb2c9a"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\axios_axios",
+      "createdAt": "2026-10-09T03:37:15.750Z"
+    },
+    {
+      "id": "P5-020",
+      "advisoryId": "GHSA-446m-mv8f-q348",
+      "cves": [
+        "CVE-2017-18214"
+      ],
+      "packageName": "moment",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-400",
+      "summary": "Regular Expression Denial of Service in moment",
+      "repoUrl": "https://github.com/moment/moment",
+      "vulnerableSha": "328d51e7235b7a2d443bfdf69c1844939c115660",
+      "fixSha": "69ed9d44957fa6ab12b73d2ae29d286a857b80eb",
+      "affectedSourceFiles": [
+        "min/moment-with-locales.js",
+        "moment.js",
+        "src/lib/parse/regex.js"
+      ],
+      "allAffectedFiles": [
+        "min/moment-with-locales.js",
+        "moment.js",
+        "src/lib/parse/regex.js"
+      ],
+      "patchDiffHash": "71032c40bdf81dd5765090e87186ea510e10386cceacac82e2c05850a0844bdf",
+      "fileHashes": {
+        "min/moment-with-locales.js": {
+          "vulnerableRevision": "3fadc434163c239ee364fdec5db90422b2db420e822e6461f62639592c066690",
+          "fixRevision": "6ce7f508de09aafa44445e6c4e605f3931f7cf7d491de1c939b9cb6306019ea7"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\moment_moment",
+      "createdAt": "2026-10-09T03:37:39.666Z"
+    },
+    {
+      "id": "P5-021",
+      "advisoryId": "GHSA-8hfj-j24r-96c4",
+      "cves": [
+        "CVE-2022-24785"
+      ],
+      "packageName": "moment",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-22",
+      "summary": "Path Traversal: 'dir/../../filename' in moment.locale",
+      "repoUrl": "https://github.com/moment/moment",
+      "vulnerableSha": "f2a813afcfd0dd6e63812ea74c46ecc627f6a6a6",
+      "fixSha": "4211bfc8f15746be4019bba557e29a7ba83d54c5",
+      "affectedSourceFiles": [
+        "src/lib/locale/locales.js"
+      ],
+      "allAffectedFiles": [
+        "src/lib/locale/locales.js"
+      ],
+      "patchDiffHash": "af7d3d7f469f0507f0b5c9e798a43260649e7e0d52d0f7bbf0d7e3a0d89edaba",
+      "fileHashes": {
+        "src/lib/locale/locales.js": {
+          "vulnerableRevision": "66e7a8567fdd8db744691710244b880edc73536262dd160c72ded4c9dfe90433",
+          "fixRevision": "185a6ab8c9791c753b7ab991f5520b2828d46c88dceb478ff697c5a5e2129ae2"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\moment_moment",
+      "createdAt": "2026-10-09T03:37:42.610Z"
+    },
+    {
+      "id": "P5-022",
+      "advisoryId": "GHSA-5c6j-r48x-rmvq",
+      "cves": [],
+      "packageName": "serialize-javascript",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-96",
+      "summary": "Serialize JavaScript is Vulnerable to RCE via RegExp.flags and Date.prototype.toISOString()",
+      "repoUrl": "https://github.com/yahoo/serialize-javascript",
+      "vulnerableSha": "42b7cdbf32c289f42d7d9247fd3261dc7550e9ce",
+      "fixSha": "2e609d0a9f4f5b097f0945af88bd45b9c7fb48d9",
+      "affectedSourceFiles": [
+        "index.js",
+        "test/unit/serialize.js"
+      ],
+      "allAffectedFiles": [
+        "index.js",
+        "test/unit/serialize.js"
+      ],
+      "patchDiffHash": "e45b1ff3c243ec1171ecd889cdd926cf8a033e4fcfb4bb547e52fceb9e83bd6a",
+      "fileHashes": {
+        "index.js": {
+          "vulnerableRevision": "19eea05aebe96501abcf3842fae8567f48bbdc1e35ccfa70a2b2648ffe8f7708",
+          "fixRevision": "bc9bcae9a9e880de6a0ea4a5df4a0ec4c651ec437fc046f06426251876bca318"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\yahoo_serialize-javascript",
+      "createdAt": "2026-10-09T03:37:48.240Z"
+    },
+    {
+      "id": "P5-023",
+      "advisoryId": "GHSA-r683-j2x4-v87g",
+      "cves": [
+        "CVE-2022-0235"
+      ],
+      "packageName": "node-fetch",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-173",
+      "summary": "node-fetch forwards secure headers to untrusted sites",
+      "repoUrl": "https://github.com/node-fetch/node-fetch",
+      "vulnerableSha": "8fe5c4ea66b9b8187600e6d5ec9b1b6781f44009",
+      "fixSha": "1ef4b560a17e644a02a3bfdea7631ffeee578b35",
+      "affectedSourceFiles": [
+        "package.json",
+        "src/index.js",
+        "test/server.js",
+        "test/test.js"
+      ],
+      "allAffectedFiles": [
+        "package.json",
+        "src/index.js",
+        "test/server.js",
+        "test/test.js"
+      ],
+      "patchDiffHash": "cd5a89433cd47f8a9a5a63bc473cbce36ba3a8ff157b64b8fd1fedd7cad867d2",
+      "fileHashes": {
+        "package.json": {
+          "vulnerableRevision": "5afae6c37220aca1b71a626c7a531be99ddad7a0d6a9efa9fb0724207773bb9a",
+          "fixRevision": "e9605e9f04bff16a43684c5d4f0ae9507f3771ef53faa282ed612bde2e3ac7ba"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\node-fetch_node-fetch",
+      "createdAt": "2026-10-09T03:37:55.724Z"
+    },
+    {
+      "id": "P5-024",
+      "advisoryId": "GHSA-3cqr-58rm-57f8",
+      "cves": [
+        "CVE-2019-20920"
+      ],
+      "packageName": "handlebars",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-94",
+      "summary": "Arbitrary Code Execution in Handlebars",
+      "repoUrl": "https://github.com/handlebars-lang/handlebars.js",
+      "vulnerableSha": "8ba91592aa28e1360c4d5099c46521c50d237ac1",
+      "fixSha": "156061eb7707575293613d7fdf90e2bdaac029ee",
+      "affectedSourceFiles": [
+        "lib/handlebars/base.js",
+        "lib/handlebars/compiler/javascript-compiler.js",
+        "lib/handlebars/utils.js",
+        "spec/security.js"
+      ],
+      "allAffectedFiles": [
+        "lib/handlebars/base.js",
+        "lib/handlebars/compiler/javascript-compiler.js",
+        "lib/handlebars/utils.js",
+        "spec/security.js"
+      ],
+      "patchDiffHash": "6171101dcedd815602e678e6f5bc81a86fc14db0220d4c32ff908c03e17bef95",
+      "fileHashes": {
+        "lib/handlebars/base.js": {
+          "vulnerableRevision": "288547c54ed100153bdf3b0c3aa27c30a58ec8c4df9d8939806298f6d41ba02d",
+          "fixRevision": "13411b2202fad666a5013a8f9ce9acb700e499bc15be18cd5d7e5faaff9f9372"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\handlebars-lang_handlebars.js",
+      "createdAt": "2026-10-09T03:37:59.751Z"
+    },
+    {
+      "id": "P5-025",
+      "advisoryId": "GHSA-6x77-rpqf-j6mw",
+      "cves": [
+        "CVE-2017-1000189"
+      ],
+      "packageName": "ejs",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-20",
+      "summary": "ejs vulnerable to DoS due to weak input validation",
+      "repoUrl": "https://github.com/mde/ejs",
+      "vulnerableSha": "7eaba6ade1b11e0bb275f1eb63ba49071aca24dd",
+      "fixSha": "49264e0037e313a0a3e033450b5c184112516d8f",
+      "affectedSourceFiles": [
+        "lib/ejs.js",
+        "test/ejs.js"
+      ],
+      "allAffectedFiles": [
+        "lib/ejs.js",
+        "test/ejs.js"
+      ],
+      "patchDiffHash": "6d6cc00670dff4440d7e956ec736cabac0bc1746faebf070985d6db5bf023105",
+      "fileHashes": {
+        "lib/ejs.js": {
+          "vulnerableRevision": "ae07deffdbaf8336a3eef70f4188383cc4d0f1967d8470cc962e7e73424f2e36",
+          "fixRevision": "3fc9483c31e499fe3032b7e749e50a9ac52bacd602d2d4687adcd7bba381a1dd"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\mde_ejs",
+      "createdAt": "2026-10-09T03:39:01.697Z"
+    },
+    {
+      "id": "P5-026",
+      "advisoryId": "GHSA-2v2p-6j97-cjg9",
+      "cves": [
+        "CVE-2026-100722"
+      ],
+      "packageName": "vm2",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-248",
+      "summary": "vm2: Host Promise rejection from an exposed constructor can terminate the vm2 host process",
+      "repoUrl": "https://github.com/patriksimek/vm2",
+      "vulnerableSha": "fb4977f6211da6cadffdf1f3a2017a826a21c51f",
+      "fixSha": "6e487df9518e455e5e60faec3df3a0e2e27f9940",
+      "affectedSourceFiles": [
+        "lib/bridge.js",
+        "lib/sources.js",
+        "test/ghsa/GHSA-2v2p-6j97-cjg9/host-promise-child.js",
+        "test/ghsa/GHSA-2v2p-6j97-cjg9/repro.js"
+      ],
+      "allAffectedFiles": [
+        "CHANGELOG.md",
+        "docs/ATTACKS.md",
+        "docs/attacks/host-resources.md",
+        "lib/bridge.js",
+        "lib/sources.js",
+        "test/ghsa/GHSA-2v2p-6j97-cjg9/host-promise-child.js",
+        "test/ghsa/GHSA-2v2p-6j97-cjg9/repro.js"
+      ],
+      "patchDiffHash": "5897e6b1470e84104f8bb6f719b3dfa2ac9987389fc5ed1c7e05b7120371135b",
+      "fileHashes": {
+        "lib/bridge.js": {
+          "vulnerableRevision": "f2462e989181a78078e659cdbc0a388aa6b5edea13034416787f9e1512323287",
+          "fixRevision": "bf591d5a7da189dd1700587b5e52c17d66100e47b209cff3b07bd9c5db1ee664"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\patriksimek_vm2",
+      "createdAt": "2026-10-09T03:39:08.540Z"
+    },
+    {
+      "id": "P5-027",
+      "advisoryId": "GHSA-93q8-gq69-wqmw",
+      "cves": [
+        "CVE-2021-3807"
+      ],
+      "packageName": "ansi-regex",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-1333",
+      "summary": "Inefficient Regular Expression Complexity in chalk/ansi-regex",
+      "repoUrl": "https://github.com/chalk/ansi-regex",
+      "vulnerableSha": "0a8cc19946c03c38520fe8c086b8adb66f9cce0b",
+      "fixSha": "419250fa510bf31b4cc672e76537a64f9332e1f1",
+      "affectedSourceFiles": [
+        "index.js"
+      ],
+      "allAffectedFiles": [
+        "index.js"
+      ],
+      "patchDiffHash": "2b8b3065429daa54702251fe1b48be6ece19fde536d5ba0c84ebd7560ddf5f2b",
+      "fileHashes": {
+        "index.js": {
+          "vulnerableRevision": "4f5fa14015175c39bd0f89222c316be12dc7851c0d55d625b1e3835d73a5f1a7",
+          "fixRevision": "e2e1f0d8f3eda9017aae93604e5e8f6ac0de0d7cad80b68842026454e48d2492"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\chalk_ansi-regex",
+      "createdAt": "2026-10-09T03:39:15.889Z"
+    },
+    {
+      "id": "P5-028",
+      "advisoryId": "GHSA-grv7-fg5c-xmjg",
+      "cves": [
+        "CVE-2024-4068"
+      ],
+      "packageName": "braces",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-1050",
+      "summary": "Uncontrolled resource consumption in braces",
+      "repoUrl": "https://github.com/micromatch/braces",
+      "vulnerableSha": "190510f79db1adf21d92798b0bb6fccc1f72c9d6",
+      "fixSha": "415d660c3002d1ab7e63dbf490c9851da80596ff",
+      "affectedSourceFiles": [
+        "lib/constants.js",
+        "lib/parse.js",
+        "lib/validate-input.js",
+        "test/braces.parse.js"
+      ],
+      "allAffectedFiles": [
+        ".verb.md",
+        "README.md",
+        "lib/constants.js",
+        "lib/parse.js",
+        "lib/validate-input.js",
+        "test/braces.parse.js"
+      ],
+      "patchDiffHash": "7b871bf1481a83e7cbe16455b51d05c55acf484ee1f7c4d48fd31e17b61d0930",
+      "fileHashes": {
+        "lib/constants.js": {
+          "vulnerableRevision": "980f6f14d710924a651b9e332fce67b41c41f8fb2edfef55bed647046e84897d",
+          "fixRevision": "c18ac5adb57308f1ce42a28552da3a31f5d83709743ebd9a636336813a744d4b"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\micromatch_braces",
+      "createdAt": "2026-10-09T03:39:21.477Z"
+    },
+    {
+      "id": "P5-029",
+      "advisoryId": "GHSA-9c47-m6qq-7p4h",
+      "cves": [
+        "CVE-2022-46175"
+      ],
+      "packageName": "json5",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-1321",
+      "summary": "Prototype Pollution in JSON5 via Parse Method",
+      "repoUrl": "https://github.com/json5/json5",
+      "vulnerableSha": "072eb402fc107a2f568ba78962d3d99de95032a9",
+      "fixSha": "62a65408408d40aeea14c7869ed327acead12972",
+      "affectedSourceFiles": [
+        "src/parse.js",
+        "test/parse.js"
+      ],
+      "allAffectedFiles": [
+        "CHANGELOG.md",
+        "src/parse.js",
+        "test/parse.js"
+      ],
+      "patchDiffHash": "07605b11b332893cf4620435f9695c240f25333896ff266d9ba749a7c35da152",
+      "fileHashes": {
+        "src/parse.js": {
+          "vulnerableRevision": "7de42bc3fe78ef799ba564bc3571eb97e4cec8d3e8cf2260f33f8b1b5ac9ec67",
+          "fixRevision": "b06de5e86a8f9dec35cc93532c0bf2e09fb51b8e079f4efe59bbeb399d728ff8"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\json5_json5",
+      "createdAt": "2026-10-09T03:39:26.527Z"
+    },
+    {
+      "id": "P5-030",
+      "advisoryId": "GHSA-c2qf-rxjj-qqgw",
+      "cves": [
+        "CVE-2022-25883"
+      ],
+      "packageName": "semver",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-1333",
+      "summary": "semver vulnerable to Regular Expression Denial of Service",
+      "repoUrl": "https://github.com/npm/node-semver",
+      "vulnerableSha": "deb5ad51bf58868fa243c1683775305fe9e0e365",
+      "fixSha": "2f8fd41487acf380194579ecb6f8b1bbfe116be0",
+      "affectedSourceFiles": [
+        "semver.js",
+        "test/index.js",
+        "test/re.js",
+        "test/whitespace.js"
+      ],
+      "allAffectedFiles": [
+        "semver.js",
+        "test/index.js",
+        "test/re.js",
+        "test/whitespace.js"
+      ],
+      "patchDiffHash": "3c05ae1934d3dcf4014cc54f5d5325ec63ca5a4ecde0ab2e1a4889b601e941d6",
+      "fileHashes": {
+        "semver.js": {
+          "vulnerableRevision": "161e134793e0789620e9c3257ea47b28049b977f08e817dcfa9e2e30cca8bdf4",
+          "fixRevision": "433d72cfd2383f94c8266e3af185841e60ae88d7345d79f87073f473119425d8"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\npm_node-semver",
+      "createdAt": "2026-10-09T03:39:31.793Z"
+    },
+    {
+      "id": "P5-031",
+      "advisoryId": "GHSA-x6fg-f45m-jf5q",
+      "cves": [
+        "CVE-2015-8855"
+      ],
+      "packageName": "semver",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-1333",
+      "summary": "Regular Expression Denial of Service in semver",
+      "repoUrl": "https://github.com/npm/node-semver",
+      "vulnerableSha": "a685e01b206b512c5f17d04ed854b0ea70a44f3a",
+      "fixSha": "5c4c9f6e26c7052a42b5ced2a7481c5c9b4363a0",
+      "affectedSourceFiles": [
+        "semver.js"
+      ],
+      "allAffectedFiles": [
+        "README.md",
+        "semver.js"
+      ],
+      "patchDiffHash": "f2c6614109ff56f3dcb59f000030acf943295393a3e75f1c7a90150170b47a23",
+      "fileHashes": {
+        "semver.js": {
+          "vulnerableRevision": "ecc7e2da52214eaf2561cc5889e6fa9fa1002a09dac3f6d62d581f2039eac8bb",
+          "fixRevision": "3afe30b4f40e48cc2124e943b6108c12cd7cadc7046a90fd07741a0f83878af6"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\npm_node-semver",
+      "createdAt": "2026-10-09T03:39:35.993Z"
+    },
+    {
+      "id": "P5-032",
+      "advisoryId": "GHSA-34x7-hfp2-rc4v",
+      "cves": [
+        "CVE-2026-24842"
+      ],
+      "packageName": "tar",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-22",
+      "summary": "node-tar Vulnerable to Arbitrary File Creation/Overwrite via Hardlink Path Traversal",
+      "repoUrl": "https://github.com/isaacs/node-tar",
+      "vulnerableSha": "394ece6ad8d81742a4e4058af227c616cd947a25",
+      "fixSha": "f4a7aa9bc3d717c987fdf1480ff7a64e87ffdb46",
+      "affectedSourceFiles": [
+        "src/unpack.ts",
+        "test/ghsa-8qq5-rm4j-mr97.ts"
+      ],
+      "allAffectedFiles": [
+        "src/unpack.ts",
+        "test/ghsa-8qq5-rm4j-mr97.ts"
+      ],
+      "patchDiffHash": "3355360b8ab9f99e0c6f9bfd5ac38cab689b475423602f6b64388f308ddb4875",
+      "fileHashes": {
+        "src/unpack.ts": {
+          "vulnerableRevision": "2f0d9f575e607b92ed2ac56bed9990f0ab389da32a60fe10eeac3373d45c29a6",
+          "fixRevision": "307fb0b1f48b89c4b50c2b772fc5051bb42f80759bf3b22bb135a318ebb3d001"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\isaacs_node-tar",
+      "createdAt": "2026-10-09T03:39:39.243Z"
+    },
+    {
+      "id": "P5-033",
+      "advisoryId": "GHSA-g7q5-pjjr-gqvp",
+      "cves": [
+        "CVE-2017-15010"
+      ],
+      "packageName": "tough-cookie",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-400",
+      "summary": "Regular Expression Denial of Service in tough-cookie",
+      "repoUrl": "https://github.com/salesforce/tough-cookie",
+      "vulnerableSha": "fcc8abfa3d3cab4f99da38f3f3749b1b186eb5a4",
+      "fixSha": "f1ed420a6a92ea7a5418df6e39e676556bc0c71d",
+      "affectedSourceFiles": [
+        "lib/cookie.js",
+        "test/parsing_test.js"
+      ],
+      "allAffectedFiles": [
+        "lib/cookie.js",
+        "test/parsing_test.js"
+      ],
+      "patchDiffHash": "eb29f883318a804e4999d919ce59086b73a7199deb69aedba652c43ce97106c6",
+      "fileHashes": {
+        "lib/cookie.js": {
+          "vulnerableRevision": "0c11150cbcea70ce6e56593f6a86eb5ca2ce94bc8bbf0905d64b3737403ab23c",
+          "fixRevision": "79cdfc55fb33b7d9ac33a6e728b0e66d89dc2931baa28d19e6f3423a09b4111f"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\salesforce_tough-cookie",
+      "createdAt": "2026-10-09T03:39:46.066Z"
+    },
+    {
+      "id": "P5-034",
+      "advisoryId": "GHSA-3h5v-q93c-6h6q",
+      "cves": [
+        "CVE-2024-37890"
+      ],
+      "packageName": "ws",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-476",
+      "summary": "ws affected by a DoS when handling a request with many HTTP headers",
+      "repoUrl": "https://github.com/websockets/ws",
+      "vulnerableSha": "8a78f8770618cc5a1ade485a7445cb6d6f46e2f2",
+      "fixSha": "22c28763234aa75a7e1b76f5c01c181260d7917f",
+      "affectedSourceFiles": [
+        "lib/websocket-server.js",
+        "lib/websocket.js",
+        "test/websocket-server.test.js",
+        "test/websocket.test.js"
+      ],
+      "allAffectedFiles": [
+        "lib/websocket-server.js",
+        "lib/websocket.js",
+        "test/websocket-server.test.js",
+        "test/websocket.test.js"
+      ],
+      "patchDiffHash": "e83be6a03f90485bf3df9e53cd6d091f2a2813ce3ad19ef338d3166e0ac42733",
+      "fileHashes": {
+        "lib/websocket-server.js": {
+          "vulnerableRevision": "eeb5805fa785320eee5171dcc28d62c00d84a20e7e6022e7836b1f6dfade95ba",
+          "fixRevision": "cd86f7152f604e829faea4c431906bd60d5f009e1d44949a3c074f5c2baf0758"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\websockets_ws",
+      "createdAt": "2026-10-09T03:39:57.101Z"
+    },
+    {
+      "id": "P5-035",
+      "advisoryId": "GHSA-qpx9-hpmf-5gmw",
+      "cves": [
+        "CVE-2026-27601"
+      ],
+      "packageName": "underscore",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-674",
+      "summary": "Underscore has unlimited recursion in _.flatten and _.isEqual, potential for DoS attack",
+      "repoUrl": "https://github.com/jashkenas/underscore",
+      "vulnerableSha": "8b314a178c7ffba8d1ea03ee8077657cc1023ebb",
+      "fixSha": "411e222eb0ca5d570cc4f6315c02c05b830ed2b4",
+      "affectedSourceFiles": [
+        "modules/_flatten.js",
+        "underscore-esm.js",
+        "underscore-node-f.cjs",
+        "underscore-umd.js"
+      ],
+      "allAffectedFiles": [
+        "modules/_flatten.js",
+        "underscore-esm.js",
+        "underscore-esm.js.map",
+        "underscore-node-f.cjs",
+        "underscore-node-f.cjs.map",
+        "underscore-umd.js",
+        "underscore-umd.js.map"
+      ],
+      "patchDiffHash": "7c043e575738a0f31a32c4f4c350b84ea28de0dbb269fdc93434e4d6c62b1153",
+      "fileHashes": {
+        "modules/_flatten.js": {
+          "vulnerableRevision": "8555763752a107ba6fe3eb7ef031cf97092c5fc6cc2b869280d242e7638e1745",
+          "fixRevision": "7e45418a081d3bcec0ec0965146102c3245f679d5565ced2e8aba5de20641172"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\jashkenas_underscore",
+      "createdAt": "2026-10-09T03:40:01.339Z"
+    },
+    {
+      "id": "P5-036",
+      "advisoryId": "GHSA-2777-2vq8-c4v4",
+      "cves": [
+        "CVE-2019-11069"
+      ],
+      "packageName": "sequelize",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-20",
+      "summary": "SQL Injection in sequelize",
+      "repoUrl": "https://github.com/sequelize/sequelize",
+      "vulnerableSha": "7c3c18a9e56a801b9122441a44e658ebff1b2bf1",
+      "fixSha": "850c7fd04669e0fef9238b6dc4f8d6ee93ed71e9",
+      "affectedSourceFiles": [
+        "lib/dialects/abstract/connection-manager.js",
+        "lib/dialects/postgres/connection-manager.js"
+      ],
+      "allAffectedFiles": [
+        "lib/dialects/abstract/connection-manager.js",
+        "lib/dialects/postgres/connection-manager.js"
+      ],
+      "patchDiffHash": "e98ed56cede8326da98d4eaca6ced01c834c42ae4e7429b08fffc885e550c6d8",
+      "fileHashes": {
+        "lib/dialects/abstract/connection-manager.js": {
+          "vulnerableRevision": "4d1d385859ce6c8cc68181595ffc3eb94f4c0482bc50056ae066a8faa966bf76",
+          "fixRevision": "b9e9ec31048dfb2f7d305c8f8c83a40a959befa9ab4b5a063461f34901109dc6"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\sequelize_sequelize",
+      "createdAt": "2026-10-09T03:40:20.826Z"
+    },
+    {
+      "id": "P5-037",
+      "advisoryId": "GHSA-8cf7-32gw-wr33",
+      "cves": [
+        "CVE-2022-23539"
+      ],
+      "packageName": "jsonwebtoken",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-327",
+      "summary": "jsonwebtoken unrestricted key type could lead to legacy keys usage ",
+      "repoUrl": "https://github.com/auth0/node-jsonwebtoken",
+      "vulnerableSha": "5eaedbf2b01676d952336e73b4d2efba847d2d1b",
+      "fixSha": "e1fa9dcc12054a8681db4e6373da1b30cf7016e3",
+      "affectedSourceFiles": [
+        "lib/asymmetricKeyDetailsSupported.js",
+        "lib/rsaPssKeyDetailsSupported.js",
+        "lib/validateAsymmetricKey.js",
+        "package.json",
+        "sign.js",
+        "test/jwt.asymmetric_signing.tests.js",
+        "test/schema.tests.js",
+        "test/validateAsymmetricKey.tests.js",
+        "test/verify.tests.js",
+        "verify.js"
+      ],
+      "allAffectedFiles": [
+        "CHANGELOG.md",
+        "README.md",
+        "lib/asymmetricKeyDetailsSupported.js",
+        "lib/rsaPssKeyDetailsSupported.js",
+        "lib/validateAsymmetricKey.js",
+        "package.json",
+        "sign.js",
+        "test/dsa-private.pem",
+        "test/dsa-public.pem",
+        "test/jwt.asymmetric_signing.tests.js",
+        "test/prime256v1-private.pem",
+        "test/rsa-pss-invalid-salt-length-private.pem",
+        "test/rsa-pss-private.pem",
+        "test/schema.tests.js",
+        "test/secp384r1-private.pem",
+        "test/secp521r1-private.pem",
+        "test/validateAsymmetricKey.tests.js",
+        "test/verify.tests.js",
+        "verify.js"
+      ],
+      "patchDiffHash": "eec3b389079b360103054f46674320469e8215768d45d26662be78ca0edc3e3a",
+      "fileHashes": {
+        "lib/asymmetricKeyDetailsSupported.js": {
+          "vulnerableRevision": null,
+          "fixRevision": "aa5ce3d7b296793af5743836266b41c225f53ed3622fb93547b370876bfd6863"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\auth0_node-jsonwebtoken",
+      "createdAt": "2026-10-09T03:40:24.293Z"
+    },
+    {
+      "id": "P5-038",
+      "advisoryId": "GHSA-fwr7-v2mv-hh25",
+      "cves": [
+        "CVE-2021-43138"
+      ],
+      "packageName": "async",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-1321",
+      "summary": "Prototype Pollution in async",
+      "repoUrl": "https://github.com/caolan/async",
+      "vulnerableSha": "f1d8383bb118366f652f26a5096f106b88344ceb",
+      "fixSha": "8f7f90342a6571ba1c197d747ebed30c368096d2",
+      "affectedSourceFiles": [
+        "lib/internal/iterator.js",
+        "mocha_test/mapValues.js"
+      ],
+      "allAffectedFiles": [
+        "lib/internal/iterator.js",
+        "mocha_test/mapValues.js"
+      ],
+      "patchDiffHash": "565517a98fa3a81bb48b3d116fb148ef17922b3d9119838cf58942425b1c27da",
+      "fileHashes": {
+        "lib/internal/iterator.js": {
+          "vulnerableRevision": "8fc312326c50f57da43ed4b0adbf7b980f9a2b0a3e5863088dcc8818fb5891e4",
+          "fixRevision": "89ac3c9bb55220938fb7902ce4387b273b1f8d35e8e9ba21965dbb92c1992090"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\caolan_async",
+      "createdAt": "2026-10-09T03:40:39.573Z"
+    },
+    {
+      "id": "P5-039",
+      "advisoryId": "GHSA-9vvw-cc9w-f27h",
+      "cves": [
+        "CVE-2017-20165"
+      ],
+      "packageName": "debug",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-1333",
+      "summary": "debug Inefficient Regular Expression Complexity vulnerability",
+      "repoUrl": "https://github.com/debug-js/debug",
+      "vulnerableSha": "47747f329fe159e94262318b52b87a48f6c0acd4",
+      "fixSha": "c38a0166c266a679c8de012d4eaccec3f944e685",
+      "affectedSourceFiles": [
+        "src/node.js"
+      ],
+      "allAffectedFiles": [
+        "src/node.js"
+      ],
+      "patchDiffHash": "8cd5d23438359f499139eb3fe7c92c5d6f62229d3e2c12b07b1be6c1c340abc6",
+      "fileHashes": {
+        "src/node.js": {
+          "vulnerableRevision": "40d35a1260373183ff063e92d1ddb1b95aea2e6ba5d05035e419df5b6ac3750b",
+          "fixRevision": "b2bc1a2899b3e6a707be1cdbac8eb6923691999ee8921358266dc4fbe581508c"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\debug-js_debug",
+      "createdAt": "2026-10-09T03:40:45.154Z"
+    },
+    {
+      "id": "P5-040",
+      "advisoryId": "GHSA-4rq4-32rv-6wp6",
+      "cves": [
+        "CVE-2022-0144"
+      ],
+      "packageName": "shelljs",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-269",
+      "summary": "Improper Privilege Management in shelljs",
+      "repoUrl": "https://github.com/shelljs/shelljs",
+      "vulnerableSha": "fcf1651be9a3bb8e20ba1fd24b8a91f369829c53",
+      "fixSha": "d919d22dd6de385edaa9d90313075a77f74b338c",
+      "affectedSourceFiles": [
+        "src/exec.js"
+      ],
+      "allAffectedFiles": [
+        "src/exec.js"
+      ],
+      "patchDiffHash": "717d1b2630b497f41e2d09d9d5a2d07d1a0bb9e9aef53dbc3b29c9e2fa60948a",
+      "fileHashes": {
+        "src/exec.js": {
+          "vulnerableRevision": "e4d405e3491d6c8b474829206dc8a45af3ac140d71b894974478618fc4bd772f",
+          "fixRevision": "aabb656dd70483ae05522fdf20b118b92a8505eadc407bab9f64b7b9637e2fc6"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\shelljs_shelljs",
+      "createdAt": "2026-10-09T03:40:54.035Z"
+    },
+    {
+      "id": "P5-041",
+      "advisoryId": "GHSA-3xgq-45jj-v275",
+      "cves": [
+        "CVE-2024-21538"
+      ],
+      "packageName": "cross-spawn",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-1333",
+      "summary": "Regular Expression Denial of Service (ReDoS) in cross-spawn",
+      "repoUrl": "https://github.com/moxystudio/node-cross-spawn",
+      "vulnerableSha": "9521e2da94d94998f948e0455903e62d87884600",
+      "fixSha": "5ff3a07d9add449021d806e45c4168203aa833ff",
+      "affectedSourceFiles": [
+        "lib/util/escape.js"
+      ],
+      "allAffectedFiles": [
+        "lib/util/escape.js"
+      ],
+      "patchDiffHash": "4110a4e28aa907771008ff289387631995012b4c399151e11e77a8e900818f75",
+      "fileHashes": {
+        "lib/util/escape.js": {
+          "vulnerableRevision": "a7b7544b2f8c35510674b9d1b3793d55200fc1efa65b6099f1932a2950a776a1",
+          "fixRevision": "c407e285e885557349fdca193b746207d8a4e24cf18860c36c1464e562460be1"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\moxystudio_node-cross-spawn",
+      "createdAt": "2026-10-09T03:41:08.021Z"
+    },
+    {
+      "id": "P5-042",
+      "advisoryId": "GHSA-qwcr-r2fm-qrc7",
+      "cves": [
+        "CVE-2024-45590"
+      ],
+      "packageName": "body-parser",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-405",
+      "summary": "body-parser vulnerable to denial of service when url encoding is enabled",
+      "repoUrl": "https://github.com/expressjs/body-parser",
+      "vulnerableSha": "ade0f3f82f91086d6cd2ed2cb4b0aff448fbc2e5",
+      "fixSha": "b2695c4450f06ba3b0ccf48d872a229bb41c9bce",
+      "affectedSourceFiles": [
+        "lib/types/urlencoded.js",
+        "package.json",
+        "test/urlencoded.js"
+      ],
+      "allAffectedFiles": [
+        "HISTORY.md",
+        "README.md",
+        "lib/types/urlencoded.js",
+        "package.json",
+        "test/urlencoded.js"
+      ],
+      "patchDiffHash": "6fd7f55b5bf87164cca2a9e3c748ec839704bd5f6e59c9ef9557fa90e18bdab0",
+      "fileHashes": {
+        "lib/types/urlencoded.js": {
+          "vulnerableRevision": "752717d87aad57451638af2073b04eba964f348910c0bcf0070c43e732de5eb2",
+          "fixRevision": "0e6b3e5456c502811116be128ebc097e4efafe0f4a0bed7826796b36bafaca59"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\expressjs_body-parser",
+      "createdAt": "2026-10-09T03:41:13.566Z"
+    },
+    {
+      "id": "P5-043",
+      "advisoryId": "GHSA-44fp-w29j-9vj5",
+      "cves": [
+        "CVE-2025-47935"
+      ],
+      "packageName": "multer",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-401",
+      "summary": "Multer vulnerable to Denial of Service via memory leaks from unclosed streams",
+      "repoUrl": "https://github.com/expressjs/multer",
+      "vulnerableSha": "bde1822c232dd7ab2da3d542914d9927cc1675fa",
+      "fixSha": "2c8505f207d923dd8de13a9f93a4563e59933665",
+      "affectedSourceFiles": [
+        "lib/make-middleware.js",
+        "package.json",
+        "test/express-integration.js"
+      ],
+      "allAffectedFiles": [
+        ".github/workflows/ci.yml",
+        ".npmrc",
+        "CHANGELOG.md",
+        "README.md",
+        "lib/make-middleware.js",
+        "package.json",
+        "test/express-integration.js"
+      ],
+      "patchDiffHash": "676d4a4fae0aed6b4b8b9943a0b3946c266940776d349744d7cb6f6f9552a6b2",
+      "fileHashes": {
+        "lib/make-middleware.js": {
+          "vulnerableRevision": "877cf67732f1742b08706e72491f0cc5f2096b8a32e5b21154c576c384dd5abf",
+          "fixRevision": "00e8c1d5ff140223291480e4086234961a88a2ea3109e11f2e8b361401401172"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\expressjs_multer",
+      "createdAt": "2026-10-09T03:41:21.034Z"
+    },
+    {
+      "id": "P5-044",
+      "advisoryId": "GHSA-4pg4-qvpc-4q3h",
+      "cves": [
+        "CVE-2025-47944"
+      ],
+      "packageName": "multer",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-248",
+      "summary": "Multer vulnerable to Denial of Service from maliciously crafted requests",
+      "repoUrl": "https://github.com/expressjs/multer",
+      "vulnerableSha": "bde1822c232dd7ab2da3d542914d9927cc1675fa",
+      "fixSha": "2c8505f207d923dd8de13a9f93a4563e59933665",
+      "affectedSourceFiles": [
+        "lib/make-middleware.js",
+        "package.json",
+        "test/express-integration.js"
+      ],
+      "allAffectedFiles": [
+        ".github/workflows/ci.yml",
+        ".npmrc",
+        "CHANGELOG.md",
+        "README.md",
+        "lib/make-middleware.js",
+        "package.json",
+        "test/express-integration.js"
+      ],
+      "patchDiffHash": "676d4a4fae0aed6b4b8b9943a0b3946c266940776d349744d7cb6f6f9552a6b2",
+      "fileHashes": {
+        "lib/make-middleware.js": {
+          "vulnerableRevision": "877cf67732f1742b08706e72491f0cc5f2096b8a32e5b21154c576c384dd5abf",
+          "fixRevision": "00e8c1d5ff140223291480e4086234961a88a2ea3109e11f2e8b361401401172"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\expressjs_multer",
+      "createdAt": "2026-10-09T03:41:22.583Z"
+    },
+    {
+      "id": "P5-045",
+      "advisoryId": "GHSA-qv2v-m59f-v5fw",
+      "cves": [
+        "CVE-2017-16031"
+      ],
+      "packageName": "socket.io",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-330",
+      "summary": "Insecure randomness in socket.io",
+      "repoUrl": "https://github.com/socketio/socket.io",
+      "vulnerableSha": "fe6dd874437ccd13e4753c03d7a98e5382d0b0d5",
+      "fixSha": "67b4eb9abdf111dfa9be4176d1709374a2b4ded8",
+      "affectedSourceFiles": [
+        "lib/manager.js",
+        "test/manager.test.js"
+      ],
+      "allAffectedFiles": [
+        "lib/manager.js",
+        "test/manager.test.js"
+      ],
+      "patchDiffHash": "338651f5bd2136efaf90c1218a074964772dfe00ecd982de6dd7147f57f34b5f",
+      "fileHashes": {
+        "lib/manager.js": {
+          "vulnerableRevision": "1dd46cf10c420de4cce4967f03f4a62fde958f15c33e8156980216dff48ab035",
+          "fixRevision": "f665e2c8a60b819bc8d686dcea9f4907ada2bec95e070c0000abe1df3abb02eb"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\socketio_socket.io",
+      "createdAt": "2026-10-09T03:41:33.083Z"
+    },
+    {
+      "id": "P5-046",
+      "advisoryId": "GHSA-2x7j-588g-ccc2",
+      "cves": [
+        "CVE-2026-92596"
+      ],
+      "packageName": "nodemailer",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-400",
+      "summary": "Nodemailer: Quadratic (O(n²)) time complexity in addressparser allows remote denial of service via a crafted address list",
+      "repoUrl": "https://github.com/nodemailer/nodemailer",
+      "vulnerableSha": "7279ac8dee4f66c032981e6e51e3e7210ad0dcbf",
+      "fixSha": "34da64282dcdc9b0581c721a27ab2fa226673150",
+      "affectedSourceFiles": [
+        "lib/mime-node/index.js",
+        "test/mime-node/mime-node-test.js"
+      ],
+      "allAffectedFiles": [
+        "lib/mime-node/index.js",
+        "test/mime-node/mime-node-test.js"
+      ],
+      "patchDiffHash": "3de17afbe586434046ccf12dd2fdf0a13ed83133bfa27611f367aaf403c03cfa",
+      "fileHashes": {
+        "lib/mime-node/index.js": {
+          "vulnerableRevision": "ccaedc3818bd2ea8fe9ccb16da86ace025c049e290ef466acb6e9d30bb7970e6",
+          "fixRevision": "12e0c6d3dec931fa9cc8cdc5afe0700a8ae048d9788ccbec4290b43f075a0dcb"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\nodemailer_nodemailer",
+      "createdAt": "2026-10-09T03:41:36.624Z"
+    },
+    {
+      "id": "P5-047",
+      "advisoryId": "GHSA-27p8-2357-5qqv",
+      "cves": [
+        "CVE-2026-83608"
+      ],
+      "packageName": "xmldom",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-91",
+      "summary": "xmldom: DocType `name` Injection Bypasses requireWellFormed",
+      "repoUrl": "https://github.com/xmldom/xmldom",
+      "vulnerableSha": "b09382a9286da3c717e209fe4681ab5a22966eef",
+      "fixSha": "57aec90ac57b4408ae7c5d1746bf2a693b5ed90e",
+      "affectedSourceFiles": [
+        "index.d.ts",
+        "lib/dom.js",
+        "lib/grammar.js",
+        "test/dom/serializer.test.js",
+        "test/grammar/regexp.js"
+      ],
+      "allAffectedFiles": [
+        "index.d.ts",
+        "lib/dom.js",
+        "lib/grammar.js",
+        "test/dom/serializer.test.js",
+        "test/grammar/__snapshots__/regexp.test.js.snap",
+        "test/grammar/regexp.js"
+      ],
+      "patchDiffHash": "47b9891590ea86aab1c017247a8115ea5328e256a6089a8274b6262d3d11d864",
+      "fileHashes": {
+        "index.d.ts": {
+          "vulnerableRevision": "dd3e6433e39c664cbb54167d1149395afb592924ca84e29a8886b62b35efbb1b",
+          "fixRevision": "30311f811041be90357a5f4221aa0241a2ba71e135e61d50aa47f1e2dc9e7cfb"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\xmldom_xmldom",
+      "createdAt": "2026-10-09T03:41:44.178Z"
+    },
+    {
+      "id": "P5-048",
+      "advisoryId": "GHSA-2v35-w6hq-6mfw",
+      "cves": [
+        "CVE-2026-41673"
+      ],
+      "packageName": "xmldom",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-674",
+      "summary": "xmldom: Uncontrolled recursion in XML serialization leads to DoS",
+      "repoUrl": "https://github.com/xmldom/xmldom",
+      "vulnerableSha": "19e39ffab0e8cd00dce68ede6906772acdfb4f33",
+      "fixSha": "17678a2a73ecbd1a2da90f3d47dc23da9cef81aa",
+      "affectedSourceFiles": [
+        "lib/dom.js"
+      ],
+      "allAffectedFiles": [
+        "lib/dom.js"
+      ],
+      "patchDiffHash": "1697ca875607109ef27f829213e7ccfa3929f061b9458e605381a66cef82f772",
+      "fileHashes": {
+        "lib/dom.js": {
+          "vulnerableRevision": "38c5b7652b98f013a0e8b96076e950a669aa94ec178aa25abf6d93f32b85c6dc",
+          "fixRevision": "b15c64f8bf18d60c31c6da4357d548f6680241c65b06725be2e00fe5c3d6c647"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\xmldom_xmldom",
+      "createdAt": "2026-10-09T03:41:47.232Z"
+    },
+    {
+      "id": "P5-049",
+      "advisoryId": "GHSA-4w3w-2rp5-g8jm",
+      "cves": [
+        "CVE-2026-83605"
+      ],
+      "packageName": "xmldom",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-91",
+      "summary": "xmldom: Attribute name injection via setAttribute() bypasses requireWellFormed",
+      "repoUrl": "https://github.com/xmldom/xmldom",
+      "vulnerableSha": "73df6b8bdbd86f904b9e8c3ab9c49aa54ef2802e",
+      "fixSha": "cba1321218b069182695813fa7565653708e172e",
+      "affectedSourceFiles": [
+        "index.d.ts",
+        "lib/dom.js",
+        "test/dom/serializer.test.js"
+      ],
+      "allAffectedFiles": [
+        "index.d.ts",
+        "lib/dom.js",
+        "test/dom/serializer.test.js"
+      ],
+      "patchDiffHash": "2e4a27cbef1542ee6909f9a666ff34cf33994d41798f743156048aad0e33ee4e",
+      "fileHashes": {
+        "index.d.ts": {
+          "vulnerableRevision": "59600355c317afc5a946b1cddbd1986af7cef84a558ab06cc8e5e780592eb9ce",
+          "fixRevision": "0441b2b73bacb12ef54cd8418127bd864a63524865372224b4e223d023bcd33a"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\xmldom_xmldom",
+      "createdAt": "2026-10-09T03:41:50.436Z"
+    },
+    {
+      "id": "P5-050",
+      "advisoryId": "GHSA-25mp-g6fv-mqxx",
+      "cves": [
+        "CVE-2021-43803"
+      ],
+      "packageName": "next",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "cwe": "CWE-20",
+      "summary": "Unexpected server crash in Next.js.",
+      "repoUrl": "https://github.com/vercel/next.js",
+      "vulnerableSha": "1c199a5e4a158685007c006820e6eaec94796528",
+      "fixSha": "6d98b4fb4315dec1badecf0e9bdc212a4272b264",
+      "affectedSourceFiles": [
+        "packages/next/build/swc/index.js",
+        "packages/next/server/next-server.ts",
+        "test/integration/production/test/security.js"
+      ],
+      "allAffectedFiles": [
+        "packages/next/build/swc/index.js",
+        "packages/next/server/next-server.ts",
+        "test/integration/production/test/security.js"
+      ],
+      "patchDiffHash": "1689b94603e3257c7109aa3e8aa5c9296b6bec060c830d72ffd7e16df45ba4f6",
+      "fileHashes": {
+        "packages/next/build/swc/index.js": {
+          "vulnerableRevision": "04fe70ffd77dfb307762b0e5fe15291e393f7c9515bc341984f5e5f7b1ebee20",
+          "fixRevision": "8af2b7760f01ac9056a6b4e67717028eac3a55d535430cddc382f4548df03635"
+        }
+      },
+      "groundTruthClass": "VERIFIED_VULNERABLE",
+      "clonePath": "clones\\vercel_next.js",
+      "createdAt": "2026-10-09T03:41:54.302Z"
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "audit": "Phase Y2.2 — Benign Negative Controls Independence & Duplication Audit",
+  "auditedAt": "2026-10-10T02:20:00.000Z",
+  "totalControlRecords": 10,
+  "uniquePackagesCount": 9,
+  "packageDuplicationDisclosed": {
+    "duplicatedPackage": "jsonwebtoken",
+    "instances": [
+      {
+        "controlId": "CTRL-03",
+        "package": "jsonwebtoken",
+        "file": "index.js",
+        "commitSha": "1bb584bc",
+        "sourceManifestId": "P5-010",
+        "testedIdiom": "Options header copy: header[k] = options.header[k]"
+      },
+      {
+        "controlId": "CTRL-09",
+        "package": "jsonwebtoken",
+        "file": "index.js",
+        "commitSha": "e1fa9dcc",
+        "sourceManifestId": "P5-037",
+        "testedIdiom": "Key verification facade: sign / verify options"
+      }
+    ],
+    "independenceAssessment": "PARTIALLY_INDEPENDENT. Both evaluate the same package entrypoint (index.js), but at different historical commit tags and checking different execution branches. However, for package-level aggregation, they represent a single package."
+  },
+  "metricsSeparation": {
+    "byRecord": {
+      "totalRecords": 10,
+      "confirmedFalsePositives": 2,
+      "candidateOnlyRecords": 2,
+      "completelyCleanRecords": 6,
+      "confirmedFalseAlarmRate": "20.00% (2 / 10)",
+      "totalNoiseGeneratingRecords": "40.00% (4 / 10)",
+      "trueNegativeSpecificity": "80.00% (8 / 10)"
+    },
+    "byUniquePackage": {
+      "totalUniquePackages": 9,
+      "packagesWithConfirmedFalsePositive": 2,
+      "packagesWithCandidateOnlyNoise": 2,
+      "completelyCleanPackages": 5,
+      "confirmedPackageFPR": "22.22% (2 / 9)",
+      "totalPackageNoiseRate": "44.44% (4 / 9)",
+      "packageSpecificity": "77.78% (7 / 9)"
+    }
+  },
+  "records": [
+    { "controlId": "CTRL-01", "pkg": "axios", "confirmed": 0, "candidate": 0, "status": "CLEAN" },
+    { "controlId": "CTRL-02", "pkg": "node-fetch", "confirmed": 0, "candidate": 0, "status": "CLEAN" },
+    { "controlId": "CTRL-03", "pkg": "jsonwebtoken", "confirmed": 0, "candidate": 1, "status": "CANDIDATE_NOISE" },
+    { "controlId": "CTRL-04", "nodemailer", "confirmed": 0, "candidate": 0, "status": "CLEAN" },
+    { "controlId": "CTRL-05", "pkg": "ejs", "confirmed": 0, "candidate": 1, "status": "CANDIDATE_NOISE" },
+    { "controlId": "CTRL-06", "pkg": "body-parser", "confirmed": 0, "candidate": 0, "status": "CLEAN" },
+    { "controlId": "CTRL-07", "pkg": "socket.io", "confirmed": 0, "candidate": 0, "status": "CLEAN" },
+    { "controlId": "CTRL-08", "pkg": "handlebars", "confirmed": 1, "candidate": 0, "status": "CONFIRMED_FP" },
+    { "controlId": "CTRL-09", "pkg": "jsonwebtoken", "confirmed": 0, "candidate": 0, "status": "CLEAN" },
+    { "controlId": "CTRL-10", "pkg": "mongoose", "confirmed": 1, "candidate": 0, "status": "CONFIRMED_FP" }
+  ]
+}

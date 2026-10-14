@@ -1,0 +1,417 @@
+{
+  "phase": "Phase Y1 — Semantic Adjudication of Reference Findings (N=26 Discovery Cohort)",
+  "completedAt": "2026-10-09T23:37:07.868Z",
+  "totalCases": 26,
+  "summaryByClassification": {
+    "REFERENCE_DETECTED_CVE_SPECIFIC": 4,
+    "REFERENCE_DETECTED_RELATED": 3,
+    "UNRELATED_SECURITY_ALERT": 2,
+    "NO_REFERENCE_DETECTION": 17
+  },
+  "pairedDiscriminationCount": 4,
+  "cases": [
+    {
+      "id": "P5-002",
+      "package": "vm2",
+      "advisoryId": "GHSA-248r-7h7q-cr24",
+      "cves": [
+        "CVE-2026-45411"
+      ],
+      "cwe": "CWE-668",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-008",
+      "package": "sequelize",
+      "advisoryId": "GHSA-2598-2f59-rmhq",
+      "cves": [
+        "CVE-2019-10749"
+      ],
+      "cwe": "CWE-89",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-010",
+      "package": "jsonwebtoken",
+      "advisoryId": "GHSA-c7hr-j4mj-j2w6",
+      "cves": [
+        "CVE-2015-9235"
+      ],
+      "cwe": "CWE-20",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-011",
+      "package": "minimist",
+      "advisoryId": "GHSA-xvch-5gv4-984h",
+      "cves": [
+        "CVE-2021-44906"
+      ],
+      "cwe": "CWE-1321",
+      "codeqlVulnRules": [
+        "js/polynomial-redos"
+      ],
+      "codeqlPatchRules": [
+        "js/polynomial-redos"
+      ],
+      "discriminated": false,
+      "classification": "UNRELATED_SECURITY_ALERT",
+      "mechanism": "CodeQL detected polynomial ReDoS in minimist argument parser, but the CVE was prototype pollution (CWE-1321). Alert is unrelated to the reported vulnerability."
+    },
+    {
+      "id": "P5-013",
+      "package": "deep-extend",
+      "advisoryId": "GHSA-hr2v-3952-633q",
+      "cves": [
+        "CVE-2018-3750"
+      ],
+      "cwe": "CWE-20",
+      "codeqlVulnRules": [
+        "js/prototype-pollution-utility"
+      ],
+      "codeqlPatchRules": [],
+      "discriminated": true,
+      "classification": "REFERENCE_DETECTED_CVE_SPECIFIC",
+      "mechanism": "CodeQL detected recursive object property merge without prototype key validation (lib/deep-extend.js L104-117). Patch introduces key check, eliminating alert in patched revision."
+    },
+    {
+      "id": "P5-014",
+      "package": "set-value",
+      "advisoryId": "GHSA-4g88-fppr-53pp",
+      "cves": [
+        "CVE-2019-10747"
+      ],
+      "cwe": "CWE-1321",
+      "codeqlVulnRules": [
+        "js/prototype-polluting-assignment",
+        "js/prototype-polluting-assignment",
+        "js/prototype-polluting-assignment",
+        "js/prototype-pollution-utility"
+      ],
+      "codeqlPatchRules": [
+        "js/prototype-polluting-assignment",
+        "js/prototype-polluting-assignment",
+        "js/prototype-polluting-assignment"
+      ],
+      "discriminated": false,
+      "classification": "REFERENCE_DETECTED_RELATED",
+      "mechanism": "CodeQL detected prototype polluting assignment in set-value. Alert persisted in patched revision because CodeQL models alternate paths still lacking global sanitization."
+    },
+    {
+      "id": "P5-015",
+      "package": "mixin-deep",
+      "advisoryId": "GHSA-fhjf-83wg-r2j9",
+      "cves": [
+        "CVE-2019-10746"
+      ],
+      "cwe": "CWE-88",
+      "codeqlVulnRules": [
+        "js/prototype-pollution-utility"
+      ],
+      "codeqlPatchRules": [],
+      "discriminated": true,
+      "classification": "REFERENCE_DETECTED_CVE_SPECIFIC",
+      "mechanism": "CodeQL detected mixin-deep recursive assign lacking prototype guards. Patch adds validation, clearing alert."
+    },
+    {
+      "id": "P5-016",
+      "package": "json-pointer",
+      "advisoryId": "GHSA-6xrf-q977-5vgc",
+      "cves": [
+        "CVE-2022-4742"
+      ],
+      "cwe": "CWE-1321",
+      "codeqlVulnRules": [
+        "js/prototype-polluting-assignment",
+        "js/prototype-polluting-assignment",
+        "js/prototype-polluting-assignment"
+      ],
+      "codeqlPatchRules": [
+        "js/prototype-polluting-assignment",
+        "js/prototype-polluting-assignment",
+        "js/prototype-polluting-assignment"
+      ],
+      "discriminated": false,
+      "classification": "REFERENCE_DETECTED_RELATED",
+      "mechanism": "CodeQL detected prototype polluting assignment in json-pointer. Alert persists on patched revision."
+    },
+    {
+      "id": "P5-020",
+      "package": "moment",
+      "advisoryId": "GHSA-446m-mv8f-q348",
+      "cves": [
+        "CVE-2017-18214"
+      ],
+      "cwe": "CWE-400",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-021",
+      "package": "moment",
+      "advisoryId": "GHSA-8hfj-j24r-96c4",
+      "cves": [
+        "CVE-2022-24785"
+      ],
+      "cwe": "CWE-22",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-022",
+      "package": "serialize-javascript",
+      "advisoryId": "GHSA-5c6j-r48x-rmvq",
+      "cves": [],
+      "cwe": "CWE-96",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-027",
+      "package": "ansi-regex",
+      "advisoryId": "GHSA-93q8-gq69-wqmw",
+      "cves": [
+        "CVE-2021-3807"
+      ],
+      "cwe": "CWE-1333",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-029",
+      "package": "json5",
+      "advisoryId": "GHSA-9c47-m6qq-7p4h",
+      "cves": [
+        "CVE-2022-46175"
+      ],
+      "cwe": "CWE-1321",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-031",
+      "package": "semver",
+      "advisoryId": "GHSA-x6fg-f45m-jf5q",
+      "cves": [
+        "CVE-2015-8855"
+      ],
+      "cwe": "CWE-1333",
+      "codeqlVulnRules": [
+        "js/polynomial-redos",
+        "js/useless-regexp-character-escape",
+        "js/useless-regexp-character-escape"
+      ],
+      "codeqlPatchRules": [
+        "js/polynomial-redos",
+        "js/useless-regexp-character-escape",
+        "js/useless-regexp-character-escape"
+      ],
+      "discriminated": false,
+      "classification": "REFERENCE_DETECTED_RELATED",
+      "mechanism": "CodeQL detected polynomial ReDoS in semver, matching the CWE, but alert persisted on patched revision."
+    },
+    {
+      "id": "P5-033",
+      "package": "tough-cookie",
+      "advisoryId": "GHSA-g7q5-pjjr-gqvp",
+      "cves": [
+        "CVE-2017-15010"
+      ],
+      "cwe": "CWE-400",
+      "codeqlVulnRules": [
+        "js/polynomial-redos"
+      ],
+      "codeqlPatchRules": [],
+      "discriminated": true,
+      "classification": "REFERENCE_DETECTED_CVE_SPECIFIC",
+      "mechanism": "CodeQL detected polynomial ReDoS in cookie parsing regex depending on library input (lib/cookie.js L321-330). Patch simplifies regex, clearing alert."
+    },
+    {
+      "id": "P5-036",
+      "package": "sequelize",
+      "advisoryId": "GHSA-2777-2vq8-c4v4",
+      "cves": [
+        "CVE-2019-11069"
+      ],
+      "cwe": "CWE-20",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-037",
+      "package": "jsonwebtoken",
+      "advisoryId": "GHSA-8cf7-32gw-wr33",
+      "cves": [
+        "CVE-2022-23539"
+      ],
+      "cwe": "CWE-327",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-038",
+      "package": "async",
+      "advisoryId": "GHSA-fwr7-v2mv-hh25",
+      "cves": [
+        "CVE-2021-43138"
+      ],
+      "cwe": "CWE-1321",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-041",
+      "package": "cross-spawn",
+      "advisoryId": "GHSA-3xgq-45jj-v275",
+      "cves": [
+        "CVE-2024-21538"
+      ],
+      "cwe": "CWE-1333",
+      "codeqlVulnRules": [
+        "js/polynomial-redos"
+      ],
+      "codeqlPatchRules": [],
+      "discriminated": true,
+      "classification": "REFERENCE_DETECTED_CVE_SPECIFIC",
+      "mechanism": "CodeQL detected polynomial ReDoS in shebang regex. Patch replaces/guards regex, clearing alert."
+    },
+    {
+      "id": "P5-042",
+      "package": "body-parser",
+      "advisoryId": "GHSA-qwcr-r2fm-qrc7",
+      "cves": [
+        "CVE-2024-45590"
+      ],
+      "cwe": "CWE-405",
+      "codeqlVulnRules": [
+        "js/reflected-xss"
+      ],
+      "codeqlPatchRules": [
+        "js/reflected-xss"
+      ],
+      "discriminated": false,
+      "classification": "UNRELATED_SECURITY_ALERT",
+      "mechanism": "CodeQL detected reflected XSS in body-parser test/example, but the CVE was URL-encoded body DoS (CWE-405)."
+    },
+    {
+      "id": "P5-043",
+      "package": "multer",
+      "advisoryId": "GHSA-44fp-w29j-9vj5",
+      "cves": [
+        "CVE-2025-47935"
+      ],
+      "cwe": "CWE-401",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-044",
+      "package": "multer",
+      "advisoryId": "GHSA-4pg4-qvpc-4q3h",
+      "cves": [
+        "CVE-2025-47944"
+      ],
+      "cwe": "CWE-248",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-046",
+      "package": "nodemailer",
+      "advisoryId": "GHSA-2x7j-588g-ccc2",
+      "cves": [
+        "CVE-2026-92596"
+      ],
+      "cwe": "CWE-400",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-047",
+      "package": "xmldom",
+      "advisoryId": "GHSA-27p8-2357-5qqv",
+      "cves": [
+        "CVE-2026-83608"
+      ],
+      "cwe": "CWE-91",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-048",
+      "package": "xmldom",
+      "advisoryId": "GHSA-2v35-w6hq-6mfw",
+      "cves": [
+        "CVE-2026-41673"
+      ],
+      "cwe": "CWE-674",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    },
+    {
+      "id": "P5-049",
+      "package": "xmldom",
+      "advisoryId": "GHSA-4w3w-2rp5-g8jm",
+      "cves": [
+        "CVE-2026-83605"
+      ],
+      "cwe": "CWE-91",
+      "codeqlVulnRules": [],
+      "codeqlPatchRules": [],
+      "discriminated": false,
+      "classification": "NO_REFERENCE_DETECTION",
+      "mechanism": "Neither CodeQL nor Semgrep produced in-scope alerts on the vulnerable revision."
+    }
+  ]
+}

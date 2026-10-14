@@ -1,0 +1,121 @@
+{
+  "phase": "Phase Y2 — Sentinel Y Prototype Differential Evaluation",
+  "evaluatedAt": "2026-10-10T06:41:17.413Z",
+  "totalCases": 4,
+  "discriminatedCount": 4,
+  "discriminationRate": "100%",
+  "results": [
+    {
+      "caseId": "P5-013",
+      "package": "deep-extend",
+      "weakness": "CWE-1321 (Prototype Pollution)",
+      "rule": "Y-PROTO-001",
+      "vulnerableSha": "9653940a",
+      "patchedSha": "9423fae8",
+      "file": "lib/deep-extend.js",
+      "vulnerableAlert": true,
+      "patchedAlert": false,
+      "discriminated": true,
+      "vFindingsCount": 1,
+      "pFindingsCount": 0,
+      "witness": {
+        "sourceLocation": {
+          "file": "lib/deep-extend.js",
+          "line": 104,
+          "symbol": "key"
+        },
+        "sinkLocation": {
+          "file": "lib/deep-extend.js",
+          "line": 117,
+          "symbol": "key"
+        },
+        "violatedInvariant": "Key must not resolve to __proto__, constructor, or prototype before assignment",
+        "missingGuard": "Complete guard (filtering __proto__, constructor, and prototype) not found"
+      }
+    },
+    {
+      "caseId": "P5-015",
+      "package": "mixin-deep",
+      "weakness": "CWE-1321 (Prototype Pollution)",
+      "rule": "Y-PROTO-001",
+      "vulnerableSha": "9925af76",
+      "patchedSha": "8f464c8c",
+      "file": "index.js",
+      "vulnerableAlert": true,
+      "patchedAlert": false,
+      "discriminated": true,
+      "vFindingsCount": 3,
+      "pFindingsCount": 0,
+      "witness": {
+        "sourceLocation": {
+          "file": "index.js",
+          "line": 6,
+          "symbol": "key"
+        },
+        "sinkLocation": {
+          "file": "index.js",
+          "line": 8,
+          "symbol": "key"
+        },
+        "violatedInvariant": "Key must not resolve to __proto__, constructor, or prototype before assignment",
+        "missingGuard": "Complete guard (filtering __proto__, constructor, and prototype) not found"
+      }
+    },
+    {
+      "caseId": "P5-033",
+      "package": "tough-cookie",
+      "weakness": "CWE-1333 (ReDoS)",
+      "rule": "Y-REDOS-001",
+      "vulnerableSha": "fcc8abfa",
+      "patchedSha": "f1ed420a",
+      "file": "lib/cookie.js",
+      "vulnerableAlert": true,
+      "patchedAlert": false,
+      "discriminated": true,
+      "vFindingsCount": 3,
+      "pFindingsCount": 1,
+      "witness": {
+        "sourceLocation": {
+          "file": "lib/cookie.js",
+          "line": 603,
+          "symbol": "key"
+        },
+        "sinkLocation": {
+          "file": "lib/cookie.js",
+          "line": 608,
+          "symbol": "prop"
+        },
+        "violatedInvariant": "Key must not resolve to __proto__, constructor, or prototype before assignment",
+        "missingGuard": "Complete guard (filtering __proto__, constructor, and prototype) not found"
+      }
+    },
+    {
+      "caseId": "P5-041",
+      "package": "cross-spawn",
+      "weakness": "CWE-1333 (ReDoS)",
+      "rule": "Y-REDOS-001",
+      "vulnerableSha": "9521e2da",
+      "patchedSha": "5ff3a07d",
+      "file": "lib/util/escape.js",
+      "vulnerableAlert": true,
+      "patchedAlert": false,
+      "discriminated": true,
+      "vFindingsCount": 2,
+      "pFindingsCount": 0,
+      "witness": {
+        "sourceLocation": {
+          "file": "lib/util/escape.js",
+          "line": 21,
+          "symbol": "arg"
+        },
+        "sinkLocation": {
+          "file": "lib/util/escape.js",
+          "line": 21,
+          "symbol": "(\\\\*)\""
+        },
+        "violatedInvariant": "Regex repetition must not backtrack catastrophically on escaping operations",
+        "missingGuard": "Lookahead assertion required to disable JS regex backtracking"
+      }
+    }
+  ]
+}

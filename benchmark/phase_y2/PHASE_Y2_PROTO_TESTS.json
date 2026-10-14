@@ -1,0 +1,31 @@
+{
+  "suite": "Sentinel Y - Prototype Pollution Unit Test Suite",
+  "totalTests": 4,
+  "passed": 4,
+  "results": [
+    {
+      "name": "Vulnerable recursive assignment without guard",
+      "expectedRule": "Y-PROTO-001",
+      "actualFindings": 1,
+      "pass": true
+    },
+    {
+      "name": "Safe recursive assignment with dominant __proto__ and constructor guard",
+      "expectedRule": null,
+      "actualFindings": 0,
+      "pass": true
+    },
+    {
+      "name": "Safe assignment with isValidKey helper guard",
+      "expectedRule": null,
+      "actualFindings": 0,
+      "pass": true
+    },
+    {
+      "name": "Unrelated property write",
+      "expectedRule": null,
+      "actualFindings": 0,
+      "pass": true
+    }
+  ]
+}

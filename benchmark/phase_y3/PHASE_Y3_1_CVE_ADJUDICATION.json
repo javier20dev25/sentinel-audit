@@ -1,0 +1,79 @@
+{
+  "adjudication": "Phase Y3.1 — CVE-Specific Forensic Adjudication of Differential Signals",
+  "adjudicatedAt": "2026-10-10T02:19:00.000Z",
+  "taxonomy": {
+    "DIFFERENTIAL_SIGNAL": "An alert present on the vulnerable revision that disappears on the patched revision in an affected file, but without proof that the alert tracks the root cause of the CVE.",
+    "CVE_SPECIFIC_CONFIRMED": "A differential signal where ruleId, AST location, dataflow, and remediation diff prove the alert identifies the specific defect documented in the advisory.",
+    "PERSISTENT_ALERT": "An alert that fires identically or quasi-identically on both vulnerable and patched revisions.",
+    "UNRELATED_SECURITY_ALERT": "An alert firing on code patterns unrelated to the vulnerability fix.",
+    "NO_ALERT": "No alert generated on either revision."
+  },
+  "cases": [
+    {
+      "caseId": "P5-030",
+      "package": "semver",
+      "cve": "CVE-2022-25883",
+      "ghsa": "GHSA-c2qf-rxjj-qqgw",
+      "weakness": "CWE-1333 (Regular Expression Denial of Service)",
+      "targetFile": "semver.js",
+      "codeqlSignal": {
+        "ruleId": "js/polynomial-redos",
+        "observedStatus": "DIFFERENTIAL_SIGNAL",
+        "vulnAlert": true,
+        "patchAlert": false,
+        "location": "semver.js (range / whitespace regex)",
+        "cveMechanismAlignment": "NVD and GHSA document that semver <7.5.2 is vulnerable to ReDoS when parsing untrusted range strings with crafted whitespace sequences. The CodeQL rule js/polynomial-redos flags regexes containing unbounded repetition of whitespace in range matching. However, because the test run in Task 4428 deleted the SARIF without preserving the codeFlow trace, it is formally adjudicated as a DIFFERENTIAL_SIGNAL pending persistent trace capture, rather than CVE_SPECIFIC_CONFIRMED."
+      },
+      "sentinelYSignal": {
+        "ruleId": "Y-REDOS-001",
+        "vulnAlert": false,
+        "patchAlert": false,
+        "classification": "NO_ALERT"
+      }
+    },
+    {
+      "caseId": "P5-039",
+      "package": "debug",
+      "cve": "CVE-2017-20165",
+      "ghsa": "GHSA-9vvw-cc9w-f27h",
+      "weakness": "CWE-1333 (Regular Expression Denial of Service)",
+      "targetFile": "src/node.js",
+      "codeqlSignal": {
+        "ruleId": "js/polynomial-redos",
+        "observedStatus": "DIFFERENTIAL_SIGNAL",
+        "vulnAlert": true,
+        "patchAlert": false,
+        "location": "src/node.js (format / wildcard regex)",
+        "cveMechanismAlignment": "MITRE documents CVE-2017-20165 as ReDoS in debug <2.6.9 when parsing crafted namespaces via regex. The CodeQL rule js/polynomial-redos flags the namespace splitting regex. However, because Task 4394/4410 deleted the SARIF without archiving the flow path in reference_runs, it is adjudicated as DIFFERENTIAL_SIGNAL pending immutable artifact persistence."
+      },
+      "sentinelYSignal": {
+        "ruleId": "Y-REDOS-001",
+        "vulnAlert": false,
+        "patchAlert": false,
+        "classification": "NO_ALERT"
+      }
+    },
+    {
+      "caseId": "P5-029",
+      "package": "json5",
+      "cve": "CVE-2022-46175",
+      "ghsa": "GHSA-9c47-m6qq-7p4h",
+      "weakness": "CWE-1321 (Prototype Pollution)",
+      "targetFile": "src/parse.js",
+      "codeqlSignal": {
+        "ruleId": null,
+        "observedStatus": "NO_ALERT",
+        "vulnAlert": false,
+        "patchAlert": false
+      },
+      "sentinelYSignal": {
+        "ruleId": "Y-PROTO-001",
+        "observedStatus": "CVE_SPECIFIC_CONFIRMED",
+        "vulnAlert": true,
+        "patchAlert": false,
+        "location": "src/parse.js:50",
+        "cveMechanismAlignment": "GHSA-9c47-m6qq-7p4h documents Prototype Pollution via direct indexed property assignment during JSON5 reviver parsing (internalize function). The patch replaces value[key] = replacement with Object.defineProperty(value, key, { value: replacement, ... }). Sentinel Y detects the exact assignment sink at line 50 and clears on the Object.defineProperty call. Adjudicated as CVE_SPECIFIC_CONFIRMED (Cohort Holdout, not prospective blind)."
+      }
+    }
+  ]
+}

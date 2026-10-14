@@ -1,0 +1,490 @@
+[
+  {
+    "id": "P5-001",
+    "pkg": "handlebars",
+    "ghsa": "GHSA-2w6w-674q-4c4q",
+    "cwe": "CWE-843",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 1,
+    "patchMatchedCount": 1
+  },
+  {
+    "id": "P5-002",
+    "pkg": "vm2",
+    "ghsa": "GHSA-248r-7h7q-cr24",
+    "cwe": "CWE-668",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-003",
+    "vulnVerdict": "CHECKOUT_FAILED",
+    "patchVerdict": "ALERT_PATCHED",
+    "patchMatchedCount": 4
+  },
+  {
+    "id": "P5-004",
+    "pkg": "tar",
+    "ghsa": "GHSA-23hp-3jrh-7fpw",
+    "cwe": "CWE-770",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 2,
+    "patchMatchedCount": 2
+  },
+  {
+    "id": "P5-005",
+    "pkg": "underscore",
+    "ghsa": "GHSA-cf4h-3jhx-xvhq",
+    "cwe": "CWE-94",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 5,
+    "patchMatchedCount": 5
+  },
+  {
+    "id": "P5-006",
+    "vulnVerdict": "CHECKOUT_FAILED",
+    "patchVerdict": "CLEAN_PATCHED",
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-007",
+    "pkg": "mongoose",
+    "ghsa": "GHSA-9m93-w8w6-76hh",
+    "cwe": "CWE-1321",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 1,
+    "patchMatchedCount": 1
+  },
+  {
+    "id": "P5-008",
+    "pkg": "sequelize",
+    "ghsa": "GHSA-2598-2f59-rmhq",
+    "cwe": "CWE-89",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-009",
+    "pkg": "sequelize",
+    "ghsa": "GHSA-5v9h-q3gj-c32x",
+    "cwe": "CWE-89",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 1,
+    "patchMatchedCount": 1
+  },
+  {
+    "id": "P5-010",
+    "pkg": "jsonwebtoken",
+    "ghsa": "GHSA-c7hr-j4mj-j2w6",
+    "cwe": "CWE-20",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-011",
+    "pkg": "minimist",
+    "ghsa": "GHSA-xvch-5gv4-984h",
+    "cwe": "CWE-1321",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-012",
+    "pkg": "nodemailer",
+    "ghsa": "GHSA-48ww-j4fc-435p",
+    "cwe": "CWE-88",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 37,
+    "patchMatchedCount": 37
+  },
+  {
+    "id": "P5-013",
+    "pkg": "deep-extend",
+    "ghsa": "GHSA-hr2v-3952-633q",
+    "cwe": "CWE-20",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-014",
+    "pkg": "set-value",
+    "ghsa": "GHSA-4g88-fppr-53pp",
+    "cwe": "CWE-1321",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-015",
+    "pkg": "mixin-deep",
+    "ghsa": "GHSA-fhjf-83wg-r2j9",
+    "cwe": "CWE-88",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-016",
+    "pkg": "json-pointer",
+    "ghsa": "GHSA-6xrf-q977-5vgc",
+    "cwe": "CWE-1321",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-017",
+    "pkg": "lodash",
+    "ghsa": "GHSA-35jh-r3h4-6jhm",
+    "cwe": "CWE-77",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 2,
+    "patchMatchedCount": 2
+  },
+  {
+    "id": "P5-018",
+    "pkg": "lodash",
+    "ghsa": "GHSA-4xc9-xhrj-v574",
+    "cwe": "CWE-400",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 2,
+    "patchMatchedCount": 2
+  },
+  {
+    "id": "P5-019",
+    "pkg": "axios",
+    "ghsa": "GHSA-3pq3-5fj3-cg6v",
+    "cwe": "CWE-918",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 15,
+    "patchMatchedCount": 15
+  },
+  {
+    "id": "P5-020",
+    "pkg": "moment",
+    "ghsa": "GHSA-446m-mv8f-q348",
+    "cwe": "CWE-400",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-021",
+    "pkg": "moment",
+    "ghsa": "GHSA-8hfj-j24r-96c4",
+    "cwe": "CWE-22",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-022",
+    "pkg": "serialize-javascript",
+    "ghsa": "GHSA-5c6j-r48x-rmvq",
+    "cwe": "CWE-96",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-023",
+    "pkg": "node-fetch",
+    "ghsa": "GHSA-r683-j2x4-v87g",
+    "cwe": "CWE-173",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 3,
+    "patchMatchedCount": 3
+  },
+  {
+    "id": "P5-024",
+    "pkg": "handlebars",
+    "ghsa": "GHSA-3cqr-58rm-57f8",
+    "cwe": "CWE-94",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 1,
+    "patchMatchedCount": 1
+  },
+  {
+    "id": "P5-025",
+    "pkg": "ejs",
+    "ghsa": "GHSA-6x77-rpqf-j6mw",
+    "cwe": "CWE-20",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 1,
+    "patchMatchedCount": 1
+  },
+  {
+    "id": "P5-026",
+    "pkg": "vm2",
+    "ghsa": "GHSA-2v2p-6j97-cjg9",
+    "cwe": "CWE-248",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 4,
+    "patchMatchedCount": 6
+  },
+  {
+    "id": "P5-027",
+    "pkg": "ansi-regex",
+    "ghsa": "GHSA-93q8-gq69-wqmw",
+    "cwe": "CWE-1333",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-028",
+    "pkg": "braces",
+    "ghsa": "GHSA-grv7-fg5c-xmjg",
+    "cwe": "CWE-1050",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 2,
+    "patchMatchedCount": 2
+  },
+  {
+    "id": "P5-029",
+    "pkg": "json5",
+    "ghsa": "GHSA-9c47-m6qq-7p4h",
+    "cwe": "CWE-1321",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-030",
+    "pkg": "semver",
+    "ghsa": "GHSA-c2qf-rxjj-qqgw",
+    "cwe": "CWE-1333",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 2,
+    "patchMatchedCount": 3
+  },
+  {
+    "id": "P5-031",
+    "pkg": "semver",
+    "ghsa": "GHSA-x6fg-f45m-jf5q",
+    "cwe": "CWE-1333",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-032",
+    "pkg": "tar",
+    "ghsa": "GHSA-34x7-hfp2-rc4v",
+    "cwe": "CWE-22",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 1,
+    "patchMatchedCount": 1
+  },
+  {
+    "id": "P5-033",
+    "pkg": "tough-cookie",
+    "ghsa": "GHSA-g7q5-pjjr-gqvp",
+    "cwe": "CWE-400",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-034",
+    "pkg": "ws",
+    "ghsa": "GHSA-3h5v-q93c-6h6q",
+    "cwe": "CWE-476",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 3,
+    "patchMatchedCount": 3
+  },
+  {
+    "id": "P5-035",
+    "pkg": "underscore",
+    "ghsa": "GHSA-qpx9-hpmf-5gmw",
+    "cwe": "CWE-674",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 6,
+    "patchMatchedCount": 6
+  },
+  {
+    "id": "P5-036",
+    "pkg": "sequelize",
+    "ghsa": "GHSA-2777-2vq8-c4v4",
+    "cwe": "CWE-20",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-037",
+    "pkg": "jsonwebtoken",
+    "ghsa": "GHSA-8cf7-32gw-wr33",
+    "cwe": "CWE-327",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-038",
+    "pkg": "async",
+    "ghsa": "GHSA-fwr7-v2mv-hh25",
+    "cwe": "CWE-1321",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-039",
+    "pkg": "debug",
+    "ghsa": "GHSA-9vvw-cc9w-f27h",
+    "cwe": "CWE-1333",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 4,
+    "patchMatchedCount": 4
+  },
+  {
+    "id": "P5-040",
+    "pkg": "shelljs",
+    "ghsa": "GHSA-4rq4-32rv-6wp6",
+    "cwe": "CWE-269",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 15,
+    "patchMatchedCount": 16
+  },
+  {
+    "id": "P5-041",
+    "pkg": "cross-spawn",
+    "ghsa": "GHSA-3xgq-45jj-v275",
+    "cwe": "CWE-1333",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 1
+  },
+  {
+    "id": "P5-042",
+    "pkg": "body-parser",
+    "ghsa": "GHSA-qwcr-r2fm-qrc7",
+    "cwe": "CWE-405",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-043",
+    "pkg": "multer",
+    "ghsa": "GHSA-44fp-w29j-9vj5",
+    "cwe": "CWE-401",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-044",
+    "pkg": "multer",
+    "ghsa": "GHSA-4pg4-qvpc-4q3h",
+    "cwe": "CWE-248",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-045",
+    "pkg": "socket.io",
+    "ghsa": "GHSA-qv2v-m59f-v5fw",
+    "cwe": "CWE-330",
+    "vulnVerdict": "TP_VULNERABLE",
+    "patchVerdict": "ALERT_PATCHED",
+    "vulnMatchedCount": 1,
+    "patchMatchedCount": 1
+  },
+  {
+    "id": "P5-046",
+    "pkg": "nodemailer",
+    "ghsa": "GHSA-2x7j-588g-ccc2",
+    "cwe": "CWE-400",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-047",
+    "pkg": "xmldom",
+    "ghsa": "GHSA-27p8-2357-5qqv",
+    "cwe": "CWE-91",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-048",
+    "pkg": "xmldom",
+    "ghsa": "GHSA-2v35-w6hq-6mfw",
+    "cwe": "CWE-674",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-049",
+    "pkg": "xmldom",
+    "ghsa": "GHSA-4w3w-2rp5-g8jm",
+    "cwe": "CWE-91",
+    "vulnVerdict": "FN_VULNERABLE",
+    "patchVerdict": "CLEAN_PATCHED",
+    "vulnMatchedCount": 0,
+    "patchMatchedCount": 0
+  },
+  {
+    "id": "P5-050",
+    "vulnVerdict": "CHECKOUT_FAILED",
+    "patchVerdict": "ALERT_PATCHED",
+    "patchMatchedCount": 5
+  }
+]
