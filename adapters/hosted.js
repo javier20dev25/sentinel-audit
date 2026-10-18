@@ -40,6 +40,8 @@ function resolveClient(ctx, opts) {
   if (envFallback) candidates.push(envFallback);
   const siblingClient = path.resolve(__dirname, '..', '..', 'sentinel-cloud-client', 'dist', 'index.js');
   if (fs.existsSync(siblingClient)) candidates.push(siblingClient);
+  const closureClient = path.resolve(__dirname, '..', '..', 'sentinel-cloud-client-product-closure', 'dist', 'index.js');
+  if (fs.existsSync(closureClient)) candidates.push(closureClient);
   for (const candidate of candidates) {
     try { return require(candidate); } catch (_) { /* try the next resolution path */ }
   }
@@ -102,6 +104,9 @@ async function runHostedCloud(root, ctx, opts = {}) {
   const env = process.env;
   const baseUrlEnv = hostedCfg.baseUrlEnv || 'SENTINEL_CLOUD_URL';
   const tokenEnv = hostedCfg.tokenEnv || 'SENTINEL_CLOUD_API_TOKEN';
+  const groupKeyEnv = hostedCfg.groupKeyEnv || 'SENTINEL_GROUP_KEY';
+  const memberKeyEnv = hostedCfg.memberKeyEnv || 'SENTINEL_MEMBER_KEY';
+  const repositoryIdEnv = hostedCfg.repositoryIdEnv || 'SENTINEL_GROUP_REPOSITORY_ID';
   let baseUrl;
   try {
     baseUrl = client.getResolvedBaseUrl(opts.apiUrl || env[baseUrlEnv] || undefined, env);
@@ -109,12 +114,24 @@ async function runHostedCloud(root, ctx, opts = {}) {
     return failure(startedAt, 'INVALID_REQUEST', scrub(null, error && error.message || error));
   }
 
+  const groupCredentials = opts.groupCredentials || {
+    groupKey: env[groupKeyEnv],
+    memberKey: env[memberKeyEnv],
+    repositoryId: env[repositoryIdEnv],
+  };
+  const groupParts = [groupCredentials.groupKey, groupCredentials.memberKey, groupCredentials.repositoryId];
+  const hasSomeGroupCredentials = groupParts.some(Boolean);
+  const hasGroupCredentials = groupParts.every((value) => typeof value === 'string' && value.length > 0);
+  if (hasSomeGroupCredentials && !hasGroupCredentials) {
+    return failure(startedAt, 'INVALID_REQUEST', 'group mode requires SENTINEL_GROUP_KEY, SENTINEL_MEMBER_KEY, and SENTINEL_GROUP_REPOSITORY_ID');
+  }
+
   let token = typeof client.resolveToken === 'function' ? client.resolveToken(opts.apiToken || env[tokenEnv] || undefined, env) : null;
   if (!token && typeof client.loadSession === 'function') {
     const session = client.loadSession();
     if (session && typeof session.token === 'string') token = session.token;
   }
-  if (!token) {
+  if (!token && !hasGroupCredentials) {
     return failure(startedAt, 'UNAUTHORIZED', 'no Sentinel Cloud API token is configured (SENTINEL_CLOUD_API_TOKEN or session)');
   }
 
@@ -130,10 +147,12 @@ async function runHostedCloud(root, ctx, opts = {}) {
     return failure(startedAt, 'INVALID_REQUEST', `repository archive could not be built: ${scrub(token, error && error.message || error)}`);
   }
 
-  const submitted = await client.submitRepositoryScan(packed.bytes, token, baseUrl, {
+  const submitted = await client.submitRepositoryScan(packed.bytes, token || '', baseUrl, {
     repoLabel: ctx.pre && ctx.pre.name,
     commitSha: ctx.pre && ctx.pre.commit,
     timeoutMs: opts.submitTimeoutMs,
+    idempotencyKey: `sentinel-audit-${ctx.executionId || (ctx.route && ctx.route.executionId) || ctx.pre && ctx.pre.commit || 'run'}`,
+    groupCredentials: hasGroupCredentials ? groupCredentials : undefined,
   });
   // The archive has left the process; wipe the buffer so the source tree is not
   // retained in memory for the rest of the run.
@@ -145,11 +164,12 @@ async function runHostedCloud(root, ctx, opts = {}) {
 
   const scanId = submitted.data.scanId;
   const statusTransitions = [];
-  const waited = await client.waitForRepositoryScan(scanId, token, baseUrl, {
+  const waited = await client.waitForRepositoryScan(scanId, token || '', baseUrl, {
     pollIntervalMs: policies.pollIntervalMs,
     waitTimeoutMs: policies.waitTimeoutMs,
     signal: opts.signal,
     onStatus: (summary) => statusTransitions.push(summary && summary.status),
+    groupCredentials: hasGroupCredentials ? groupCredentials : undefined,
   });
   if (!waited || waited.ok !== true) {
     try {
