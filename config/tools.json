@@ -5,7 +5,10 @@
       "_comment": "Protocol and transport live in @sentinel/cloud-client. The runner never builds its own authenticated request; it resolves this module and calls it.",
       "clientModule": "@sentinel/cloud-client",
       "baseUrlEnv": "SENTINEL_CLOUD_URL",
-      "tokenEnv": "SENTINEL_CLOUD_API_TOKEN"
+      "tokenEnv": "SENTINEL_CLOUD_API_TOKEN",
+      "groupKeyEnv": "SENTINEL_GROUP_KEY",
+      "memberKeyEnv": "SENTINEL_MEMBER_KEY",
+      "repositoryIdEnv": "SENTINEL_GROUP_REPOSITORY_ID"
     }
   },
   "codeql": {

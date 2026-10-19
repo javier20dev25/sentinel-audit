@@ -209,9 +209,15 @@ function checkHostedHealth(tools, policies, opts = {}, env = process.env) {
   const policy = policies.hosted || {};
   const baseUrlEnv = hosted.baseUrlEnv || 'SENTINEL_CLOUD_URL';
   const tokenEnv = hosted.tokenEnv || 'SENTINEL_CLOUD_API_TOKEN';
+  const groupKeyEnv = hosted.groupKeyEnv || 'SENTINEL_GROUP_KEY';
+  const memberKeyEnv = hosted.memberKeyEnv || 'SENTINEL_MEMBER_KEY';
+  const repositoryIdEnv = hosted.repositoryIdEnv || 'SENTINEL_GROUP_REPOSITORY_ID';
   const clientModule = hosted.clientModule || '@sentinel/cloud-client';
   const baseUrl = opts.apiUrl || env[baseUrlEnv] || null;
   const token = env[tokenEnv] || null;
+  const groupValues = [env[groupKeyEnv], env[memberKeyEnv], env[repositoryIdEnv]];
+  const hasGroupCredentials = groupValues.every((value) => typeof value === 'string' && value.length > 0);
+  const hasPartialGroupCredentials = groupValues.some(Boolean) && !hasGroupCredentials;
   let clientResolvable = false;
   try {
     const { resolveClient } = require('../adapters/hosted');
@@ -222,7 +228,8 @@ function checkHostedHealth(tools, policies, opts = {}, env = process.env) {
   if (policy.enabled !== true) reasons.push('hosted scan is disabled by policy (policies.hosted.enabled is false)');
   if (!clientResolvable) reasons.push(`hosted Cloud client ${clientModule} is not resolvable`);
   if (!baseUrl) reasons.push(`no Sentinel Cloud base URL (${baseUrlEnv})`);
-  if (!token) reasons.push(`no Sentinel Cloud API token (${tokenEnv} or saved session)`);
+  if (!token && !hasGroupCredentials) reasons.push(`no Sentinel Cloud API token (${tokenEnv} or saved session), or configure all group variables: ${groupKeyEnv}, ${memberKeyEnv}, ${repositoryIdEnv}`);
+  if (hasPartialGroupCredentials) reasons.push(`group authentication is incomplete; configure ${groupKeyEnv}, ${memberKeyEnv}, and ${repositoryIdEnv} together`);
   return {
     enabled: policy.enabled === true,
     provider: policy.provider || 'sentinel-cloud',
@@ -230,6 +237,7 @@ function checkHostedHealth(tools, policies, opts = {}, env = process.env) {
     clientResolvable,
     baseUrl,
     tokenPresent: !!token,
+    groupCredentialsPresent: hasGroupCredentials,
     reasons,
   };
 }
