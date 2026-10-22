@@ -7,6 +7,18 @@ and stops for a human before anything is called a vulnerability.
 It does not detect vulnerabilities. It is the thing that keeps detection
 honest.
 
+
+## Part of the Sentinel platform
+
+| Product | Purpose | When to use |
+|---------|---------|-------------|
+| **[Sentinel CLI](https://github.com/javier20dev25/sentinel-cli)** | Local-first SAST, supply chain audit, build intelligence, skills/MCP for AI agents | Run locally, in CI, or as part of agent workflows. No account required for core scans. |
+| **[Sentinel Audit](https://github.com/javier20dev25/sentinel-audit)** | Focused audit workflows (deps/PRs/CI) and reporting | Structured audits with tighter reporting/automation. |
+| **[Sentinel Cloud](https://github.com/javier20dev25/sentinel-cloud)** | Web dashboard, team workflows, full-engine scans with pulses | When you need shared intelligence, collaboration, or the full engine. |
+| **[Sentinel Oracle](https://github.com/javier20dev25/sentinel-oracle)** | Merge authorization/enforcement server (gate PR merges) | When you need to enforce "authorize before merge" with isolated enforcement. |
+
+> **Tip:** If Sentinel Cloud is temporarily unreachable or you hit auth/connection issues, use the CLI directly (`sntnl scan`, `sntnl audit-deps`) — it works standalone without Cloud.
+
 ## Why this exists
 
 Running seven security tools and concatenating their output produces a
