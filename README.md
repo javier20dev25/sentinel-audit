@@ -48,6 +48,9 @@ before a run, start with `node audit-runner.js interactive` (or
 `sentinel-audit interactive` after installation). It helps select a workflow but
 does not replace reading the report or human adjudication.
 
+Coding agents can follow the optional [`sentinel-audit` skill](./skills/sentinel-audit/SKILL.md)
+for health checks, pinned scope, coverage reporting and human-led adjudication.
+
 ```bash
 node audit-runner.js interactive
 node audit-runner.js doctor

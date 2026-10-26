@@ -3,6 +3,13 @@
 All notable changes to the audit runner. Every entry is a freeze tag; nothing
 in this repository is released without one.
 
+## v1.3.1 — Agent workflow guide
+
+Added an optional `skills/sentinel-audit/SKILL.md` for coding agents. It
+requires health checks and pinned commits, makes missing tools explicit, keeps
+candidate adjudication human-led, and prohibits describing incomplete coverage
+as clean. No scanner or verdict logic changed.
+
 ## v1.3.0 — Guided terminal workflow
 
 Added `interactive`, a dependency-free terminal menu for tool health, pinned
