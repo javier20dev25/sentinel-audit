@@ -42,7 +42,14 @@ analyzable surface, and what will it cost.
 
 ## Commands
 
+Sentinel Audit currently ships as a terminal application; it has no graphical
+dashboard. For a guided menu, pinned-commit checks and an optional confirmation
+before a run, start with `node audit-runner.js interactive` (or
+`sentinel-audit interactive` after installation). It helps select a workflow but
+does not replace reading the report or human adjudication.
+
 ```bash
+node audit-runner.js interactive
 node audit-runner.js doctor
 node audit-runner.js preflight <repo> [<repo> ...] --commit <sha>
 node audit-runner.js run <repo> --commit <sha> --routing file|directory|repo

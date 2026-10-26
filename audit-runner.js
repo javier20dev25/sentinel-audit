@@ -9,16 +9,18 @@ const { runAuditV1, rerenderExecution, rerouteExecution, cleanupExecution, conti
 const { adjudicate, auditVerdict, openCandidates } = require('./correlate');
 const { renderReport } = require('./reports/expediente');
 const { writeJson, manifest, contained } = require('./workflow/artifacts');
+const { interactiveArgs } = require('./workflow/interactive');
 
 const EXIT = Object.freeze({ COMPLETE: 0, CANDIDATES: 1, DEGRADED: 2, PREFLIGHT: 3, INFRA: 4 });
 const VALUE_FLAGS = new Set(['repo', 'commit', 'routing', 'only', 'skip', 'output', 'max-heavy', 'max-light', 'timeout', 'name', 'candidate', 'disposition', 'rationale', 'severity', 'priority', 'ground-truth', 'provider', 'api']);
 const BOOLEAN_FLAGS = new Set(['dry-run', 'keep-worktree', 'json', 'verbose', 'quiet', 'help', 'cloud']);
 const PROVIDERS = new Set(['local', 'cloud']);
-const COMMANDS = new Set(['preflight', 'run', 'scan', 'route', 'specialists', 'report', 'cleanup', 'adjudicate', 'doctor', 'resume', 'retry', 'help']);
+const COMMANDS = new Set(['preflight', 'run', 'scan', 'route', 'specialists', 'report', 'cleanup', 'adjudicate', 'doctor', 'resume', 'retry', 'interactive', 'help']);
 
 function usage() {
   return [
     'Sentinel Audit v1',
+    '  sentinel-audit interactive  # guided terminal workflow',
     '  sentinel-audit preflight --repo <path> [--commit <40-sha>] [--json]',
     '  sentinel-audit run --repo <path> --commit <40-sha> [--routing file|directory|repo] [--only tools] [--skip tools] [--dry-run] [--output dir] [--keep-worktree] [--max-heavy n] [--max-light n] [--timeout 30s]',
     '  sentinel-audit run --repo <path> --commit <40-sha> --cloud [--api <url>]  # hosted provider, requires policies.hosted.enabled',
@@ -126,6 +128,12 @@ async function main() {
   const parsed = parse(process.argv);
   const opts = options(parsed);
   if (parsed.command === 'help' || parsed.flags.help) { console.log(usage()); return EXIT.COMPLETE; }
+  if (parsed.command === 'interactive') {
+    const nextArgs = await interactiveArgs();
+    if (!nextArgs) return EXIT.COMPLETE;
+    process.argv = [process.argv[0], process.argv[1], ...nextArgs];
+    return main();
+  }
   if (parsed.command === 'doctor') {
     const { tools, policies } = loadConfig();
     const health = checkToolHealth(tools);

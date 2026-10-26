@@ -3,6 +3,14 @@
 All notable changes to the audit runner. Every entry is a freeze tag; nothing
 in this repository is released without one.
 
+## v1.3.0 — Guided terminal workflow
+
+Added `interactive`, a dependency-free terminal menu for tool health, pinned
+preflight, confirmed audit runs, and report rendering. It validates a full
+commit SHA and scope before returning a command, and always asks before an
+audit run. It does not alter candidate decisions or claim a vulnerability.
+The README now documents the CLI-only experience and guided entry point.
+
 ## v1.5 - `audit-runner-v1.5-freeze`
 
 Added: review state, and a real opt-out for Purple. Fixed: candidate locations

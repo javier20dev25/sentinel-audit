@@ -1,8 +1,8 @@
 {
     "name":  "sentinel-audit",
-    "version":  "1.1.0",
+    "version":  "1.3.0",
     "type":  "commonjs",
-    "description":  "Sentinel Audit v1: security orchestrator that runs Sentinel Cloud plus scoped specialists over an immutable repository commit and retains auditable evidence.",
+    "description":  "Terminal-first security audit orchestrator for pinned repository commits, analyzer coverage, raw evidence and human adjudication.",
     "bin":  {
                 "sentinel-audit":  "./audit-runner.js"
             },
