@@ -9,26 +9,28 @@ const { runAuditV1, rerenderExecution, rerouteExecution, cleanupExecution, conti
 const { adjudicate, auditVerdict, openCandidates } = require('./correlate');
 const { renderReport } = require('./reports/expediente');
 const { writeJson, manifest, contained } = require('./workflow/artifacts');
-const { interactiveArgs } = require('./workflow/interactive');
+const { interactiveArgs, handlePRWorkflow, handleKeysWorkflow } = require('./workflow/interactive');
+const { DISCLAIMER_TEXT } = require('./lib/cloud-keys');
 
 const EXIT = Object.freeze({ COMPLETE: 0, CANDIDATES: 1, DEGRADED: 2, PREFLIGHT: 3, INFRA: 4 });
 const VALUE_FLAGS = new Set(['repo', 'commit', 'routing', 'only', 'skip', 'output', 'max-heavy', 'max-light', 'timeout', 'name', 'candidate', 'disposition', 'rationale', 'severity', 'priority', 'ground-truth', 'provider', 'api']);
 const BOOLEAN_FLAGS = new Set(['dry-run', 'keep-worktree', 'json', 'verbose', 'quiet', 'help', 'cloud']);
 const PROVIDERS = new Set(['local', 'cloud']);
-const COMMANDS = new Set(['preflight', 'run', 'scan', 'route', 'specialists', 'report', 'cleanup', 'adjudicate', 'doctor', 'resume', 'retry', 'interactive', 'help']);
+const COMMANDS = new Set(['preflight', 'run', 'scan', 'route', 'specialists', 'report', 'cleanup', 'adjudicate', 'doctor', 'resume', 'retry', 'interactive', 'help', 'pr', 'keys']);
 
 function usage() {
   return [
-    'Sentinel Audit v1',
-    '  sentinel-audit interactive  # guided terminal workflow',
+    'Sentinel Audit v1 — Security Intelligence Orchestrator',
+    '  sentinel-audit interactive  # guided terminal workflow (PR scanning, keys, audits)',
+    '  sentinel-audit pr           # list and scan repository PRs with Lite or Cloud pulses',
+    '  sentinel-audit keys         # manage, list, add, and revoke Sentinel Cloud API keys',
     '  sentinel-audit preflight --repo <path> [--commit <40-sha>] [--json]',
-    '  sentinel-audit run --repo <path> --commit <40-sha> [--routing file|directory|repo] [--only tools] [--skip tools] [--dry-run] [--output dir] [--keep-worktree] [--max-heavy n] [--max-light n] [--timeout 30s]',
-    '  sentinel-audit run --repo <path> --commit <40-sha> --cloud [--api <url>]  # hosted provider, requires policies.hosted.enabled',
+    '  sentinel-audit run --repo <path> --commit <40-sha> [--routing file|directory|repo] [--only tools] [--skip tools] [--dry-run] [--output dir]',
+    '  sentinel-audit run --repo <path> --commit <40-sha> --cloud [--api <url>]  # hosted provider',
     '  sentinel-audit scan --repo <path> --commit <40-sha> [run flags]  # Stage A + routing only',
-    '  sentinel-audit route <execution-dir> --routing file|directory|repo',
-    '  sentinel-audit specialists <execution-dir> [--only codeql,semgrep] [--max-heavy n] [--max-light n] [--timeout 30s]',
-    '  sentinel-audit resume <execution-dir> [--only tools]  |  retry <execution-dir> --only tool',
-    '  sentinel-audit report <execution-dir> | cleanup <execution-dir> | adjudicate <execution-dir> --candidate ID --disposition VALUE --rationale TEXT | doctor',
+    '  sentinel-audit doctor       # check tools and hosted connectivity',
+    '',
+    `⚖ AVISO DE RESPONSABILIDAD: ${DISCLAIMER_TEXT}`,
     '',
     'Flags: --repo --commit --routing --only --skip --dry-run --output --keep-worktree --max-heavy --max-light --timeout --cloud --provider local|cloud --api --json --verbose --quiet',
     'Exit codes: 0 COMPLETE; 1 FINDINGS/CANDIDATES; 2 DEGRADED/INCOMPLETE; 3 PREFLIGHT/CONFIG; 4 UNRECOVERABLE INFRASTRUCTURE.',
@@ -133,6 +135,26 @@ async function main() {
     if (!nextArgs) return EXIT.COMPLETE;
     process.argv = [process.argv[0], process.argv[1], ...nextArgs];
     return main();
+  }
+  if (parsed.command === 'pr') {
+    const readline = require('node:readline/promises');
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    try {
+      await handlePRWorkflow(rl);
+    } finally {
+      rl.close();
+    }
+    return EXIT.COMPLETE;
+  }
+  if (parsed.command === 'keys') {
+    const readline = require('node:readline/promises');
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    try {
+      await handleKeysWorkflow(rl);
+    } finally {
+      rl.close();
+    }
+    return EXIT.COMPLETE;
   }
   if (parsed.command === 'doctor') {
     const { tools, policies } = loadConfig();
