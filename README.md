@@ -42,6 +42,23 @@ analyzable surface, and what will it cost.
 
 ## Commands
 
+### Windows launcher
+
+The repository includes `sentinel-audit.cmd`, a dependency-free launcher for
+PowerShell and Command Prompt. Add the checkout to the user PATH once, then
+open a new terminal:
+
+```powershell
+$auditRoot = 'C:\Users\sleyt\sentinel-audit'
+$userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+if ($userPath -notlike "*$auditRoot*") {
+  [Environment]::SetEnvironmentVariable('Path', "$userPath;$auditRoot", 'User')
+}
+```
+
+Verify with `sentinel-audit --help`. The launcher requires Node.js 20 or
+newer and does not elevate privileges or install anything globally.
+
 Sentinel Audit currently ships as a terminal application; it has no graphical
 dashboard. For a guided menu, pinned-commit checks and an optional confirmation
 before a run, start with `node audit-runner.js interactive` (or

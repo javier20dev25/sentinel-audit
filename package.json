@@ -16,6 +16,7 @@
                   "rules/",
                   "workflow/",
                   "audit-runner.js",
+                  "sentinel-audit.cmd",
                   "README.md",
                   "LICENSE",
                   "SECURITY.md",
