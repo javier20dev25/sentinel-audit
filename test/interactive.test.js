@@ -19,35 +19,38 @@ test('interactive menu shows the GitHub identity and keeps the disclaimer opt-in
   const io = scriptedIO(['8']);
   assert.equal(await interactiveArgs(io), null);
   assert.match(io.output.text, /SENTINEL AUDIT/);
-  assert.match(io.output.text, /GitHub:/);
-  assert.match(io.output.text, /7\) Leer aviso de responsabilidad/);
+  assert.match(io.output.text, /Cuenta GitHub/);
+  assert.match(io.output.text, /OPERACIONES/);
+  assert.match(io.output.text, /RESPONSABILIDAD/);
+  assert.match(io.output.text, /╭─ SENTINEL AUDIT/);
   assert.doesNotMatch(io.output.text, /El usuario es el único responsable/);
   assert.doesNotMatch(io.output.text, /[\u{1F300}-\u{1FAFF}]/u);
 });
 
 test('terminal output strips control sequences from repository evidence', () => {
   assert.equal(safeTerminal('safe\u001b[2J\u001b]0;owned\u0007\u0007text'), 'safe text');
+  assert.equal(safeTerminal('🛡️ report 🚨'), ' report ');
 });
 
 test('key management returns to the main menu without terminating the CLI', async () => {
   const io = scriptedIO(['2', '0', '8']);
   assert.equal(await interactiveArgs(io), null);
-  assert.match(io.output.text, /GESTIÓN DE CLAVES DE SENTINEL CLOUD/);
-  assert.match(io.output.text, /0\) Volver al menú principal/);
-  assert.equal((io.output.text.match(/Selecciona una opción:/g) || []).length, 2);
+  assert.match(io.output.text, /CLAVES SENTINEL CLOUD/);
+  assert.match(io.output.text, /00  Volver al menu principal/);
+  assert.equal((io.output.text.match(/OPERACIONES/g) || []).length, 2);
 });
 
 test('empty menu input exits cleanly instead of throwing or re-entering a broken form', async () => {
   const io = scriptedIO(['']);
   assert.equal(await interactiveArgs(io), null);
-  assert.match(io.output.text, /8\) Salir/);
+  assert.match(io.output.text, /08  SALIR/);
 });
 
 test('pinned workflow options advertise GitHub repo and commit pickers', async () => {
   const io = scriptedIO(['8']);
   await interactiveArgs(io);
-  assert.match(io.output.text, /Elegir repo y commit de GitHub y ejecutar auditoría/);
-  assert.match(io.output.text, /Elegir repo y commit de GitHub para preflight/);
+  assert.match(io.output.text, /AUDITAR COMMIT/);
+  assert.match(io.output.text, /PREFLIGHT/);
   assert.doesNotMatch(io.output.text, /Ruta del repositorio:/);
   assert.doesNotMatch(io.output.text, /SHA completo de 40 caracteres:/);
 });

@@ -51,6 +51,12 @@ remote automatically and begins listing open pull requests without requiring
 an extra confirmation keystroke. When no remote is available, choose a
 repository from the authenticated account's repository list.
 
+The menu, repository and PR selectors, engine choice, findings, and saved
+reports render in bordered panels. Findings use severity-colored panels and
+show a concise snippet; the full evidence remains in the execution report.
+The stage map uses a slower live spinner and a bordered status view so progress
+is readable during longer specialist runs. Set `NO_COLOR=1` for plain output.
+
 Menu navigation is numbered throughout: `0` or Enter backs out of selection
 screens, and Enter at the main menu exits. Options 4 and 5 let you choose a
 repository and recent commit from GitHub, then run an audit or preflight on an
