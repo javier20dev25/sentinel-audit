@@ -49,6 +49,14 @@ Hosted engine integrations currently return an aggregate result, not events from
 their internal analyzer stages. The map names the provider and reports the
 aggregate status and signal count without inventing internal tools or timing.
 
+The guided PR workflow shows the selected engine explicitly. Sentinel Lite
+shows the GitHub head SHA, local diff download and analysis, and result; it
+rechecks the PR head after fetching the diff and stops if the SHA changed.
+Sentinel Cloud Pulses shows the head SHA, Cloud key/capability check, full PR
+scan, and aggregate result. A degraded Cloud response is never presented as a
+clean result. The `/api/scan/pr` endpoint does not expose internal analyzer
+progress, so the map does not pretend to show it.
+
 ## Evidence
 
 The map is an operator view, not the audit record. The execution directory
