@@ -64,6 +64,27 @@ node audit-runner.js adjudicate <executionDir> --candidate SAR-0001 \
     --disposition <DISPOSITION> --priority <P0|P1|P2|P3> --rationale "..."
 ```
 
+### PR scan: Sentinel Lite o Pulsos de Sentinel Cloud
+
+En el flujo `interactive`, el análisis de PR permite elegir el motor para cada
+ejecución. Sentinel Lite descarga solo el diff y lo analiza en este equipo; no
+requiere cuenta ni consume Pulsos. Comprueba el SHA antes y después de descargar
+el diff y se detiene si el PR cambió. Sentinel Cloud usa una clave agregada con
+`sentinel-audit keys`, valida el permiso `remote_scan` y solicita el análisis
+completo del PR al endpoint `/api/scan/pr`. Cloud vuelve a comprobar el SHA del
+head antes de iniciar y consume un Pulso por análisis completado.
+
+El modo Cloud requiere `SENTINEL_CLOUD_URL` y una clave válida. La clave se envía
+solo a Sentinel Cloud; el token de GitHub de `gh` nunca se reenvía. Si el head
+cambia entre la selección y el inicio, Cloud rechaza el análisis para que no se
+atribuya el resultado a un commit distinto. La API devuelve un resumen agregado,
+no el avance de cada analizador interno; el mapa de terminal señala ese límite.
+Ambas opciones muestran su propio mapa de etapas para que se distinga el análisis
+local del remoto.
+
+La ruta `run --provider cloud` es otro flujo: sube un archivo del repositorio y
+continúa con el enrutamiento y los analizadores especialistas de Audit.
+
 ### Mapa de ejecución en terminal
 
 Los comandos `run` y `scan` muestran un mapa en vivo en stderr: preflight,
