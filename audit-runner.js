@@ -40,7 +40,9 @@ function usage() {
 
 function parse(argv) {
   const args = argv.slice(2);
-  const command = args.shift() || 'doctor';
+  // Starting the executable with no arguments is the human-facing entry point.
+  // Keep diagnostics available explicitly as `sentinel-audit doctor`.
+  const command = args.shift() || 'interactive';
   if (!COMMANDS.has(command) && command !== '--help' && command !== '-h') throw new Error(`unknown command: ${command}`);
   const flags = {};
   const positional = [];

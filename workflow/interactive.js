@@ -290,6 +290,9 @@ async function interactiveArgs(io) {
       if (!/^[a-f0-9]{40}$/i.test(commit)) throw new Error('Ingresa un SHA válido de 40 caracteres');
       if (choice === '5') return ['preflight', repo, '--commit', commit];
       const routing = (await io.question('Alcance [file/directory/repo] (default: file): ')).trim() || 'file';
+      if (!['file', 'directory', 'repo'].includes(routing)) {
+        throw new Error('Alcance debe ser file, directory o repo');
+      }
       const confirm = (await io.question(`¿Ejecutar analizadores en ${repo} @ ${commit}? [y/N]: `)).trim().toLowerCase();
       if (confirm !== 'y' && confirm !== 'yes') return null;
       return ['run', repo, '--commit', commit, '--routing', routing];

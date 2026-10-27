@@ -60,10 +60,10 @@ Verify with `sentinel-audit --help`. The launcher requires Node.js 20 or
 newer and does not elevate privileges or install anything globally.
 
 Sentinel Audit currently ships as a terminal application; it has no graphical
-dashboard. For a guided menu, pinned-commit checks and an optional confirmation
-before a run, start with `node audit-runner.js interactive` (or
-`sentinel-audit interactive` after installation). It helps select a workflow but
-does not replace reading the report or human adjudication.
+dashboard. Running `sentinel-audit` opens the guided terminal workflow. The
+same menu is available with `sentinel-audit interactive`; use
+`sentinel-audit doctor` for a machine-readable readiness report. The menu helps
+select a workflow but does not replace reading the report or human adjudication.
 
 Coding agents can follow the optional [`sentinel-audit` skill](./skills/sentinel-audit/SKILL.md)
 for health checks, pinned scope, coverage reporting and human-led adjudication.
