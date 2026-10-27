@@ -29,19 +29,25 @@ test('terminal output strips control sequences from repository evidence', () => 
   assert.equal(safeTerminal('safe\u001b[2J\u001b]0;owned\u0007\u0007text'), 'safe text');
 });
 
-test('guided flow builds a pinned preflight command', async () => {
-  const sha = 'a'.repeat(40);
-  assert.deepEqual(await interactiveArgs(scriptedIO(['5', 'C:/repo', sha])), ['preflight', 'C:/repo', '--commit', sha]);
+test('key management returns to the main menu without terminating the CLI', async () => {
+  const io = scriptedIO(['2', '0', '8']);
+  assert.equal(await interactiveArgs(io), null);
+  assert.match(io.output.text, /GESTIÓN DE CLAVES DE SENTINEL CLOUD/);
+  assert.match(io.output.text, /0\) Volver al menú principal/);
+  assert.equal((io.output.text.match(/Selecciona una opción:/g) || []).length, 2);
 });
 
-test('guided flow asks for confirmation before returning a run command', async () => {
-  const sha = 'b'.repeat(40);
-  assert.deepEqual(await interactiveArgs(scriptedIO(['4', 'C:/repo', sha, 'repo', 'yes'])), ['run', 'C:/repo', '--commit', sha, '--routing', 'repo']);
-  assert.equal(await interactiveArgs(scriptedIO(['4', 'C:/repo', sha, 'file', 'no'])), null);
+test('empty menu input exits cleanly instead of throwing or re-entering a broken form', async () => {
+  const io = scriptedIO(['']);
+  assert.equal(await interactiveArgs(io), null);
+  assert.match(io.output.text, /8\) Salir/);
 });
 
-test('guided flow rejects incomplete commit identities and invalid scopes', async () => {
-  await assert.rejects(interactiveArgs(scriptedIO(['5', 'C:/repo', 'abc'])), /40 caracteres/);
-  const sha = 'c'.repeat(40);
-  await assert.rejects(interactiveArgs(scriptedIO(['4', 'C:/repo', sha, 'branch'])), /Alcance debe ser/);
+test('pinned workflow options advertise GitHub repo and commit pickers', async () => {
+  const io = scriptedIO(['8']);
+  await interactiveArgs(io);
+  assert.match(io.output.text, /Elegir repo y commit de GitHub y ejecutar auditoría/);
+  assert.match(io.output.text, /Elegir repo y commit de GitHub para preflight/);
+  assert.doesNotMatch(io.output.text, /Ruta del repositorio:/);
+  assert.doesNotMatch(io.output.text, /SHA completo de 40 caracteres:/);
 });

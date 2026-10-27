@@ -12,6 +12,7 @@ const { runAuditV1 } = require('./pipeline-v1');
 const { createTerminalProgress } = require('./terminal-progress');
 const { loadConfig } = require('../lib/core');
 const { resolveClient } = require('../adapters/hosted');
+const { preflight } = require('./preflight');
 
 const ANSI = process.env.NO_COLOR == null && process.stdout.isTTY;
 const paint = (code, text) => ANSI ? `\u001b[${code}m${text}\u001b[0m` : text;
@@ -29,11 +30,11 @@ let cachedGitHubSession;
 function checkGitHubSession() {
   if (cachedGitHubSession) return cachedGitHubSession;
   try {
-    const out = execSync('gh auth status', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-    const match = out.match(/account\s+([\w\d_-]+)/i) || out.match(/Logged in to [^\s]+ account ([\w\d_-]+)/i);
+    const account = execFileSync('gh', ['api', 'user', '--jq', '.login'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+    if (!/^[\w-]+$/.test(account)) throw new Error('GitHub CLI returned an invalid account name');
     cachedGitHubSession = {
       authenticated: true,
-      account: match ? match[1] : 'GitHub CLI active',
+      account,
       method: 'gh_cli'
     };
     return cachedGitHubSession;
@@ -70,6 +71,116 @@ function runGit(args, options = {}) {
 
 function severityNumber(value) {
   return ({ CRITICAL: 5, HIGH: 4, MEDIUM: 3, LOW: 2, INFO: 1 })[String(value || '').toUpperCase()] || 1;
+}
+
+function listGitHubRepos(account) {
+  if (!account || account === 'Environment Token') return [];
+  const raw = execFileSync('gh', ['repo', 'list', account, '--json', 'nameWithOwner,description,isPrivate', '--limit', '100'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  return JSON.parse(raw);
+}
+
+async function chooseGitHubRepo(io, preferredRepo = null) {
+  const gh = checkGitHubSession();
+  let repos = [];
+  try { repos = listGitHubRepos(gh.account); }
+  catch (error) { io.output.write(warn(`No se pudo listar repositorios: ${safeTerminal(error.message)}`) + '\n'); }
+  if (preferredRepo && !repos.some((item) => item.nameWithOwner === preferredRepo)) {
+    repos.unshift({ nameWithOwner: preferredRepo, description: 'Repositorio detectado desde el directorio actual', isPrivate: false });
+  }
+  if (!repos.length) {
+    io.output.write('No hay repositorios para seleccionar. Inicia sesión con gh o abre la CLI desde un repositorio GitHub.\n');
+    return null;
+  }
+  io.output.write('\nRepositorios disponibles:\n');
+  repos.forEach((repo, index) => {
+    const visibility = repo.isPrivate ? 'privado' : 'público';
+    io.output.write(`  ${String(index + 1).padStart(2, ' ')}  ${safeTerminal(repo.nameWithOwner)}  [${visibility}]\n`);
+  });
+  io.output.write('  0  Volver\n');
+  const answer = (await io.question(`Selecciona [0-${repos.length}] (Enter = ${preferredRepo ? 'repositorio actual' : 'volver'}): `)).trim();
+  if (!answer && preferredRepo) return repos.find((repo) => repo.nameWithOwner === preferredRepo) || repos[0];
+  if (!/^\d+$/.test(answer)) return null;
+  const index = Number(answer);
+  return index > 0 && index <= repos.length ? repos[index - 1] : null;
+}
+
+async function chooseCommit(io, repo) {
+  let commits;
+  try {
+    commits = JSON.parse(execFileSync('gh', ['api', `repos/${repo}/commits?per_page=12`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }));
+  } catch (error) {
+    io.output.write(warn(`No se pudieron enumerar commits de ${repo}: ${safeTerminal(error.message)}`) + '\n');
+    return null;
+  }
+  if (!Array.isArray(commits) || !commits.length) {
+    io.output.write('No hay commits disponibles para seleccionar.\n');
+    return null;
+  }
+  io.output.write(`\nCommits recientes de ${repo}:\n`);
+  commits.forEach((item, index) => {
+    const sha = String(item.sha || '');
+    const subject = String(item.commit && item.commit.message || '').split(/\r?\n/)[0];
+    const date = item.commit && item.commit.author && item.commit.author.date || '';
+    io.output.write(`  ${String(index + 1).padStart(2, ' ')}  ${sha.slice(0, 10)}  ${safeTerminal(subject).slice(0, 74)}  ${safeTerminal(date).slice(0, 10)}\n`);
+  });
+  io.output.write('  0  Volver\n');
+  const answer = (await io.question(`Selecciona commit [0-${commits.length}]: `)).trim();
+  if (!/^\d+$/.test(answer)) return null;
+  const index = Number(answer);
+  return index > 0 && index <= commits.length ? commits[index - 1].sha : null;
+}
+
+async function clonePinnedCommit(repo, commit) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sentinel-audit-pinned-'));
+  const source = path.join(root, 'source');
+  try {
+    runGit(['clone', '--quiet', '--no-checkout', '--filter=blob:none', '--depth=1', `https://github.com/${repo}.git`, source]);
+    runGit(['-C', source, 'fetch', '--quiet', '--depth=1', 'origin', commit]);
+    runGit(['-C', source, 'checkout', '--quiet', '--detach', commit]);
+    return { root, source };
+  } catch (error) {
+    try { fs.rmSync(root, { recursive: true, force: true }); } catch (_) {}
+    throw error;
+  }
+}
+
+async function handlePinnedWorkflow(io, mode) {
+  const preferredRepo = detectCurrentRepo();
+  const selectedRepo = await chooseGitHubRepo(io, preferredRepo);
+  if (!selectedRepo) { io.output.write('Volviendo al menú principal.\n'); return; }
+  const repo = selectedRepo.nameWithOwner;
+  const commit = await chooseCommit(io, repo);
+  if (!commit) { io.output.write('Operación cancelada; no se eligió commit.\n'); return; }
+  let checkout;
+  try {
+    io.output.write(`\nFijando ${repo} @ ${commit.slice(0, 12)} en un checkout temporal...\n`);
+    checkout = await clonePinnedCommit(repo, commit);
+    if (mode === 'preflight') {
+      const result = preflight(checkout.source, { commit });
+      io.output.write(`\n${title('PREFLIGHT SENTINEL AUDIT')}\n`);
+      io.output.write(`Repositorio: ${repo}\nCommit: ${commit}\nVeredicto: ${result.verdict}\n`);
+      for (const reason of (result.reasons || [])) io.output.write(`  Motivo: ${safeTerminal(reason)}\n`);
+      for (const limit of (result.limits || [])) io.output.write(`  Límite: ${safeTerminal(limit)}\n`);
+      io.output.write(`Motores disponibles: ${Object.entries(result.health || {}).filter(([, item]) => item && item.available).map(([name]) => name).join(', ') || 'ninguno'}\n`);
+      return;
+    }
+    io.output.write('\nAlcance de especialistas:\n  1) Archivos señalados\n  2) Directorios señalados\n  3) Repositorio completo\n  0) Cancelar\n');
+    const scope = (await io.question('Selecciona [0-3] (Enter = archivos señalados): ')).trim() || '1';
+    if (!['1', '2', '3'].includes(scope)) { io.output.write('Auditoría cancelada.\n'); return; }
+    const routing = ({ '1': 'file', '2': 'directory', '3': 'repo' })[scope];
+    const progress = createTerminalProgress({ stream: io.output });
+    let result;
+    try { result = await runAuditV1(checkout.source, { name: repo.replace('/', '-'), commit, routing, onProgress: (event) => progress.update(event) }); }
+    finally { progress.finish(); }
+    const verdict = result.expediente.auditVerdict || {};
+    io.output.write(`\n${title('RESULTADO SENTINEL AUDIT')}\n`);
+    io.output.write(`Repositorio: ${repo}\nCommit: ${commit}\nVeredicto: ${verdict.verdict || 'INCOMPLETO'} (${verdict.analysisState || 'desconocido'})\n`);
+    io.output.write(`Candidatos: ${(result.expediente.candidates || []).length}\nEjecución y evidencia: ${result.executionDir}\n`);
+  } catch (error) {
+    io.output.write(bad(`La operación no se completó: ${safeTerminal(error.message)}`) + '\n');
+  } finally {
+    if (checkout && checkout.root) { try { fs.rmSync(checkout.root, { recursive: true, force: true }); } catch (_) {} }
+  }
 }
 
 function renderFindings(io, findings) {
@@ -115,12 +226,11 @@ async function handlePRWorkflow(io) {
   // 2. Repositorio a auditar
   let repo = detectCurrentRepo();
   if (repo) io.output.write(`Repositorio detectado: ${paint('1', repo)}\n`);
-  const repoInput = repo ? '' : (await io.question('Repositorio [owner/repo]: ')).trim();
-  if (repoInput) repo = repoInput;
-  if (!safeRepo(repo || '')) {
-    io.output.write(warn('Indica un repositorio válido con formato owner/repo.') + '\n');
-    repo = (await io.question('Repositorio [owner/repo]: ')).trim();
+  if (!repo) {
+    const selected = await chooseGitHubRepo(io);
+    repo = selected && selected.nameWithOwner;
   }
+  if (!repo) { io.output.write('Volviendo al menú principal.\n'); return null; }
   if (!safeRepo(repo || '')) { io.output.write(bad('Repositorio inválido.') + '\n'); return null; }
 
   // 3. Enumerar PRs abiertos
@@ -143,7 +253,9 @@ async function handlePRWorkflow(io) {
     io.output.write('No se encontraron PRs abiertos automáticamente. Puedes especificar el número directamente.\n');
   }
 
+  io.output.write('  0  Volver al menú principal\n');
   const prNumStr = (await io.question('\nIngresa el número de PR a escanear: ')).trim();
+  if (prNumStr === '0' || !prNumStr) { io.output.write('Volviendo al menú principal.\n'); return null; }
   const prNumber = /^\d+$/.test(prNumStr) ? Number(prNumStr) : NaN;
   if (!Number.isSafeInteger(prNumber) || prNumber <= 0) {
     io.output.write('Número de PR inválido.\n');
@@ -168,7 +280,9 @@ async function handlePRWorkflow(io) {
   io.output.write(cloudReady
     ? `  2) Sentinel Cloud Pulse; enviará el checkout fijado a Sentinel Cloud y ejecutará especialistas (${keys.length} clave(s))\n`
     : `  2) Sentinel Cloud Pulse no disponible: ${cloudReasons.join('; ')}\n`);
-  const engineChoice = (await io.question('Selecciona [1/2] (default 1): ')).trim() || '1';
+  io.output.write('  0) Volver al menú principal\n');
+  const engineChoice = (await io.question('Selecciona [0/1/2] (default 1): ')).trim() || '1';
+  if (engineChoice === '0') return null;
   if (engineChoice !== '1' && engineChoice !== '2') { io.output.write('Selección inválida.\n'); return null; }
   if (engineChoice === '2' && !cloudReady) {
     io.output.write(warn(`No se inició el Pulso: ${cloudReasons.join('; ')}.`) + '\n');
@@ -180,7 +294,9 @@ async function handlePRWorkflow(io) {
     else {
       io.output.write('\nClaves Cloud disponibles (censuradas):\n');
       for (const key of keys) io.output.write(`  ${key.index}) ${key.name}  ${key.maskedToken}\n`);
-      const index = Number((await io.question(`Selecciona [1-${keys.length}]: `)).trim());
+      const rawIndex = (await io.question(`Selecciona [1-${keys.length}] (0 = volver): `)).trim();
+      if (rawIndex === '0' || !rawIndex) return null;
+      const index = Number(rawIndex);
       selectedCloudKey = Number.isInteger(index) ? cloudKeys.getKey(index) : null;
       if (!selectedCloudKey) { io.output.write('Selección de clave inválida.\n'); return null; }
     }
@@ -324,9 +440,10 @@ async function handleKeysWorkflow(io) {
     io.output.write('\nOpciones:\n');
     io.output.write('  1) Añadir nueva clave Cloud\n');
     io.output.write('  2) Revocar / Eliminar clave de la máquina\n');
-    io.output.write('  3) Volver al menú principal\n');
+    io.output.write('  0) Volver al menú principal\n');
 
-    const choice = (await io.question('Selecciona [1-3]: ')).trim();
+    const choice = (await io.question('Selecciona [0-2] (Enter = volver): ')).trim();
+    if (!choice || choice === '0' || choice === '3') break;
     if (choice === '1') {
       const token = (await io.question('\nPega la clave de Sentinel Cloud: ')).trim();
       if (!token) {
@@ -345,7 +462,8 @@ async function handleKeysWorkflow(io) {
         io.output.write('No hay claves para revocar.\n');
         continue;
       }
-      const idxStr = (await io.question(`Número de clave a revocar [1-${keys.length}]: `)).trim();
+      const idxStr = (await io.question(`Número de clave a revocar [1-${keys.length}] (0 = volver): `)).trim();
+      if (!idxStr || idxStr === '0') continue;
       const idx = parseInt(idxStr, 10);
       if (isNaN(idx) || idx < 1 || idx > keys.length) {
         io.output.write('Selección inválida.\n');
@@ -369,10 +487,49 @@ async function handleKeysWorkflow(io) {
   }
 }
 
+function listSavedExecutions() {
+  const root = path.resolve(__dirname, '..', 'out');
+  const rows = [];
+  if (!fs.existsSync(root)) return rows;
+  for (const group of fs.readdirSync(root, { withFileTypes: true })) {
+    if (!group.isDirectory()) continue;
+    const groupPath = path.join(root, group.name);
+    for (const run of fs.readdirSync(groupPath, { withFileTypes: true })) {
+      if (!run.isDirectory()) continue;
+      const executionDir = path.join(groupPath, run.name);
+      const file = path.join(executionDir, 'expediente.json');
+      if (!fs.existsSync(file)) continue;
+      try {
+        const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+        rows.push({ executionDir, name: data.name || group.name, commit: data.commit || 'unknown', verdict: data.auditVerdict && data.auditVerdict.verdict || 'UNKNOWN', startedAt: data.startedAt || '' });
+      } catch (_) {}
+    }
+  }
+  return rows.sort((a, b) => String(b.startedAt).localeCompare(String(a.startedAt)));
+}
+
+async function chooseSavedExecution(io) {
+  const rows = listSavedExecutions();
+  if (!rows.length) {
+    io.output.write('Todavía no hay ejecuciones guardadas para renderizar.\n');
+    return null;
+  }
+  io.output.write('\nReportes locales disponibles:\n');
+  rows.slice(0, 30).forEach((row, index) => {
+    io.output.write(`  ${String(index + 1).padStart(2, ' ')}  ${safeTerminal(row.name)}  ${safeTerminal(row.commit).slice(0, 12)}  ${safeTerminal(row.verdict)}\n`);
+  });
+  io.output.write('  0  Volver\n');
+  const answer = (await io.question(`Selecciona reporte [0-${Math.min(rows.length, 30)}]: `)).trim();
+  if (!/^\d+$/.test(answer)) return null;
+  const index = Number(answer);
+  return index > 0 && index <= Math.min(rows.length, 30) ? rows[index - 1].executionDir : null;
+}
+
 async function interactiveArgs(io) {
   const ownsInterface = !io;
   io = io || readline.createInterface({ input: stdin, output: stdout });
   try {
+   while (true) {
     io.output.write('\n' + paint('1;36', '███████╗███████╗███╗   ██╗████████╗██╗███╗   ██╗███████╗██╗') + '\n');
     io.output.write(paint('1;36', '██╔════╝██╔════╝████╗  ██║╚══██╔══╝██║████╗  ██║██╔════╝██║') + '\n');
     io.output.write(paint('1;36', '███████╗█████╗  ██╔██╗ ██║   ██║   ██║██╔██╗ ██║█████╗  ██║') + '\n');
@@ -389,50 +546,42 @@ async function interactiveArgs(io) {
     io.output.write('  1) Enumerar y analizar Pull Requests\n');
     io.output.write('  2) Gestionar claves de Sentinel Cloud\n');
     io.output.write('  3) Diagnóstico de motores y herramientas\n');
-    io.output.write('  4) Auditar un commit fijado\n');
-    io.output.write('  5) Preflight de repositorio fijado\n');
-    io.output.write('  6) Renderizar un reporte existente\n');
+    io.output.write('  4) Elegir repo y commit de GitHub y ejecutar auditoría\n');
+    io.output.write('  5) Elegir repo y commit de GitHub para preflight\n');
+    io.output.write('  6) Elegir reporte local para renderizar\n');
     io.output.write('  7) Leer aviso de responsabilidad\n');
     io.output.write('  8) Salir\n');
 
-    const choice = (await io.question('\nSelecciona [1-8]: ')).trim();
+    const choice = (await io.question('\nSelecciona [0-8] (Enter = salir): ')).trim();
+    if (!choice || choice === '0') return null;
 
     if (choice === '1') {
       await handlePRWorkflow(io);
-      return null;
+      continue;
     }
     if (choice === '2') {
       await handleKeysWorkflow(io);
-      return null;
+      continue;
     }
     if (choice === '3') return ['doctor'];
     if (choice === '7') {
       io.output.write(`\n${cloudKeys.DISCLAIMER_TEXT}\n`);
-      return interactiveArgs(io);
+      continue;
     }
     if (choice === '8') return null;
 
     if (choice === '4' || choice === '5') {
-      const repo = (await io.question('Ruta del repositorio: ')).trim();
-      if (!repo) throw new Error('Se requiere la ruta del repositorio');
-      const commit = (await io.question('SHA completo de 40 caracteres: ')).trim();
-      if (!/^[a-f0-9]{40}$/i.test(commit)) throw new Error('Ingresa un SHA válido de 40 caracteres');
-      if (choice === '5') return ['preflight', repo, '--commit', commit];
-      const routing = (await io.question('Alcance [file/directory/repo] (default: file): ')).trim() || 'file';
-      if (!['file', 'directory', 'repo'].includes(routing)) {
-        throw new Error('Alcance debe ser file, directory o repo');
-      }
-      const confirm = (await io.question(`¿Ejecutar analizadores en ${repo} @ ${commit}? [y/N]: `)).trim().toLowerCase();
-      if (confirm !== 'y' && confirm !== 'yes') return null;
-      return ['run', repo, '--commit', commit, '--routing', routing];
+      await handlePinnedWorkflow(io, choice === '5' ? 'preflight' : 'run');
+      continue;
     }
     if (choice === '6') {
-      const execDir = (await io.question('Directorio de ejecución: ')).trim();
-      if (!execDir) throw new Error('Se requiere el directorio de ejecución');
+      const execDir = await chooseSavedExecution(io);
+      if (!execDir) { io.output.write('Volviendo al menú principal.\n'); continue; }
       return ['report', execDir];
     }
 
-    throw new Error('Opción no reconocida');
+    io.output.write(warn('Opción no reconocida; el menú sigue disponible.') + '\n');
+   }
   } finally {
     if (ownsInterface) io.close();
   }

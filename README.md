@@ -45,10 +45,19 @@ analyzable surface, and what will it cost.
 ### Interactive PR analysis
 
 Running `sentinel-audit` opens a colored terminal menu and reports the active
-GitHub CLI identity when available. The PR workflow uses the current Git
+GitHub CLI identity when available. GitHub identity is checked through the
+authenticated `gh api user` endpoint. The PR workflow uses the current Git
 remote automatically and begins listing open pull requests without requiring
-an extra confirmation keystroke. Enter `owner/repo` only when no remote is
-available.
+an extra confirmation keystroke. When no remote is available, choose a
+repository from the authenticated account's repository list.
+
+Menu navigation is numbered throughout: `0` or Enter backs out of selection
+screens, and Enter at the main menu exits. Options 4 and 5 let you choose a
+repository and recent commit from GitHub, then run an audit or preflight on an
+isolated temporary checkout. Option 6 lists saved local executions so reports
+can be rendered without typing filesystem paths. After key management or an
+audit, the CLI returns to the main menu. The responsibility notice is available
+from option 7.
 
 The guided PR workflow labels the deterministic diff scan as **Sentinel Audit
 Lite**. It then pins the PR head SHA, creates a temporary checkout, passes the
