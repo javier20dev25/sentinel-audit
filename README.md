@@ -64,6 +64,25 @@ node audit-runner.js adjudicate <executionDir> --candidate SAR-0001 \
     --disposition <DISPOSITION> --priority <P0|P1|P2|P3> --rationale "..."
 ```
 
+### Mapa de ejecución en terminal
+
+Los comandos `run` y `scan` muestran un mapa en vivo en stderr: preflight,
+checkout fijado al commit, motor seleccionado, enrutamiento, trabajos especialistas,
+correlación, triage y limpieza. Los estados y herramientas provienen del pipeline;
+no se estiman porcentajes. Los analizadores paralelos muestran su estado de cola,
+ejecución y finalización individual. Al terminar queda una vista estática del
+resultado junto al resumen de salida.
+
+El mapa usa color y redibujado solo en una terminal interactiva. `NO_COLOR`,
+`TERM=dumb`, CI, `--json` y `--quiet` evitan secuencias ANSI o animación; JSON
+permanece limpio en stdout y el progreso interactivo va por stderr. En modo
+`--provider cloud` se distingue el motor alojado; la API no ofrece progreso de
+sus componentes internos, así que el mapa solo informa el inicio y el resultado
+agregado del motor.
+
+Consulte [la guía del mapa de ejecución](./docs/terminal-progress.md) para leer
+los estados y el alcance de cada etapa.
+
 `audit` and `scan` remain aliases for `run`. Each new execution receives a
 unique directory under `out/<repo>/<execution-id>/`; raw evidence is written
 before normalization and is not reused across runs. `identity.json` pins the

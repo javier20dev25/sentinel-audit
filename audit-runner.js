@@ -6,6 +6,7 @@ const path = require('path');
 const { loadConfig } = require('./lib/core');
 const { preflight, checkToolHealth, checkHostedHealth } = require('./workflow/preflight');
 const { runAuditV1, rerenderExecution, rerouteExecution, cleanupExecution, continueSpecialists, loadExecution, exitCodeFor } = require('./workflow/pipeline-v1');
+const { createTerminalProgress } = require('./workflow/terminal-progress');
 const { adjudicate, auditVerdict, openCandidates } = require('./correlate');
 const { renderReport } = require('./reports/expediente');
 const { writeJson, manifest, contained } = require('./workflow/artifacts');
@@ -174,7 +175,13 @@ async function main() {
     if (parsed.flags.cloud && parsed.flags.provider && parsed.flags.provider !== 'cloud') throw new Error(`--cloud selects the hosted provider and conflicts with --provider ${parsed.flags.provider}`);
     const provider = selectedProvider(opts) || 'local';
     if (parsed.command === 'scan' && provider === 'cloud') throw new Error('--cloud is only supported by run; scan is Stage A + routing only');
-    const result = await runAuditV1(repoArgument(parsed), Object.assign(opts, { scanOnly: parsed.command === 'scan', provider }));
+    const progress = !parsed.flags.json && !parsed.flags.quiet ? createTerminalProgress() : null;
+    let result;
+    try {
+      result = await runAuditV1(repoArgument(parsed), Object.assign(opts, { scanOnly: parsed.command === 'scan', provider, onProgress: progress ? (event) => progress.update(event) : undefined }));
+    } finally {
+      if (progress) progress.finish();
+    }
     print(executionSummary(result), !!parsed.flags.json, !!parsed.flags.quiet);
     return result.exitCode;
   }

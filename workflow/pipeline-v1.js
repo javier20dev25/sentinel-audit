@@ -170,6 +170,7 @@ function enrichSpecialistResult(result, tool, job, route, root) {
 }
 
 async function runSpecialistStage(root, ctx, route, opts, executionIdValue) {
+  const progress = typeof opts.onProgress === 'function' ? opts.onProgress : () => {};
   const resources = ctx.policies.resources;
   const scheduler = new ResourceScheduler({ maxHeavy: opts.maxHeavy || resources.maxHeavy, maxLight: opts.maxLight || resources.maxLight });
   // An interrupt has to stop the specialists that are already running, not only
@@ -190,12 +191,15 @@ async function runSpecialistStage(root, ctx, route, opts, executionIdValue) {
       const skipped = { tool, status: STATUS.SKIPPED, verdict: 'SKIPPED', findings: [], findingCount: 0, notApplicable: false, error: 'specialist skipped by explicit CLI policy', coverage: { coverageKnown: false, coverageUnknown: true, analysisCompleted: false, errors: ['skipped by request'] }, cost: { wallClockMs: 0, timedOut: false }, job: { jobId: id, resourceClass, state: 'CANCELLED', queuedAt: now(), startedAt: null, finishedAt: now(), durationMs: 0 } };
       results[tool] = skipped;
       jobs.push(skipped.job);
+      progress({ tool, state: 'NOT_RUN', detail: 'omitido por política explícita de CLI' });
       continue;
     }
+    progress({ tool, state: 'QUEUED', detail: resourceClass === 'HEAVY' ? 'cola de recursos pesados' : 'cola de recursos ligeros' });
     const job = scheduler.add({
       id,
       resourceClass,
       run: async (runtime) => {
+        progress({ tool, state: 'RUNNING', detail: resourceClass === 'HEAVY' ? 'análisis en curso; recurso pesado' : 'análisis en curso; recurso ligero' });
         const result = await executeSpecialist(tool, root, ctx, Object.assign({ id, resourceClass }, runtime), {
           language: ctx.inv.mainLanguage,
           ram: ctx.pre.cost.requiredRamMB,
@@ -208,6 +212,7 @@ async function runSpecialistStage(root, ctx, route, opts, executionIdValue) {
   }
   const completed = await scheduler.drain();
   for (const job of completed) {
+    progress({ tool: job.id.split(':').pop(), state: job.state === 'SUCCEEDED' ? 'COMPLETE' : job.state === 'TIMEOUT' ? 'FAILED' : job.state, detail: `${job.durationMs || 0} ms` });
     const rawResult = job.result && job.result.result;
     if (rawResult) results[job.id.split(':').pop()] = enrichSpecialistResult(rawResult, job.id.split(':').pop(), job, route, root);
     else {
@@ -279,6 +284,8 @@ function exitCodeFor(expediente) {
 }
 
 async function runAuditV1(sourceRepo, options = {}) {
+  const progress = typeof options.onProgress === 'function' ? (event) => { try { options.onProgress(event); } catch (_) { /* terminal rendering must never interrupt an audit */ } } : () => {};
+  progress({ stage: 'PREFLIGHT', state: 'RUNNING' });
   const { tools, policies } = loadConfig();
   const sourcePreflight = preflight(sourceRepo, { name: options.name, commit: options.commit, toolOverrides: options.toolOverrides, provider: options.provider, apiUrl: options.apiUrl });
   const commit = expectedCommit(options, sourcePreflight);
@@ -297,6 +304,7 @@ async function runAuditV1(sourceRepo, options = {}) {
   });
   const stages = {};
   markStage(executionDir, stages, 'PREFLIGHT', sourcePreflight.verdict === 'SKIP' ? 'FAILED' : 'COMPLETE', sourcePreflight.reasons);
+  progress({ stage: 'PREFLIGHT', state: sourcePreflight.verdict === 'SKIP' ? 'FAILED' : 'COMPLETE', detail: sourcePreflight.verdict });
 
   const skeleton = {
     schema: 'sentinel-audit-expediente/1.0.0', executionId: id, artifactDir: executionDir,
@@ -310,6 +318,7 @@ async function runAuditV1(sourceRepo, options = {}) {
   if (sourcePreflight.verdict === 'SKIP') {
     skeleton.pipelineStatus = 'PREFLIGHT_FAILED';
     skeleton.auditVerdict = { verdict: 'PREFLIGHT_FAILED', analysisState: 'PARTIAL_ANALYSIS', canClaimClean: false, candidateCount: 0, statement: sourcePreflight.reasons.join('; ') };
+    for (const stage of ['IDENTITY', 'ENGINE', 'ROUTING', 'SPECIALISTS', 'CORRELATION', 'TRIAGE', 'CLEANUP']) progress({ stage, state: 'NOT_RUN', detail: 'preflight impidió iniciar esta etapa' });
     finalizeArtifacts(executionDir, skeleton, stages);
     return { executionDir, expediente: skeleton, exitCode: 3 };
   }
@@ -318,12 +327,17 @@ async function runAuditV1(sourceRepo, options = {}) {
     skeleton.auditVerdict = { verdict: 'DRY_RUN', analysisState: 'PARTIAL_ANALYSIS', canClaimClean: false, candidateCount: 0, statement: 'No scanner or specialist was executed because --dry-run was supplied.' };
     markStage(executionDir, stages, 'IDENTITY', 'PLANNED');
     markStage(executionDir, stages, 'CLOUD', 'NOT_RUN');
+    progress({ stage: 'IDENTITY', state: 'PLANNED' });
+    progress({ stage: 'ENGINE', state: 'NOT_RUN', detail: 'dry-run' });
+    for (const stage of ['ROUTING', 'SPECIALISTS', 'CORRELATION', 'TRIAGE', 'CLEANUP']) progress({ stage, state: 'NOT_RUN', detail: 'dry-run' });
     finalizeArtifacts(executionDir, skeleton, stages);
     return { executionDir, expediente: skeleton, exitCode: 2 };
   }
 
   let workspace = null;
+  let activeStage = 'IDENTITY';
   try {
+    progress({ stage: 'IDENTITY', state: 'RUNNING', detail: `fijando ${commit.slice(0, 12)} y creando checkout` });
     workspace = createManagedCheckout(sourceRepo, commit, executionDir, { timeoutMs: options.workspaceTimeoutMs });
     const targetPreflight = preflight(workspace.path, { name, commit, toolOverrides: options.toolOverrides, provider: options.provider, apiUrl: options.apiUrl });
     if (targetPreflight.verdict === 'SKIP') throw new Error(`managed checkout preflight failed: ${targetPreflight.reasons.join('; ')}`);
@@ -334,8 +348,11 @@ async function runAuditV1(sourceRepo, options = {}) {
     skeleton.identity = buildIdentity({ executionId: id, repo: workspace.path, preflight: targetPreflight, tools: targetPreflight.health, startedAt: skeleton.startedAt, sourceRepository: sourceRepo });
     writeJson(contained(executionDir, 'identity.json'), skeleton.identity);
     markStage(executionDir, stages, 'IDENTITY', 'COMPLETE', { commit, tree: workspace.tree });
+    progress({ stage: 'IDENTITY', state: 'COMPLETE', detail: `commit ${commit.slice(0, 12)}` });
 
     const ctx = makeContext(workspace.path, executionDir, targetPreflight, options);
+    activeStage = 'ENGINE';
+    progress({ stage: 'ENGINE', state: 'RUNNING', detail: ctx.provider === 'cloud' ? 'Sentinel Cloud alojado' : `Sentinel local (${targetPreflight.health.sentinel && targetPreflight.health.sentinel.version || 'versión detectada por preflight'})` });
     const sentinel = ctx.provider === 'cloud'
       ? await A.hosted(workspace.path, ctx, options)
       : await A.sentinel(workspace.path, ctx);
@@ -349,49 +366,66 @@ async function runAuditV1(sourceRepo, options = {}) {
     }
     writeJson(contained(executionDir, 'cloud', 'normalized.json'), sentinel.findings || []);
     markStage(executionDir, stages, 'CLOUD', sentinel.status === STATUS.ERROR ? 'FAILED' : 'COMPLETE', { status: sentinel.status, rawArtifact: sentinel.rawArtifact || null });
+    progress({ stage: 'ENGINE', state: sentinel.status === STATUS.ERROR ? 'FAILED' : 'COMPLETE', detail: `${ctx.provider === 'cloud' ? 'Cloud' : 'local'}; estado ${sentinel.status}; ${(sentinel.findings || []).length} señales normalizadas` });
 
+    activeStage = 'ROUTING';
+    progress({ stage: 'ROUTING', state: 'RUNNING' });
     const route = routeWithTargets(sentinel, workspace.path, targetPreflight, options);
     route.executionId = id;
     skeleton.signalRouting = route;
     writeJson(contained(executionDir, 'routing', 'targets.json'), { mode: route.mode, targets: route.targetEntries, filesSelected: route.filesSelected, notPromoted: route.notPromoted });
     writeJson(contained(executionDir, 'routing', 'decisions.json'), route);
     markStage(executionDir, stages, 'ROUTING', route.engineIncomplete ? 'INCOMPLETE' : 'COMPLETE', { decision: route.decision, targetCount: route.targetEntries.length });
+    progress({ stage: 'ROUTING', state: route.engineIncomplete ? 'INCOMPLETE' : 'COMPLETE', detail: `${route.targetEntries.length} destinos; ${route.filesSelected} archivos` });
 
     if (options.scanOnly) {
       skeleton.specialistJobs = [];
       skeleton.resourceMetrics = { limits: { maxHeavy: options.maxHeavy || policies.resources.maxHeavy, maxLight: options.maxLight || policies.resources.maxLight }, scheduler: [] };
       writeJson(contained(executionDir, 'specialist-jobs.json'), []);
       markStage(executionDir, stages, 'SPECIALISTS', 'NOT_RUN', 'scan command stops after Cloud normalization and routing');
+      progress({ stage: 'SPECIALISTS', state: 'NOT_RUN', detail: 'scan termina después del motor y el enrutamiento' });
     } else {
-      const specialistStage = await runSpecialistStage(workspace.path, ctx, route, Object.assign({}, options, { signal: cancellation.signal }), id);
+      activeStage = 'SPECIALISTS';
+      progress({ stage: 'SPECIALISTS', state: 'RUNNING' });
+      const specialistStage = await runSpecialistStage(workspace.path, ctx, route, Object.assign({}, options, { signal: cancellation.signal, onProgress: progress }), id);
       Object.assign(skeleton.tools, specialistStage.results);
       skeleton.specialistJobs = specialistStage.jobs;
       skeleton.resourceMetrics = { limits: { maxHeavy: options.maxHeavy || policies.resources.maxHeavy, maxLight: options.maxLight || policies.resources.maxLight }, scheduler: specialistStage.scheduler };
       writeJson(contained(executionDir, 'specialist-jobs.json'), specialistStage.jobs);
       for (const [tool, result] of Object.entries(specialistStage.results)) writeJson(contained(executionDir, 'specialists', tool, 'normalized.json'), result.findings || [], { overwrite: true });
       markStage(executionDir, stages, 'SPECIALISTS', 'COMPLETE', { jobs: specialistStage.jobs.length });
+      progress({ stage: 'SPECIALISTS', state: 'COMPLETE', detail: `${specialistStage.jobs.length} trabajos registrados` });
     }
 
+    activeStage = 'CORRELATION';
+    progress({ stage: 'CORRELATION', state: 'RUNNING' });
     const envelopes = Object.values(skeleton.tools);
     const correlationFailure = applyCorrelation(skeleton, envelopes, workspace.path, policies, executionDir);
     markStage(executionDir, stages, 'CORRELATION', correlationFailure ? 'FAILED' : 'COMPLETE', correlationFailure && correlationFailure.error);
+    progress({ stage: 'CORRELATION', state: correlationFailure ? 'FAILED' : 'COMPLETE', detail: correlationFailure ? 'no se pudo completar' : `${(skeleton.candidates || []).length} candidatos` });
     updateAuditVerdict(skeleton, envelopes, options.scanOnly && !correlationFailure
       ? stageFailure('specialist-stage', 'scan-only execution: specialists were intentionally not run')
       : correlationFailure);
+    activeStage = 'TRIAGE';
+    progress({ stage: 'TRIAGE', state: 'RUNNING' });
     const triageResults = await triageCandidatesHybrid(skeleton, workspace.path, options);
     skeleton.triageRuns = triageResults;
     markStage(executionDir, stages, 'TRIAGE', 'COMPLETE', { verdict: skeleton.auditVerdict.verdict, candidateCount: skeleton.auditVerdict.candidateCount, triageDecisions: triageResults.length });
+    progress({ stage: 'TRIAGE', state: 'COMPLETE', detail: `${skeleton.auditVerdict.verdict}; ${triageResults.length} decisiones de triage` });
     skeleton.pipelineStatus = options.scanOnly ? 'SCAN_COMPLETE_PENDING_SPECIALISTS' : 'COMPLETE';
   } catch (error) {
     skeleton.pipelineStatus = 'INFRASTRUCTURE_FAILURE';
     skeleton.pipelineFailure = String(error && error.message || error);
     skeleton.auditVerdict = { verdict: 'PARTIAL_ANALYSIS', analysisState: 'PARTIAL_ANALYSIS', canClaimClean: false, candidateCount: 0, statement: `Pipeline infrastructure failure: ${skeleton.pipelineFailure}` };
     markStage(executionDir, stages, 'PIPELINE', 'FAILED', skeleton.pipelineFailure);
+    progress({ stage: activeStage, state: 'FAILED', detail: skeleton.pipelineFailure });
   } finally {
     skeleton.finishedAt = now();
     skeleton.totalWallClockMs = new Date(skeleton.finishedAt) - new Date(skeleton.startedAt);
+    progress({ stage: 'CLEANUP', state: 'RUNNING' });
     skeleton.cleanup = cleanupManagedCheckout(executionDir, { keepWorktree: !!options.keepWorktree });
     markStage(executionDir, stages, 'CLEANUP', skeleton.cleanup.cleanupStatus, skeleton.cleanup.cleanupErrors);
+    progress({ stage: 'CLEANUP', state: skeleton.cleanup.cleanupStatus === 'CLEAN' ? 'COMPLETE' : 'FAILED', detail: skeleton.cleanup.cleanupStatus });
     if (skeleton.cleanup.cleanupStatus !== 'CLEAN' && skeleton.auditVerdict) {
       skeleton.auditVerdict.analysisState = 'PARTIAL_ANALYSIS';
       skeleton.auditVerdict.canClaimClean = false;
