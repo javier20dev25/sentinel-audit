@@ -279,6 +279,10 @@ test('checkHostedHealth lists every missing prerequisite without touching the ne
   const enabled = checkHostedHealth(tools, { hosted: { enabled: true } }, { apiUrl: 'https://cloud.example' }, { SENTINEL_CLOUD_API_TOKEN: 'x' });
   assert.equal(enabled.reasons.length, 0);
   assert.equal(enabled.tokenPresent, true);
+
+  const selectedKey = checkHostedHealth(tools, { hosted: { enabled: true } }, { apiUrl: 'https://cloud.example', apiToken: 'selected-in-memory-key' }, {});
+  assert.equal(selectedKey.reasons.length, 0);
+  assert.equal(selectedKey.tokenPresent, true);
 });
 
 test('local and hosted providers emit the same envelope key set and finding shape', async () => {

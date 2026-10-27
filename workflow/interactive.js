@@ -10,6 +10,8 @@ const cloudKeys = require('../lib/cloud-keys');
 const liteScanner = require('../lib/lite-scanner');
 const { runAuditV1 } = require('./pipeline-v1');
 const { createTerminalProgress } = require('./terminal-progress');
+const { loadConfig } = require('../lib/core');
+const { resolveClient } = require('../adapters/hosted');
 
 const ANSI = process.env.NO_COLOR == null && process.stdout.isTTY;
 const paint = (code, text) => ANSI ? `\u001b[${code}m${text}\u001b[0m` : text;
@@ -17,6 +19,11 @@ const title = (text) => paint('1;36', text);
 const good = (text) => paint('32', text);
 const warn = (text) => paint('33', text);
 const bad = (text) => paint('31;1', text);
+function safeTerminal(value) {
+  return String(value == null ? '' : value)
+    .replace(/\u001b(?:\[[0-?]*[ -/]*[@-~]|\][^\u0007]*(?:\u0007|\u001b\\))/g, '')
+    .replace(/[\u0000-\u001f\u007f]/g, (char) => char === '\n' ? '\n' : ' ');
+}
 let cachedGitHubSession;
 
 function checkGitHubSession() {
@@ -73,8 +80,8 @@ function renderFindings(io, findings) {
   findings.forEach((f, idx) => {
     const sev = String(f.severity || 'INFO').toUpperCase();
     const color = sev === 'CRITICAL' || sev === 'HIGH' ? bad : sev === 'MEDIUM' ? warn : paint.bind(null, '36');
-    io.output.write(`\n${color(`${String(idx + 1).padStart(2, '0')}  ${sev}`)}  ${f.title}  (${f.file}:${f.line || 0})\n`);
-    if (f.snippet) io.output.write(`    ${f.snippet.replace(/\r/g, '').split('\n').join('\n    ')}\n`);
+    io.output.write(`\n${color(`${String(idx + 1).padStart(2, '0')}  ${sev}`)}  ${safeTerminal(f.title)}  (${safeTerminal(f.file)}:${f.line || 0})\n`);
+    if (f.snippet) io.output.write(`    ${safeTerminal(f.snippet).split('\n').join('\n    ')}\n`);
   });
 }
 
@@ -130,7 +137,7 @@ async function handlePRWorkflow(io) {
     io.output.write(`\nPull Requests abiertos encontrados en ${repo}:\n`);
     prList.forEach(p => {
       const authorLogin = (p.author && p.author.login) || 'unknown';
-      io.output.write(`  ${paint('1', `#${p.number}`.padEnd(6))} ${p.title.slice(0, 68).padEnd(70)} @${authorLogin}  ${paint('90', p.headRefName)}\n`);
+      io.output.write(`  ${paint('1', `#${p.number}`.padEnd(6))} ${safeTerminal(p.title).slice(0, 68).padEnd(70)} @${safeTerminal(authorLogin)}  ${paint('90', safeTerminal(p.headRefName))}\n`);
     });
   } else {
     io.output.write('No se encontraron PRs abiertos automáticamente. Puedes especificar el número directamente.\n');
@@ -146,11 +153,38 @@ async function handlePRWorkflow(io) {
   // 4. Seleccionar motor de escaneo
   const keys = cloudKeys.listKeys();
   const hasCloudKey = keys.length > 0;
-
-  io.output.write('\nMotor de entrada: Sentinel Audit Lite local. Los analizadores de Audit se ejecutan después sobre el checkout fijado.\n');
-  io.output.write(hasCloudKey
-    ? warn('Las claves Cloud están guardadas, pero este flujo no invoca Pulsos; se informa para no confundir el origen del resultado.') + '\n'
-    : 'No hay claves Cloud; se continuará con análisis local.\n');
+  const { tools, policies } = loadConfig();
+  const hostedPolicyEnabled = !!(policies.hosted && policies.hosted.enabled);
+  const hostedClientAvailable = !!resolveClient({ tools }, {});
+  const hostedUrl = process.env.SENTINEL_CLOUD_URL || null;
+  const cloudReady = hostedPolicyEnabled && hostedClientAvailable && !!hostedUrl && hasCloudKey;
+  const cloudReasons = [];
+  if (!hostedPolicyEnabled) cloudReasons.push('policies.hosted.enabled está desactivado');
+  if (!hostedClientAvailable) cloudReasons.push('falta @sentinel/cloud-client');
+  if (!hostedUrl) cloudReasons.push('falta SENTINEL_CLOUD_URL');
+  if (!hasCloudKey) cloudReasons.push('no hay clave Cloud guardada');
+  io.output.write('\nMotor de entrada para Sentinel Audit:\n');
+  io.output.write('  1) Sentinel Audit Lite local sobre el diff y especialistas justificados\n');
+  io.output.write(cloudReady
+    ? `  2) Sentinel Cloud Pulse; enviará el checkout fijado a Sentinel Cloud y ejecutará especialistas (${keys.length} clave(s))\n`
+    : `  2) Sentinel Cloud Pulse no disponible: ${cloudReasons.join('; ')}\n`);
+  const engineChoice = (await io.question('Selecciona [1/2] (default 1): ')).trim() || '1';
+  if (engineChoice !== '1' && engineChoice !== '2') { io.output.write('Selección inválida.\n'); return null; }
+  if (engineChoice === '2' && !cloudReady) {
+    io.output.write(warn(`No se inició el Pulso: ${cloudReasons.join('; ')}.`) + '\n');
+    return null;
+  }
+  let selectedCloudKey = null;
+  if (engineChoice === '2') {
+    if (keys.length === 1) selectedCloudKey = cloudKeys.getKey(keys[0].index);
+    else {
+      io.output.write('\nClaves Cloud disponibles (censuradas):\n');
+      for (const key of keys) io.output.write(`  ${key.index}) ${key.name}  ${key.maskedToken}\n`);
+      const index = Number((await io.question(`Selecciona [1-${keys.length}]: `)).trim());
+      selectedCloudKey = Number.isInteger(index) ? cloudKeys.getKey(index) : null;
+      if (!selectedCloudKey) { io.output.write('Selección de clave inválida.\n'); return null; }
+    }
+  }
 
   // 5. Obtener Diff y Ejecutar Escaneo
   io.output.write(`\nDescargando diff de PR #${prNumber} de ${repo}...\n`);
@@ -185,7 +219,10 @@ async function handlePRWorkflow(io) {
     }));
     auditResult = await runAuditV1(clonePath, {
       name: `${repo.replace('/', '-')}-pr-${prNumber}`, commit: prMeta.headRefOid,
-      seedFindings, seedEngine: 'Sentinel Audit Lite PR diff', routing: 'file',
+      ...(engineChoice === '1'
+        ? { seedFindings, seedEngine: 'Sentinel Audit Lite PR diff' }
+        : { provider: 'cloud', apiToken: selectedCloudKey.token, apiUrl: hostedUrl }),
+      routing: 'file',
       onProgress: (event) => progress.update(event),
     });
   } catch (err) {
@@ -218,24 +255,30 @@ async function handlePRWorkflow(io) {
     io.output.write(`Veredicto: ${verdict.verdict || 'INCOMPLETO'} | estado: ${verdict.analysisState || 'desconocido'}\n`);
     io.output.write(`Ejecución: ${auditResult.executionDir}\n`);
     io.output.write(`Candidatos correlacionados: ${(auditResult.expediente.candidates || []).length}\n`);
+    const engineResult = auditResult.expediente.tools && auditResult.expediente.tools.sentinel;
+    io.output.write(`Motor de entrada: ${engineChoice === '2' ? 'Sentinel Cloud Pulse' : 'Sentinel Audit Lite diff'}; estado ${engineResult && engineResult.status || 'UNKNOWN'}; ${(engineResult && engineResult.findingCount) || 0} señales normalizadas\n`);
+    for (const finding of (engineResult && engineResult.findings || [])) {
+      io.output.write(`  ${safeTerminal(finding.category || 'signal')}  ${safeTerminal(finding.rule || 'Señal')}  ${finding.file ? `${safeTerminal(path.relative(auditResult.expediente.repository, finding.file))}${finding.line ? `:${finding.line}` : ''}` : '(sin archivo localizado)'}\n`);
+      if (finding.detail) io.output.write(`    Evidencia: ${safeTerminal(finding.detail)}\n`);
+    }
     const jobs = auditResult.expediente.specialistJobs || [];
     io.output.write('Analizadores de Audit:\n');
     if (!jobs.length) io.output.write('  No se programaron: ninguna señal del diff se pudo enrutar a un archivo elegible.\n');
-    else for (const job of jobs) io.output.write(`  ${job.tool}: ${job.outcome || job.status || job.state}; ${job.findingCount || 0} señales${job.error ? ` — ${job.error}` : ''}\n`);
+    else for (const job of jobs) io.output.write(`  ${safeTerminal(job.tool)}: ${safeTerminal(job.outcome || job.status || job.state)}; ${job.findingCount || 0} señales${job.error ? ` — ${safeTerminal(job.error)}` : ''}\n`);
     const specialistResults = Object.entries(auditResult.expediente.tools || {}).filter(([tool]) => tool !== 'sentinel');
     for (const [tool, toolResult] of specialistResults) {
-      io.output.write(`  ${tool}: ${toolResult.status || 'UNKNOWN'}; ${toolResult.findingCount || 0} hallazgos${toolResult.error ? ` — ${toolResult.error}` : ''}\n`);
+      io.output.write(`  ${safeTerminal(tool)}: ${safeTerminal(toolResult.status || 'UNKNOWN')}; ${toolResult.findingCount || 0} hallazgos${toolResult.error ? ` — ${safeTerminal(toolResult.error)}` : ''}\n`);
       for (const finding of (toolResult.findings || [])) {
-        io.output.write(`    ${finding.level || finding.kind || 'SIGNAL'}  ${finding.rule || finding.detail || 'Hallazgo'}  ${finding.file || ''}${finding.line ? `:${finding.line}` : ''}\n`);
+        io.output.write(`    ${safeTerminal(finding.level || finding.kind || 'SIGNAL')}  ${safeTerminal(finding.rule || finding.detail || 'Hallazgo')}  ${safeTerminal(finding.file || '')}${finding.line ? `:${finding.line}` : ''}\n`);
       }
     }
     for (const candidate of (auditResult.expediente.candidates || [])) {
-      io.output.write(`  ${candidate.priority || candidate.severity || 'REVIEW'}  ${candidate.title || candidate.rule || candidate.category || 'Candidato correlacionado'}\n`);
+      io.output.write(`  ${safeTerminal(candidate.priority || candidate.severity || 'REVIEW')}  ${safeTerminal(candidate.title || candidate.rule || candidate.category || 'Candidato correlacionado')}\n`);
     }
     const notRun = Object.entries(auditResult.expediente.stages || {}).filter(([, stage]) => ['NOT_RUN', 'INCOMPLETE', 'FAILED'].includes(stage.state));
     if (notRun.length) {
       io.output.write(warn('Etapas incompletas o detenidas:') + '\n');
-      for (const [stage, state] of notRun) io.output.write(`  ${stage}: ${typeof state.detail === 'string' ? state.detail : JSON.stringify(state.detail || state.state)}\n`);
+      for (const [stage, state] of notRun) io.output.write(`  ${stage}: ${safeTerminal(typeof state.detail === 'string' ? state.detail : JSON.stringify(state.detail || state.state))}\n`);
     }
   } else if (executionError) {
     io.output.write(warn(`Pipeline especializado no iniciado: ${executionError.message}`) + '\n');
@@ -399,5 +442,6 @@ module.exports = {
   interactiveArgs,
   checkGitHubSession,
   handlePRWorkflow,
-  handleKeysWorkflow
+  handleKeysWorkflow,
+  safeTerminal
 };

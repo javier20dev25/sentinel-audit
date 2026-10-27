@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { interactiveArgs } = require('../workflow/interactive');
+const { interactiveArgs, safeTerminal } = require('../workflow/interactive');
 const { parse } = require('../audit-runner');
 
 function scriptedIO(answers) {
@@ -23,6 +23,10 @@ test('interactive menu shows the GitHub identity and keeps the disclaimer opt-in
   assert.match(io.output.text, /7\) Leer aviso de responsabilidad/);
   assert.doesNotMatch(io.output.text, /El usuario es el único responsable/);
   assert.doesNotMatch(io.output.text, /[\u{1F300}-\u{1FAFF}]/u);
+});
+
+test('terminal output strips control sequences from repository evidence', () => {
+  assert.equal(safeTerminal('safe\u001b[2J\u001b]0;owned\u0007\u0007text'), 'safe text');
 });
 
 test('guided flow builds a pinned preflight command', async () => {
