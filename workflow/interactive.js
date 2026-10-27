@@ -2,30 +2,45 @@
 
 const readline = require('node:readline/promises');
 const { stdin, stdout } = require('node:process');
-const { execSync } = require('node:child_process');
+const { execSync, execFileSync } = require('node:child_process');
 const path = require('node:path');
 const fs = require('node:fs');
+const os = require('node:os');
 const cloudKeys = require('../lib/cloud-keys');
 const liteScanner = require('../lib/lite-scanner');
+const { runAuditV1 } = require('./pipeline-v1');
+const { createTerminalProgress } = require('./terminal-progress');
+
+const ANSI = process.env.NO_COLOR == null && process.stdout.isTTY;
+const paint = (code, text) => ANSI ? `\u001b[${code}m${text}\u001b[0m` : text;
+const title = (text) => paint('1;36', text);
+const good = (text) => paint('32', text);
+const warn = (text) => paint('33', text);
+const bad = (text) => paint('31;1', text);
+let cachedGitHubSession;
 
 function checkGitHubSession() {
+  if (cachedGitHubSession) return cachedGitHubSession;
   try {
     const out = execSync('gh auth status', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
     const match = out.match(/account\s+([\w\d_-]+)/i) || out.match(/Logged in to [^\s]+ account ([\w\d_-]+)/i);
-    return {
+    cachedGitHubSession = {
       authenticated: true,
       account: match ? match[1] : 'GitHub CLI active',
       method: 'gh_cli'
     };
+    return cachedGitHubSession;
   } catch (_) {
     if (process.env.GITHUB_TOKEN || process.env.GH_TOKEN) {
-      return {
+      cachedGitHubSession = {
         authenticated: true,
         account: 'Environment Token',
         method: 'env_token'
       };
+      return cachedGitHubSession;
     }
-    return { authenticated: false };
+    cachedGitHubSession = { authenticated: false };
+    return cachedGitHubSession;
   }
 }
 
@@ -35,20 +50,44 @@ function detectCurrentRepo() {
     const m = url.match(/[:/]([\w\d_.-]+)\/([\w\d_.-]+?)(\.git)?$/);
     if (m) return `${m[1]}/${m[2]}`;
   } catch (_) {}
-  return 'javier20dev25/Merx';
+  return null;
+}
+
+function safeRepo(value) {
+  return /^[\w.-]+\/[\w.-]+$/.test(value);
+}
+
+function runGit(args, options = {}) {
+  return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], ...options });
+}
+
+function severityNumber(value) {
+  return ({ CRITICAL: 5, HIGH: 4, MEDIUM: 3, LOW: 2, INFO: 1 })[String(value || '').toUpperCase()] || 1;
+}
+
+function renderFindings(io, findings) {
+  if (!findings.length) {
+    io.output.write(good('No se encontraron señales en el diff analizado.') + '\n');
+    return;
+  }
+  findings.forEach((f, idx) => {
+    const sev = String(f.severity || 'INFO').toUpperCase();
+    const color = sev === 'CRITICAL' || sev === 'HIGH' ? bad : sev === 'MEDIUM' ? warn : paint.bind(null, '36');
+    io.output.write(`\n${color(`${String(idx + 1).padStart(2, '0')}  ${sev}`)}  ${f.title}  (${f.file}:${f.line || 0})\n`);
+    if (f.snippet) io.output.write(`    ${f.snippet.replace(/\r/g, '').split('\n').join('\n    ')}\n`);
+  });
 }
 
 async function handlePRWorkflow(io) {
-  io.output.write('\n──────────────────────────────────────────────────────────\n');
-  io.output.write('🔍 SENTINEL AUDIT — ESCANEO DE PULL REQUESTS\n');
-  io.output.write('──────────────────────────────────────────────────────────\n');
+  io.output.write('\n' + title('SENTINEL AUDIT  /  ESCANEO DE PULL REQUESTS') + '\n');
+  io.output.write(paint('90', '──────────────────────────────────────────────────────────') + '\n');
 
   // 1. Verificar sesión activa de GitHub
   const gh = checkGitHubSession();
   if (gh.authenticated) {
-    io.output.write(`✓ Sesión activa de GitHub detectada: ${gh.account} (vía ${gh.method})\n`);
+    io.output.write(`${good('GitHub')}  ${gh.account}  (${gh.method})\n`);
   } else {
-    io.output.write('⚠ No se detectó sesión activa de GitHub en la terminal.\n');
+    io.output.write(warn('No se detectó sesión activa de GitHub en la terminal.') + '\n');
     io.output.write('  1) Iniciar sesión con GitHub CLI (gh auth login)\n');
     io.output.write('  2) Ingresar GitHub Personal Access Token manualmente\n');
     io.output.write('  3) Continuar sin autenticación (solo repositorios públicos)\n');
@@ -67,34 +106,39 @@ async function handlePRWorkflow(io) {
   }
 
   // 2. Repositorio a auditar
-  const defaultRepo = detectCurrentRepo();
-  const repoInput = (await io.question(`\nRepositorio [owner/repo] (default: ${defaultRepo}): `)).trim();
-  const repo = repoInput || defaultRepo;
+  let repo = detectCurrentRepo();
+  if (repo) io.output.write(`Repositorio detectado: ${paint('1', repo)}\n`);
+  const repoInput = repo ? '' : (await io.question('Repositorio [owner/repo]: ')).trim();
+  if (repoInput) repo = repoInput;
+  if (!safeRepo(repo || '')) {
+    io.output.write(warn('Indica un repositorio válido con formato owner/repo.') + '\n');
+    repo = (await io.question('Repositorio [owner/repo]: ')).trim();
+  }
+  if (!safeRepo(repo || '')) { io.output.write(bad('Repositorio inválido.') + '\n'); return null; }
 
   // 3. Enumerar PRs abiertos
   io.output.write(`\nConsultando Pull Requests abiertos en ${repo}...\n`);
   let prList = [];
   try {
-    const cmd = `gh pr list --repo ${repo} --json number,title,author,headRefName --limit 15`;
-    const raw = execSync(cmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    const raw = execFileSync('gh', ['pr', 'list', '--repo', repo, '--json', 'number,title,author,headRefName', '--limit', '30'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
     prList = JSON.parse(raw);
   } catch (err) {
-    io.output.write(`⚠ No se pudo enumerar vía gh (${err.message}).\n`);
+    io.output.write(warn(`No se pudo enumerar vía GitHub CLI (${err.message}).`) + '\n');
   }
 
   if (prList.length > 0) {
     io.output.write(`\nPull Requests abiertos encontrados en ${repo}:\n`);
     prList.forEach(p => {
       const authorLogin = (p.author && p.author.login) || 'unknown';
-      io.output.write(`  #${p.number.toString().padEnd(4)} | ${p.title.slice(0, 50).padEnd(52)} | por @${authorLogin} (${p.headRefName})\n`);
+      io.output.write(`  ${paint('1', `#${p.number}`.padEnd(6))} ${p.title.slice(0, 68).padEnd(70)} @${authorLogin}  ${paint('90', p.headRefName)}\n`);
     });
   } else {
     io.output.write('No se encontraron PRs abiertos automáticamente. Puedes especificar el número directamente.\n');
   }
 
   const prNumStr = (await io.question('\nIngresa el número de PR a escanear: ')).trim();
-  const prNumber = parseInt(prNumStr, 10);
-  if (isNaN(prNumber) || prNumber <= 0) {
+  const prNumber = /^\d+$/.test(prNumStr) ? Number(prNumStr) : NaN;
+  if (!Number.isSafeInteger(prNumber) || prNumber <= 0) {
     io.output.write('Número de PR inválido.\n');
     return null;
   }
@@ -103,67 +147,98 @@ async function handlePRWorkflow(io) {
   const keys = cloudKeys.listKeys();
   const hasCloudKey = keys.length > 0;
 
-  io.output.write('\nSelecciona el motor de escaneo:\n');
-  io.output.write('  1) Escáner Local (Motor Lite — SAST determinista offline)\n');
-  if (hasCloudKey) {
-    io.output.write(`  2) Usar Pulsos (Sentinel Cloud API) [${keys.length} clave(s) disponible(s)]\n`);
-  } else {
-    io.output.write('  2) [No disponible - Sin Cloud API Key configurada]\n');
-  }
-
-  const engineChoice = (await io.question('Selecciona [1 o 2]: ')).trim();
-  let selectedKey = null;
-
-  if (engineChoice === '2') {
-    if (!hasCloudKey) {
-      io.output.write('⚠ Opción no disponible. No hay claves de Sentinel Cloud en la máquina.\n');
-      return null;
-    }
-    if (keys.length === 1) {
-      selectedKey = cloudKeys.getKey(1);
-      io.output.write(`Usando ${selectedKey.name} (${keys[0].maskedToken})\n`);
-    } else {
-      io.output.write('\nClaves de Sentinel Cloud disponibles en esta máquina:\n');
-      keys.forEach(k => {
-        io.output.write(`  ${k.index}) ${k.name.padEnd(20)} [${k.maskedToken}]\n`);
-      });
-      const keyChoice = parseInt((await io.question(`Selecciona clave [1-${keys.length}]: `)).trim(), 10);
-      selectedKey = cloudKeys.getKey(keyChoice) || cloudKeys.getKey(1);
-      io.output.write(`Seleccionada: ${selectedKey.name}\n`);
-    }
-  }
+  io.output.write('\nMotor de entrada: Sentinel Audit Lite local. Los analizadores de Audit se ejecutan después sobre el checkout fijado.\n');
+  io.output.write(hasCloudKey
+    ? warn('Las claves Cloud están guardadas, pero este flujo no invoca Pulsos; se informa para no confundir el origen del resultado.') + '\n'
+    : 'No hay claves Cloud; se continuará con análisis local.\n');
 
   // 5. Obtener Diff y Ejecutar Escaneo
   io.output.write(`\nDescargando diff de PR #${prNumber} de ${repo}...\n`);
   let diff = '';
   try {
-    diff = execSync(`gh pr diff ${prNumber} --repo ${repo}`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    diff = execFileSync('gh', ['pr', 'diff', String(prNumber), '--repo', repo], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
   } catch (err) {
     io.output.write(`Error al obtener diff de GitHub: ${err.message}\n`);
     return null;
   }
 
-  io.output.write(`Diff obtenido con éxito (${Buffer.byteLength(diff, 'utf8')} bytes). Analizando...\n`);
+  io.output.write(`Diff obtenido (${Buffer.byteLength(diff, 'utf8')} bytes). Ejecutando señal Lite y pipeline de Sentinel Audit...\n`);
   const authorInfo = prList.find(p => p.number === prNumber)?.author?.login || 'unknown';
-  const result = liteScanner.auditPRDiff(diff, { repo, prNumber, author: authorInfo });
+  const liteResult = liteScanner.auditPRDiff(diff, { repo, prNumber, author: authorInfo });
+  const progress = createTerminalProgress({ stream: io.output });
+  let auditResult = null;
+  let checkout = null;
+  let executionError = null;
+  try {
+    const prMeta = JSON.parse(execFileSync('gh', ['pr', 'view', String(prNumber), '--repo', repo, '--json', 'headRefOid,title,author,url'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }));
+    if (!/^[a-f0-9]{40}$/i.test(prMeta.headRefOid || '')) throw new Error('GitHub no devolvió un SHA completo del head del PR.');
+    checkout = fs.mkdtempSync(path.join(os.tmpdir(), 'sentinel-audit-pr-'));
+    const clonePath = path.join(checkout, 'source');
+    runGit(['clone', '--quiet', '--no-checkout', `https://github.com/${repo}.git`, clonePath]);
+    runGit(['-C', clonePath, 'fetch', '--quiet', '--depth=1', 'origin', `refs/pull/${prNumber}/head`]);
+    runGit(['-C', clonePath, 'checkout', '--quiet', '--detach', prMeta.headRefOid]);
+    const seedFindings = liteResult.findings.map((f) => ({
+      type: f.ruleId || f.rule || f.title || 'lite_signal', title: f.title, description: f.description,
+      message: f.title, snippet: typeof f.snippet === 'string' ? f.snippet : null,
+      file: f.file, line: Number.isInteger(f.line) && f.line > 0 ? f.line : null,
+      severity: severityNumber(f.severity), evidence: [f.ruleId || f.rule || f.title].filter(Boolean),
+    }));
+    auditResult = await runAuditV1(clonePath, {
+      name: `${repo.replace('/', '-')}-pr-${prNumber}`, commit: prMeta.headRefOid,
+      seedFindings, seedEngine: 'Sentinel Audit Lite PR diff', routing: 'file',
+      onProgress: (event) => progress.update(event),
+    });
+  } catch (err) {
+    executionError = err;
+    progress.update({ stage: 'IDENTITY', state: 'FAILED', detail: `No se pudo fijar el PR: ${err.message}` });
+    for (const stage of ['ENGINE', 'ROUTING', 'SPECIALISTS', 'CORRELATION', 'TRIAGE']) progress.update({ stage, state: 'NOT_RUN', detail: 'falló la obtención del checkout fijado' });
+  } finally {
+    progress.finish();
+    if (checkout) { try { fs.rmSync(checkout, { recursive: true, force: true }); } catch (_) {} }
+  }
+  const result = liteResult;
 
   // 6. Mostrar resultados
-  io.output.write('\n══════════════════════════════════════════════════════════\n');
-  io.output.write(`RESULTADO DEL ESCANEO: PR #${prNumber} (${repo})\n`);
-  io.output.write(`VEREDICTO:  [ ${result.verdict} ]  ·  RIESGO: ${result.riskScore}/100\n`);
-  io.output.write(`HALLAZGOS:  CRITICAL: ${result.counts.critical} | HIGH: ${result.counts.high} | MEDIUM: ${result.counts.medium} | LOW: ${result.counts.low}\n`);
-  io.output.write('══════════════════════════════════════════════════════════\n');
+  io.output.write('\n' + paint('1;36', '══════════════════════════════════════════════════════════') + '\n');
+  io.output.write(title(`RESULTADO DEL ESCANEO: PR #${prNumber} (${repo})`) + '\n');
+  const verdictColor = result.verdict === 'BLOCK' ? bad : result.verdict === 'REVIEW' ? warn : good;
+  io.output.write(`VEREDICTO LITE:  ${verdictColor(result.verdict)}  |  RIESGO: ${paint('1;33', `${result.riskScore}/100`)}\n`);
+  io.output.write(`HALLAZGOS LITE:  CRITICAL: ${bad(result.counts.critical)} | HIGH: ${warn(result.counts.high)} | MEDIUM: ${paint('36', result.counts.medium)} | LOW: ${result.counts.low}\n`);
+  io.output.write(paint('1;36', '══════════════════════════════════════════════════════════') + '\n');
 
   if (result.findings.length > 0) {
-    result.findings.slice(0, 10).forEach((f, idx) => {
-      io.output.write(`  ${idx + 1}. [${f.severity}] ${f.title} (${f.file}:${f.line || 0})\n`);
-      if (f.snippet) io.output.write(`     > ${f.snippet.replace(/\n/g, ' ').slice(0, 100)}\n`);
-    });
-    if (result.findings.length > 10) {
-      io.output.write(`     ... y ${result.findings.length - 10} hallazgo(s) más.\n`);
-    }
+    renderFindings(io, result.findings);
   } else {
-    io.output.write('  ✓ Sin hallazgos sospechosos ni credenciales expuestas.\n');
+    io.output.write(`  ${good('Sin hallazgos sospechosos ni credenciales expuestas.')}\n`);
+  }
+
+  if (auditResult) {
+    const verdict = auditResult.expediente.auditVerdict || {};
+    io.output.write('\n' + title('RESULTADO SENTINEL AUDIT') + '\n');
+    io.output.write(`Veredicto: ${verdict.verdict || 'INCOMPLETO'} | estado: ${verdict.analysisState || 'desconocido'}\n`);
+    io.output.write(`Ejecución: ${auditResult.executionDir}\n`);
+    io.output.write(`Candidatos correlacionados: ${(auditResult.expediente.candidates || []).length}\n`);
+    const jobs = auditResult.expediente.specialistJobs || [];
+    io.output.write('Analizadores de Audit:\n');
+    if (!jobs.length) io.output.write('  No se programaron: ninguna señal del diff se pudo enrutar a un archivo elegible.\n');
+    else for (const job of jobs) io.output.write(`  ${job.tool}: ${job.outcome || job.status || job.state}; ${job.findingCount || 0} señales${job.error ? ` — ${job.error}` : ''}\n`);
+    const specialistResults = Object.entries(auditResult.expediente.tools || {}).filter(([tool]) => tool !== 'sentinel');
+    for (const [tool, toolResult] of specialistResults) {
+      io.output.write(`  ${tool}: ${toolResult.status || 'UNKNOWN'}; ${toolResult.findingCount || 0} hallazgos${toolResult.error ? ` — ${toolResult.error}` : ''}\n`);
+      for (const finding of (toolResult.findings || [])) {
+        io.output.write(`    ${finding.level || finding.kind || 'SIGNAL'}  ${finding.rule || finding.detail || 'Hallazgo'}  ${finding.file || ''}${finding.line ? `:${finding.line}` : ''}\n`);
+      }
+    }
+    for (const candidate of (auditResult.expediente.candidates || [])) {
+      io.output.write(`  ${candidate.priority || candidate.severity || 'REVIEW'}  ${candidate.title || candidate.rule || candidate.category || 'Candidato correlacionado'}\n`);
+    }
+    const notRun = Object.entries(auditResult.expediente.stages || {}).filter(([, stage]) => ['NOT_RUN', 'INCOMPLETE', 'FAILED'].includes(stage.state));
+    if (notRun.length) {
+      io.output.write(warn('Etapas incompletas o detenidas:') + '\n');
+      for (const [stage, state] of notRun) io.output.write(`  ${stage}: ${typeof state.detail === 'string' ? state.detail : JSON.stringify(state.detail || state.state)}\n`);
+    }
+  } else if (executionError) {
+    io.output.write(warn(`Pipeline especializado no iniciado: ${executionError.message}`) + '\n');
   }
 
   // 7. Acciones post-escaneo
@@ -176,7 +251,7 @@ async function handlePRWorkflow(io) {
 
     if (postChoice === '3') {
       const exported = liteScanner.exportToMarkdown(result);
-      io.output.write(`\n✓ Reporte descargado exitosamente:\n  📄 ${exported.fullPath} (${exported.bytes} bytes)\n`);
+      io.output.write(`\n${good('Reporte descargado:')} ${exported.fullPath} (${exported.bytes} bytes)\n`);
     } else if (postChoice === '2') {
       return handlePRWorkflow(io);
     } else {
@@ -190,7 +265,7 @@ async function handlePRWorkflow(io) {
 async function handleKeysWorkflow(io) {
   while (true) {
     io.output.write('\n──────────────────────────────────────────────────────────\n');
-    io.output.write('🔑 GESTIÓN DE CLAVES DE SENTINEL CLOUD\n');
+    io.output.write(title('GESTIÓN DE CLAVES DE SENTINEL CLOUD') + '\n');
     io.output.write('──────────────────────────────────────────────────────────\n');
     
     const keys = cloudKeys.listKeys();
@@ -218,9 +293,9 @@ async function handleKeysWorkflow(io) {
       const name = (await io.question('Nombre identificador opcional (ej: Clave Producción): ')).trim();
       try {
         const added = cloudKeys.addKey(token, name);
-        io.output.write(`✓ Clave "${added.name}" guardada exitosamente: ${added.maskedToken}\n`);
+        io.output.write(`${good('Clave guardada:')} "${added.name}" ${added.maskedToken}\n`);
       } catch (err) {
-        io.output.write(`⚠ Error al guardar clave: ${err.message}\n`);
+        io.output.write(`${bad('Error al guardar clave:')} ${err.message}\n`);
       }
     } else if (choice === '2') {
       if (keys.length === 0) {
@@ -233,14 +308,14 @@ async function handleKeysWorkflow(io) {
         io.output.write('Selección inválida.\n');
         continue;
       }
-      io.output.write('\n⚠ ADVERTENCIA DE REVOCACIÓN:\n');
+      io.output.write('\n' + warn('AVISO DE REVOCACIÓN:') + '\n');
       io.output.write('  Revocar una clave desde este menú SOLO la elimina de tu máquina local.\n');
       io.output.write('  Si deseas invalidarla de forma permanente, debes eliminarla desde la consola web de Sentinel Cloud.\n');
       const confirm = (await io.question(`¿Seguro que deseas eliminar la Clave ${idx} de este equipo? [y/N]: `)).trim().toLowerCase();
       if (confirm === 'y' || confirm === 'yes') {
         try {
           const res = cloudKeys.revokeKey(idx);
-          io.output.write(`✓ ${res.removed.name} eliminada de la máquina.\n`);
+          io.output.write(`${good(res.removed.name)} eliminada de esta máquina.\n`);
         } catch (err) {
           io.output.write(`Error: ${err.message}\n`);
         }
@@ -255,22 +330,29 @@ async function interactiveArgs(io) {
   const ownsInterface = !io;
   io = io || readline.createInterface({ input: stdin, output: stdout });
   try {
-    io.output.write('\n══════════════════════════════════════════════════════════\n');
-    io.output.write('🛡️  SENTINEL AUDIT — Terminal Security Orchestrator\n');
-    io.output.write('══════════════════════════════════════════════════════════\n');
-    io.output.write(`⚖  ${cloudKeys.DISCLAIMER_TEXT}\n`);
-    io.output.write('──────────────────────────────────────────────────────────\n');
+    io.output.write('\n' + paint('1;36', '███████╗███████╗███╗   ██╗████████╗██╗███╗   ██╗███████╗██╗') + '\n');
+    io.output.write(paint('1;36', '██╔════╝██╔════╝████╗  ██║╚══██╔══╝██║████╗  ██║██╔════╝██║') + '\n');
+    io.output.write(paint('1;36', '███████╗█████╗  ██╔██╗ ██║   ██║   ██║██╔██╗ ██║█████╗  ██║') + '\n');
+    io.output.write(paint('1;36', '╚════██║██╔══╝  ██║╚██╗██║   ██║   ██║██║╚██╗██║██╔══╝  ██║') + '\n');
+    io.output.write(paint('1;36', '███████║███████╗██║ ╚████║   ██║   ██║██║ ╚████║███████╗███████╗') + '\n');
+    io.output.write(paint('1;36', '╚══════╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝') + '\n');
+    io.output.write(paint('1;37', '                         SENTINEL AUDIT') + '\n');
+    io.output.write(paint('90', '                    SECURITY AUDIT ORCHESTRATOR') + '\n');
+    const github = checkGitHubSession();
+    io.output.write(`GitHub: ${github.authenticated ? good(github.account) + ` (${github.method})` : warn('sin sesión detectada')}\n`);
+    io.output.write(paint('90', '──────────────────────────────────────────────────────────') + '\n');
 
     io.output.write('Selecciona una opción:\n');
-    io.output.write('  1) 🔍 Enumerar y Escanear Pull Requests (Motor Lite / Pulsos)\n');
-    io.output.write('  2) 🔑 Gestionar Claves de Sentinel Cloud\n');
-    io.output.write('  3) 🩺 Diagnóstico y Verificación de Herramientas (Doctor)\n');
-    io.output.write('  4) 🚀 Ejecutar auditoría sobre commit fijado\n');
-    io.output.write('  5) 🔎 Preflight de repositorio fijado\n');
-    io.output.write('  6) 📄 Renderizar reporte desde directorio previo\n');
-    io.output.write('  7) 🚪 Salir\n');
+    io.output.write('  1) Enumerar y analizar Pull Requests\n');
+    io.output.write('  2) Gestionar claves de Sentinel Cloud\n');
+    io.output.write('  3) Diagnóstico de motores y herramientas\n');
+    io.output.write('  4) Auditar un commit fijado\n');
+    io.output.write('  5) Preflight de repositorio fijado\n');
+    io.output.write('  6) Renderizar un reporte existente\n');
+    io.output.write('  7) Leer aviso de responsabilidad\n');
+    io.output.write('  8) Salir\n');
 
-    const choice = (await io.question('\nSelecciona [1-7]: ')).trim();
+    const choice = (await io.question('\nSelecciona [1-8]: ')).trim();
 
     if (choice === '1') {
       await handlePRWorkflow(io);
@@ -281,7 +363,11 @@ async function interactiveArgs(io) {
       return null;
     }
     if (choice === '3') return ['doctor'];
-    if (choice === '7') return null;
+    if (choice === '7') {
+      io.output.write(`\n${cloudKeys.DISCLAIMER_TEXT}\n`);
+      return interactiveArgs(io);
+    }
+    if (choice === '8') return null;
 
     if (choice === '4' || choice === '5') {
       const repo = (await io.question('Ruta del repositorio: ')).trim();

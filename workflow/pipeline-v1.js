@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const A = require('../adapters');
-const { loadConfig, STATUS, EXT_LANG, dirBytes } = require('../lib/core');
+const { loadConfig, STATUS, EXT_LANG, dirBytes, envelope } = require('../lib/core');
 const { preflight } = require('./preflight');
 const { buildIdentity } = require('./identity');
 const { buildRoutePlan, promotionIdsForFinding } = require('./audit');
@@ -352,21 +352,34 @@ async function runAuditV1(sourceRepo, options = {}) {
 
     const ctx = makeContext(workspace.path, executionDir, targetPreflight, options);
     activeStage = 'ENGINE';
-    progress({ stage: 'ENGINE', state: 'RUNNING', detail: ctx.provider === 'cloud' ? 'Sentinel Cloud alojado' : `Sentinel local (${targetPreflight.health.sentinel && targetPreflight.health.sentinel.version || 'versión detectada por preflight'})` });
-    const sentinel = ctx.provider === 'cloud'
-      ? await A.hosted(workspace.path, ctx, options)
-      : await A.sentinel(workspace.path, ctx);
+    const seededFindings = Array.isArray(options.seedFindings) ? options.seedFindings : null;
+    progress({ stage: 'ENGINE', state: 'RUNNING', detail: seededFindings
+      ? `semillas ${options.seedEngine || 'externas'}; ${seededFindings.length} señales`
+      : ctx.provider === 'cloud' ? 'Sentinel Cloud alojado' : `Sentinel local (${targetPreflight.health.sentinel && targetPreflight.health.sentinel.version || 'versión detectada por preflight'})` });
+    const sentinel = seededFindings
+      ? envelope('sentinel', {
+          status: STATUS.PARTIAL,
+          findings: A.normalizeCloudSignals(workspace.path, seededFindings),
+          coverage: { analysisCompleted: true, coverageKnown: false, coverageUnknown: true, engineCoverage: 'PR_DIFF_ONLY', errors: ['PR diff seed does not represent a full repository scan'] },
+          notes: [`Seeded from ${options.seedEngine || 'external PR diff scanner'}; this is an input signal set, not a Sentinel Cloud result.`],
+          rawArtifact: contained(executionDir, 'cloud', 'raw.json'),
+        })
+      : ctx.provider === 'cloud'
+        ? await A.hosted(workspace.path, ctx, options)
+        : await A.sentinel(workspace.path, ctx);
     skeleton.tools.sentinel = sentinel;
     if (!fs.existsSync(contained(executionDir, 'cloud', 'raw.json'))) {
       // A hosted run that failed before producing evidence must not borrow the
       // local engine's identity for its raw artifact.
-      writeJson(contained(executionDir, 'cloud', 'raw.json'), ctx.provider === 'cloud'
+      writeJson(contained(executionDir, 'cloud', 'raw.json'), seededFindings
+        ? { mode: 'seeded-pr-diff', engine: options.seedEngine || 'external PR diff scanner', result: seededFindings }
+        : ctx.provider === 'cloud'
         ? { mode: 'hosted', error: sentinel.error || null, result: null }
         : { engine: targetPreflight.health.sentinel || null, error: sentinel.error || null, result: null });
     }
     writeJson(contained(executionDir, 'cloud', 'normalized.json'), sentinel.findings || []);
     markStage(executionDir, stages, 'CLOUD', sentinel.status === STATUS.ERROR ? 'FAILED' : 'COMPLETE', { status: sentinel.status, rawArtifact: sentinel.rawArtifact || null });
-    progress({ stage: 'ENGINE', state: sentinel.status === STATUS.ERROR ? 'FAILED' : 'COMPLETE', detail: `${ctx.provider === 'cloud' ? 'Cloud' : 'local'}; estado ${sentinel.status}; ${(sentinel.findings || []).length} señales normalizadas` });
+    progress({ stage: 'ENGINE', state: sentinel.status === STATUS.ERROR ? 'FAILED' : 'COMPLETE', detail: `${seededFindings ? `semillas ${options.seedEngine || 'externas'}` : ctx.provider === 'cloud' ? 'Cloud' : 'local'}; estado ${sentinel.status}; ${(sentinel.findings || []).length} señales normalizadas` });
 
     activeStage = 'ROUTING';
     progress({ stage: 'ROUTING', state: 'RUNNING' });

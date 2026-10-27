@@ -15,6 +15,16 @@ test('running the executable without a command opens the interactive menu', () =
   assert.equal(parse(['node', 'audit-runner.js', 'doctor']).command, 'doctor');
 });
 
+test('interactive menu shows the GitHub identity and keeps the disclaimer opt-in', async () => {
+  const io = scriptedIO(['8']);
+  assert.equal(await interactiveArgs(io), null);
+  assert.match(io.output.text, /SENTINEL AUDIT/);
+  assert.match(io.output.text, /GitHub:/);
+  assert.match(io.output.text, /7\) Leer aviso de responsabilidad/);
+  assert.doesNotMatch(io.output.text, /El usuario es el único responsable/);
+  assert.doesNotMatch(io.output.text, /[\u{1F300}-\u{1FAFF}]/u);
+});
+
 test('guided flow builds a pinned preflight command', async () => {
   const sha = 'a'.repeat(40);
   assert.deepEqual(await interactiveArgs(scriptedIO(['5', 'C:/repo', sha])), ['preflight', 'C:/repo', '--commit', sha]);

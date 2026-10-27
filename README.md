@@ -42,6 +42,28 @@ analyzable surface, and what will it cost.
 
 ## Commands
 
+### Interactive PR analysis
+
+Running `sentinel-audit` opens a colored terminal menu and reports the active
+GitHub CLI identity when available. The PR workflow uses the current Git
+remote automatically and begins listing open pull requests without requiring
+an extra confirmation keystroke. Enter `owner/repo` only when no remote is
+available.
+
+The guided PR workflow labels the deterministic diff scan as **Sentinel Audit
+Lite**. It then pins the PR head SHA, creates a temporary checkout, passes the
+Lite signals into the Sentinel Audit routing pipeline, runs justified local
+specialists that are installed, correlates their findings, and prints a stage
+map. The execution directory contains the full evidence and report. Missing
+specialists, unrouted signals, failed stages, and unknown coverage are shown as
+gaps with reasons; they are never represented as a clean scan.
+
+Saved Sentinel Cloud keys do not mean a pulse was used. The guided PR workflow
+currently runs the local Lite seed plus Sentinel Audit specialists; it does
+not call Sentinel Cloud. Use a configured `sentinel-audit run --cloud` flow
+when a hosted analysis is explicitly required. The responsibility notice is
+available from menu option 7 rather than printed on every startup.
+
 ### Windows launcher
 
 The repository includes `sentinel-audit.cmd`, a dependency-free launcher for
