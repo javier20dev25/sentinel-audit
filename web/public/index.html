@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Sentinel Audit | Evidence Console</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-mark" aria-label="Sentinel"><span class="mark-core"></span><span class="mark-orbit"></span></div>
+      <div class="side-brand"><strong>SENTINEL</strong><small>AUDIT CONSOLE</small></div>
+      <div class="side-section">WORKSPACE</div>
+      <nav id="navigation" aria-label="Navegación principal">
+        <button class="nav-item active" data-view="overview"><span class="nav-icon">01</span> Escáner</button>
+        <button class="nav-item" data-view="evidence"><span class="nav-icon">02</span> Evidencia</button>
+        <button class="nav-item" data-view="database"><span class="nav-icon">03</span> Base de datos</button>
+        <button class="nav-item" data-view="analytics"><span class="nav-icon">04</span> Analítica</button>
+        <button class="nav-item" data-view="tools"><span class="nav-icon">05</span> Herramientas</button>
+        <button class="nav-item" data-view="policies"><span class="nav-icon">06</span> Políticas y guía</button>
+        <button class="nav-item" data-view="keys"><span class="nav-icon">07</span> Claves API</button>
+      </nav>
+      <div class="sidebar-footer"><span class="live-dot"></span><span id="server-status">Consola local</span><small>SOLO ESTE DISPOSITIVO</small></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar">
+        <div class="top-context"><span class="eyebrow">SECURITY OPERATIONS / LOCAL</span><span id="current-view-label">PR SCANNER</span></div>
+        <div class="account-chip"><span class="account-avatar">GH</span><span><small>GITHUB SESSION</small><strong id="github-account">Comprobando cuenta…</strong></span><i id="github-dot" class="status-dot"></i></div>
+      </header>
+      <section class="hero">
+        <div class="hero-brand"><div class="hero-logo"><span></span></div><div><p class="eyebrow">EVIDENCE-DRIVEN SECURITY</p><h1>Sentinel <em>Audit</em></h1></div></div>
+        <p class="hero-copy">Una consola local para fijar cambios, enrutar evidencia y revisar cada etapa del análisis.</p>
+      </section>
+      <section class="status-grid" id="status-grid"></section>
+      <section id="view-overview" class="view active-view">
+        <div class="section-heading"><div><p class="eyebrow">REPOSITORY INVENTORY</p><h2>Repositorios</h2></div><div class="heading-actions"><button class="button subtle" id="refresh-repos">Actualizar</button><span id="repo-count" class="muted"></span></div></div>
+        <div id="repo-grid" class="repo-grid"><div class="empty-state">Cargando repositorios de GitHub CLI…</div></div>
+        <div id="pr-panel" class="pr-panel hidden"><div class="section-heading compact"><div><p class="eyebrow" id="selected-repo-label">SELECTED REPOSITORY</p><h2 id="selected-repo-title">Pull Requests</h2></div><button class="button subtle" id="close-prs">Cerrar</button></div><div id="pr-list" class="pr-list"></div></div>
+        <div id="recent-panel" class="recent-panel"><div class="section-heading compact"><div><p class="eyebrow">LOCAL ARCHIVE</p><h2>Escaneos recientes</h2></div><button class="button subtle" data-goto="database">Ver expediente</button></div><div id="recent-scans" class="recent-list"></div></div>
+      </section>
+      <section id="view-evidence" class="view"><div class="section-heading"><div><p class="eyebrow">TRACEABLE ANALYSIS</p><h2>Ruta de evidencia</h2></div><span class="muted" id="evidence-selection">Selecciona un escaneo</span></div><div id="evidence-content" class="empty-state">Los análisis mostrarán aquí cada etapa, herramientas ejecutadas, límites y hash del cuerpo del resultado.</div></section>
+      <section id="view-database" class="view"><div class="section-heading"><div><p class="eyebrow">AUDIT STORAGE</p><h2>Base de datos local</h2></div><select id="db-table" class="select"><option value="scans">Escaneos</option><option value="findings">Hallazgos</option><option value="stages">Etapas</option></select></div><div class="table-wrap"><table id="data-table"></table></div><p class="muted db-location" id="db-location"></p></section>
+      <section id="view-analytics" class="view"><div class="section-heading"><div><p class="eyebrow">OBSERVED SIGNALS</p><h2>Analítica de escaneos</h2></div><button class="button subtle" id="refresh-analytics">Actualizar</button></div><div id="analytics-grid" class="analytics-grid"></div></section>
+      <section id="view-tools" class="view"><div class="section-heading"><div><p class="eyebrow">ENGINE REGISTRY</p><h2>Herramientas activas</h2></div></div><div id="tool-list" class="tool-list"></div></section>
+      <section id="view-policies" class="view"><div class="section-heading"><div><p class="eyebrow">OPERATOR HANDBOOK</p><h2>Políticas y guía</h2></div></div><div class="policy-grid"><article class="glass-card"><h3>Cómo usar la consola</h3><ol><li>Elige un repositorio que tu sesión de GitHub pueda consultar.</li><li>Abre sus PRs y selecciona Escaneo Lite o Pulse.</li><li>El PR se fija al SHA completo del head antes de analizarlo.</li><li>Revisa la ruta, cobertura, evidencia y expediente antes de decidir.</li></ol></article><article class="glass-card"><h3>Integridad del expediente</h3><p>Se calcula SHA-256 sobre el cuerpo normalizado del resultado y sobre el diff. El hash identifica el contenido guardado; no representa una firma de GitHub ni una certificación externa.</p><p class="muted">La base SQLite y los resultados permanecen en el perfil local del usuario.</p></article><article class="glass-card"><h3>Responsabilidad y alcance</h3><p>Sentinel Audit ayuda a priorizar revisión; sus detectores pueden producir falsos positivos o no encontrar defectos. La persona operadora decide la validación, el reporte y cualquier cambio o divulgación.</p></article><article class="glass-card"><h3>Agregar un especialista</h3><p>Configura el ejecutable y su ruta en <code>config/tools.json</code>, define cobertura/presupuesto y reglas de enrutamiento en <code>config/policies.json</code>. Implementa el adaptador, conserva evidencia cruda y normalizada, y registra estados explícitos de no disponible, error, timeout y éxito.</p><p>Antes de usarlo en repositorios, añade pruebas con fixtures seguros y verifica que el expediente explique por qué se ejecutó cada herramienta.</p></article></div></section>
+      <section id="view-keys" class="view"><div class="section-heading"><div><p class="eyebrow">SENTINEL CLOUD ACCESS</p><h2>Claves API</h2></div><button class="button primary" id="add-key-open">Agregar clave</button></div><p class="muted key-note">Los tokens se administran en el almacén local existente y nunca se envían al navegador salvo el formulario de alta; las vistas solo muestran versiones censuradas. Eliminar una clave aquí la quita de esta máquina, no invalida el token en Sentinel Cloud.</p><div id="key-list" class="key-list"></div></section>
+      <footer class="app-footer"><span>SENTINEL AUDIT / LOCAL EVIDENCE CONSOLE</span><span id="footer-db"></span></footer>
+    </main>
+  </div>
+  <div id="modal-root" class="modal-root" aria-live="polite"></div>
+</body>
+</html>

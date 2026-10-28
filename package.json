@@ -15,6 +15,7 @@
                   "reports/",
                   "rules/",
                   "workflow/",
+                  "web/",
                   "audit-runner.js",
                   "sentinel-audit.cmd",
                   "README.md",
@@ -29,7 +30,8 @@
     "scripts":  {
                     "test":  "node --test \"test/**/*.test.js\"",
                     "doctor":  "node audit-runner.js doctor --json",
-                    "help":  "node audit-runner.js --help"
+                    "help":  "node audit-runner.js --help",
+                    "web": "node audit-runner.js web"
                 },
     "keywords":  [
                      "sentinel",

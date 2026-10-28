@@ -17,7 +17,7 @@ const EXIT = Object.freeze({ COMPLETE: 0, CANDIDATES: 1, DEGRADED: 2, PREFLIGHT:
 const VALUE_FLAGS = new Set(['repo', 'commit', 'routing', 'only', 'skip', 'output', 'max-heavy', 'max-light', 'timeout', 'name', 'candidate', 'disposition', 'rationale', 'severity', 'priority', 'ground-truth', 'provider', 'api']);
 const BOOLEAN_FLAGS = new Set(['dry-run', 'keep-worktree', 'json', 'verbose', 'quiet', 'help', 'cloud']);
 const PROVIDERS = new Set(['local', 'cloud']);
-const COMMANDS = new Set(['preflight', 'run', 'scan', 'route', 'specialists', 'report', 'cleanup', 'adjudicate', 'doctor', 'resume', 'retry', 'interactive', 'help', 'pr', 'keys']);
+const COMMANDS = new Set(['preflight', 'run', 'scan', 'route', 'specialists', 'report', 'cleanup', 'adjudicate', 'doctor', 'resume', 'retry', 'interactive', 'help', 'pr', 'keys', 'web']);
 
 function usage() {
   return [
@@ -30,6 +30,7 @@ function usage() {
     '  sentinel-audit run --repo <path> --commit <40-sha> --cloud [--api <url>]  # hosted provider',
     '  sentinel-audit scan --repo <path> --commit <40-sha> [run flags]  # Stage A + routing only',
     '  sentinel-audit doctor       # check tools and hosted connectivity',
+    '  sentinel-audit web          # local evidence dashboard (127.0.0.1)',
     '',
     `⚖ AVISO DE RESPONSABILIDAD: ${DISCLAIMER_TEXT}`,
     '',
@@ -133,6 +134,11 @@ async function main() {
   const parsed = parse(process.argv);
   const opts = options(parsed);
   if (parsed.command === 'help' || parsed.flags.help) { console.log(usage()); return EXIT.COMPLETE; }
+  if (parsed.command === 'web') {
+    const { startWebDashboard } = require('./web/server');
+    await startWebDashboard({ port: Number(process.env.SENTINEL_AUDIT_WEB_PORT) || 4317 });
+    return EXIT.COMPLETE;
+  }
   if (parsed.command === 'interactive') {
     const nextArgs = await interactiveArgs();
     if (!nextArgs) return EXIT.COMPLETE;

@@ -98,11 +98,44 @@ if ($userPath -notlike "*$auditRoot*") {
 Verify with `sentinel-audit --help`. The launcher requires Node.js 20 or
 newer and does not elevate privileges or install anything globally.
 
-Sentinel Audit currently ships as a terminal application; it has no graphical
-dashboard. Running `sentinel-audit` opens the guided terminal workflow. The
-same menu is available with `sentinel-audit interactive`; use
-`sentinel-audit doctor` for a machine-readable readiness report. The menu helps
-select a workflow but does not replace reading the report or human adjudication.
+The terminal workflow remains available through `sentinel-audit` or
+`sentinel-audit interactive`. Use `sentinel-audit doctor` for a machine-readable
+readiness report. The menu helps select a workflow but does not replace reading
+the report or human adjudication.
+
+### Local evidence dashboard
+
+Run `sentinel-audit web` to start the browser console at
+`http://127.0.0.1:4317`. It binds to loopback only and does not open a browser
+automatically. The dashboard requires Node.js 22.5 or newer for the built-in
+SQLite module; the terminal commands continue to support Node.js 20 or newer.
+Set `SENTINEL_AUDIT_WEB_PORT` to change the local port.
+
+The dashboard enumerates repositories and open PRs through the active GitHub
+CLI session. Each PR offers a local Lite scan and, only when hosted policy,
+client, URL, and a saved key are ready, an explicit Sentinel Cloud Pulse. Both
+paths pin the PR head to its full SHA and run Sentinel Audit's own pipeline;
+Pulse sends the pinned checkout to the configured Sentinel Cloud endpoint.
+Specialists and their coverage states appear independently. The local evidence
+map distinguishes completed, partial, failed, unavailable, and unrun stages.
+An optional retry is limited to specialists already justified by the saved
+signal route; tools that the route did not select are not silently forced.
+
+Each completed scan is stored in the Audit-only SQLite database at
+`~/.sentinel-audit/audit.sqlite` (on Windows, under the user's home directory).
+The interface provides scan, finding, and stage tables, a long-cell modal,
+severity/source/file/date summaries, and JSON export. The report records a
+SHA-256 digest for the scan body and a separate digest for the exact PR diff;
+the body digest is computed over canonical serialized JSON before its
+`integrity` field is added. These are content references, not signatures or
+attestations from GitHub.
+
+The API-key panel uses the existing Sentinel Audit local key store, masks tokens
+in every listing, and never returns a token to browser code. Removing a key
+here deletes its local copy only; it does not revoke it server-side in Sentinel
+Cloud. Store and revoke credentials through the Sentinel Cloud account when
+permanent invalidation is required. The local dashboard has no remote login or
+multi-user protection and should remain bound to the current device.
 
 Coding agents can follow the optional [`sentinel-audit` skill](./skills/sentinel-audit/SKILL.md)
 for health checks, pinned scope, coverage reporting and human-led adjudication.
