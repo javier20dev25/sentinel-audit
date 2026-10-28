@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">Sentinel</title>
+  <rect width="256" height="256" fill="#fbfaf7"/>
+  <path fill="#202020" d="M128 53h10a75 75 0 0 1 75 75v2h-45a40 40 0 0 0-40-40V53ZM53 126h45a40 40 0 0 0 40 40v45h-10a75 75 0 0 1-75-75v-10Z"/>
+  <circle cx="128" cy="128" r="22" fill="#e6432b"/>
+</svg>

@@ -137,6 +137,13 @@ Cloud. Store and revoke credentials through the Sentinel Cloud account when
 permanent invalidation is required. The local dashboard has no remote login or
 multi-user protection and should remain bound to the current device.
 
+Tool inventory states distinguish an executable found on the host, an executable
+blocked by a host runtime guard, and a binary not found on `PATH` or configured
+paths. “Not found” is not a claim that the package cannot exist in an unsearched
+location. Analytics use a donut for severity composition, ranked horizontal bars
+for engine/source counts, a ranked list for affected files, tiles for categories,
+and an SVG timeline for scan dates.
+
 Coding agents can follow the optional [`sentinel-audit` skill](./skills/sentinel-audit/SKILL.md)
 for health checks, pinned scope, coverage reporting and human-led adjudication.
 

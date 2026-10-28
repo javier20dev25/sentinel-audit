@@ -84,7 +84,7 @@ function state() {
   const health = checkToolHealth(tools);
   const specialistTools = Object.entries(health).filter(([name]) => name !== 'sentinel').map(([name, item]) => ({ name, available: !!item.available, state: item.state, reason: item.reason || null }));
   const localEngine = health.sentinel || { available: false, state: 'UNAVAILABLE', reason: 'No se detectó el motor local Sentinel Cloud.' };
-  return { github, currentRepo: detectCurrentRepo(), tools: [{ name: 'Sentinel Lite', available: true, state: 'AVAILABLE' }, { name: 'Sentinel local', available: !!localEngine.available, state: localEngine.state || (localEngine.available ? 'AVAILABLE' : 'UNAVAILABLE'), reason: localEngine.reason || null }, ...specialistTools], cloud: cloudStatus(), policies: { hostedEnabled: !!(policies.hosted && policies.hosted.enabled) }, database: DB_PATH };
+  return { github, currentRepo: detectCurrentRepo(), tools: [{ name: 'Sentinel Lite', available: true, installed: true, state: 'AVAILABLE' }, { name: 'Sentinel local', available: !!localEngine.available, installed: !!localEngine.available, state: localEngine.state || (localEngine.available ? 'AVAILABLE' : 'UNAVAILABLE'), reason: localEngine.reason || null }, ...specialistTools.map((tool) => { const detail = health[tool.name] || {}; return { ...tool, installed: !!detail.path, blockedByHost: !!detail.blockedByHost, path: detail.path || null, reason: detail.blockedByHost ? `Encontrado en ${detail.path}; el runtime guard bloquea su ejecución en este proceso.` : detail.reason || null }; })], cloud: cloudStatus(), policies: { hostedEnabled: !!(policies.hosted && policies.hosted.enabled) }, database: DB_PATH };
 }
 
 function detectCurrentRepo() {
@@ -269,7 +269,7 @@ function startWebDashboard(options = {}) {
     throw new Error(`No se pudo abrir SQLite. El dashboard requiere Node.js 22.5 o superior: ${error.message}`);
   }
   const server = http.createServer((req, res) => {
-    res.setHeader('content-security-policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'");
+    res.setHeader('content-security-policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'");
     res.setHeader('referrer-policy', 'no-referrer');
     Promise.resolve().then(() => {
       const result = handle(req, res, db);
@@ -279,7 +279,7 @@ function startWebDashboard(options = {}) {
         const file = path.resolve(PUBLIC, `.${requested}`);
         if (!file.startsWith(`${PUBLIC}${path.sep}`) && file !== path.join(PUBLIC, 'index.html')) return json(res, 403, { error: 'Ruta inválida.' });
         if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return json(res, 404, { error: 'No encontrado.' });
-        const mime = file.endsWith('.css') ? 'text/css; charset=utf-8' : file.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8';
+        const mime = file.endsWith('.css') ? 'text/css; charset=utf-8' : file.endsWith('.js') ? 'text/javascript; charset=utf-8' : file.endsWith('.svg') ? 'image/svg+xml' : 'text/html; charset=utf-8';
         res.writeHead(200, { 'content-type': mime, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' }); res.end(fs.readFileSync(file));
       } else if (result === null && !res.writableEnded) json(res, 404, { error: 'Endpoint no encontrado.' });
     }).catch((error) => { if (!res.headersSent) json(res, error.status || 400, { error: safeError(error) }); });

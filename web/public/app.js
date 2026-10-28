@@ -25,8 +25,13 @@ function go(view) {
   if (view === 'analytics') loadAnalytics();
   if (view === 'keys') loadKeys();
 }
-document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => go(button.dataset.view)));
+document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => { go(button.dataset.view); document.body.classList.remove('mobile-nav-open'); }));
 document.querySelectorAll('[data-goto]').forEach((button) => button.addEventListener('click', () => go(button.dataset.goto)));
+const sidebarToggle=$('sidebar-toggle');
+if(localStorage.getItem('sentinel-audit-sidebar-collapsed')==='true')document.body.classList.add('sidebar-collapsed');
+sidebarToggle.addEventListener('click',()=>{document.body.classList.toggle('sidebar-collapsed');localStorage.setItem('sentinel-audit-sidebar-collapsed',String(document.body.classList.contains('sidebar-collapsed')));});
+$('mobile-nav-toggle').addEventListener('click',()=>document.body.classList.toggle('mobile-nav-open'));
+document.addEventListener('click',(event)=>{if(document.body.classList.contains('mobile-nav-open')&&event.target===document.body)document.body.classList.remove('mobile-nav-open');});
 
 async function loadState() {
   try {
@@ -35,15 +40,15 @@ async function loadState() {
     $('github-dot').classList.toggle('off', !(data.github && data.github.authenticated));
     $('db-location').textContent = data.database;
     $('footer-db').textContent = 'SQLITE / LOCAL';
-    const active = data.tools.filter((tool) => tool.available).length;
+    const active = data.tools.filter((tool) => tool.installed || tool.available).length;
     const cloud = data.cloud.enabled ? 'Pulse listo' : 'Pulse no disponible';
     $('status-grid').innerHTML = [
       card('GITHUB ACCOUNT', data.github && data.github.authenticated ? data.github.account : 'No autenticado', data.github && data.github.method || 'Usa gh auth login'),
-      card('ACTIVE ANALYZERS', `${active} / ${data.tools.length}`, 'Lite, motor Sentinel y especialistas'),
+      card('ANALYZERS FOUND', `${active} / ${data.tools.length}`, 'Detectados en este host; disponibilidad de ejecución por separado'),
       card('SENTINEL CLOUD', cloud, data.cloud.enabled ? `${data.cloud.keys.length} clave(s) local(es)` : data.cloud.reasons.join(' ')),
       card('AUDIT DATABASE', 'Conectada', 'Expedientes y etapas en SQLite local')
     ].join('');
-    $('tool-list').innerHTML = data.tools.map((tool) => `<div class="tool-row"><div class="recent-main"><strong>${esc(tool.name)}</strong><small>${esc(tool.reason || tool.state || '')}</small></div><span class="badge ${tool.available ? '' : 'warn'}">${tool.available ? 'DISPONIBLE' : esc(tool.state || 'NO DISPONIBLE')}</span></div>`).join('');
+    $('tool-list').innerHTML = data.tools.map((tool) => { const label=tool.blockedByHost?'ENCONTRADO · BLOQUEADO POR GUARD':tool.available?'ENCONTRADO · LISTO':tool.installed?'ENCONTRADO · NO DISPONIBLE':'NO LOCALIZADO EN PATH'; return `<div class="tool-row"><div class="recent-main"><strong>${esc(tool.name)}</strong><small>${esc(tool.reason || tool.state || 'Sin información')}</small>${tool.path?`<code>${esc(tool.path)}</code>`:''}</div><span class="badge ${tool.available?'':'warn'}">${label}</span></div>`; }).join('');
   } catch (error) { toast(`No se pudo consultar el estado local: ${error.message}`); }
 }
 function card(label, value, detail) { return `<article class="status-card"><small>${esc(label)}</small><strong>${esc(value)}</strong><span class="sub">${esc(detail)}</span></article>`; }
@@ -141,8 +146,18 @@ function chart(title, rows, labelKey, valueKey='count') {
   const max=Math.max(1,...rows.map(r=>Number(r[valueKey])||0));
   return `<article class="analytics-card"><h3>${esc(title)}</h3><div class="bars">${rows.length?rows.map((row)=>`<div class="bar-row"><span title="${esc(row[labelKey])}">${esc(row[labelKey]||'Sin categoría').slice(0,18)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(2,(Number(row[valueKey])||0)/max*100)}%"></div></div><span>${Number(row[valueKey])||0}</span></div>`).join(''):'<span class="muted">Sin datos agregados.</span>'}</div></article>`;
 }
+function severityDonut(rows) {
+  const colors={CRITICAL:'#d92e24',HIGH:'#f28522',MEDIUM:'#e5ba3c',LOW:'#5e9d8b',INFO:'#678099',UNSPECIFIED:'#a4a4a4'};
+  const total=rows.reduce((sum,row)=>sum+(Number(row.count)||0),0); let cursor=0;
+  const stops=rows.map((row)=>{const start=cursor;cursor+=total?(Number(row.count)||0)/total*100:0;return `${colors[row.severity]||'#aaa'} ${start}% ${cursor}%`;}).join(',');
+  const legend=rows.map((row)=>`<li><i style="--swatch:${colors[row.severity]||'#aaa'}"></i><span>${esc(row.severity||'Sin clasificar')}</span><strong>${Number(row.count)||0}</strong></li>`).join('');
+  return `<article class="analytics-card severity-card"><h3>Distribución de severidad</h3><div class="donut-layout"><div class="donut" style="--donut:${total?`conic-gradient(${stops})`:'conic-gradient(#d9d9d9 0 100%)'}"><div><strong>${total}</strong><small>hallazgos</small></div></div><ul class="donut-legend">${legend||'<li>Sin hallazgos</li>'}</ul></div></article>`;
+}
+function fileRanking(rows) { return `<article class="analytics-card"><h3>Archivos con más hallazgos</h3>${rows.length?`<ol class="file-ranking">${rows.map((row)=>`<li><code>${esc(row.file||'Sin ruta')}</code><strong>${Number(row.count)||0}</strong></li>`).join('')}</ol>`:'<p class="muted">Sin datos de archivo.</p>'}</article>`; }
+function categoryTiles(rows) { const max=Math.max(1,...rows.map((r)=>Number(r.count)||0)); return `<article class="analytics-card"><h3>Tipos de señal</h3><div class="category-tiles">${rows.length?rows.map((row)=>`<div class="category-tile" style="--tile-weight:${Math.max(1,Number(row.count)||0)/max}"><span>${esc(row.category||'Sin categoría')}</span><strong>${Number(row.count)||0}</strong></div>`).join(''):'<p class="muted">Sin categorías.</p>'}</div></article>`; }
+function timelineSvg(rows) { const width=640,height=180,pad=28,max=Math.max(1,...rows.map(r=>Number(r.count)||0));const points=rows.map((row,index)=>{const x=rows.length<2?width/2:pad+index*(width-pad*2)/(rows.length-1);const y=height-pad-(Number(row.count)||0)/max*(height-pad*2);return {x,y,row};});const poly=points.map(p=>`${p.x},${p.y}`).join(' ');return `<article class="analytics-card timeline-card"><h3>Actividad de escaneos · cronología</h3>${points.length?`<svg class="timeline-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Escaneos por fecha"><line x1="${pad}" y1="${height-pad}" x2="${width-pad}" y2="${height-pad}"/><line x1="${pad}" y1="${pad}" x2="${pad}" y2="${height-pad}"/><polyline points="${poly}"/>${points.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4"><title>${esc(p.row.day)}: ${Number(p.row.count)||0} escaneos</title></circle>`).join('')}${points.map(p=>`<text x="${p.x}" y="${height-6}" text-anchor="middle">${esc(p.row.day.slice(5))}</text>`).join('')}</svg>`:'<p class="muted">Sin escaneos registrados.</p>'}</article>`; }
 async function loadAnalytics() {
-  try { const d=await api('/api/analytics'); const max=Math.max(1,...d.timeline.map(x=>x.count)); const timeline=`<article class="analytics-card"><h3>Escaneos por fecha</h3><div class="timeline">${d.timeline.map((p)=>`<div class="time-point" style="height:${Math.max(4,p.count/max*100)}%" title="${esc(p.day)}: ${p.count}"><span>${esc(p.day.slice(5))}</span></div>`).join('')||'<span class="muted">Sin datos.</span>'}</div></article>`; $('analytics-grid').innerHTML=chart('Hallazgos por severidad',d.severities,'severity')+chart('Hallazgos por motor',d.sources,'source')+chart('Archivos con más señales',d.files,'file')+chart('Categorías registradas',d.categories,'category')+timeline; }
+  try { const d=await api('/api/analytics'); $('analytics-grid').innerHTML=severityDonut(d.severities)+chart('Hallazgos por motor',d.sources,'source')+fileRanking(d.files)+categoryTiles(d.categories)+timelineSvg(d.timeline); }
   catch (error) { $('analytics-grid').innerHTML=`<div class="empty-state">${esc(error.message)}</div>`; }
 }
 async function loadKeys() {

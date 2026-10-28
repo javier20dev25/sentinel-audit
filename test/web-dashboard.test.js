@@ -18,11 +18,18 @@ test('local web dashboard serves UI, reports GitHub identity, and rejects unauth
   assert.equal(page.status, 200);
   assert.match(await page.text(), /Sentinel <em>Audit/);
   assert.match(page.headers.get('content-security-policy'), /default-src 'self'/);
+  assert.match(page.headers.get('content-security-policy'), /style-src 'self' 'unsafe-inline'/);
+  const [theme, logo] = await Promise.all([fetch(`${base}/theme.css`), fetch(`${base}/sentinel-logo.svg`)]);
+  assert.equal(theme.status, 200);
+  assert.match(await theme.text(), /color-scheme:\s*light/);
+  assert.equal(logo.headers.get('content-type'), 'image/svg+xml');
+  assert.match(await logo.text(), /#e6432b/);
 
   const state = await fetch(`${base}/api/state`).then((response) => response.json());
   assert.equal(state.github.authenticated, true);
   assert.equal(state.github.account, 'javier20dev25');
   assert.ok(Array.isArray(state.tools));
+  assert.ok(state.tools.every((tool) => typeof tool.installed === 'boolean'));
   assert.ok(state.database.endsWith('audit.sqlite'));
 
   const rejected = await fetch(`${base}/api/scans`, {

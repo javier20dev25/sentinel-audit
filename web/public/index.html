@@ -3,35 +3,36 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="light">
   <title>Sentinel Audit | Evidence Console</title>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/theme.css">
   <script defer src="/app.js"></script>
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="brand-mark" aria-label="Sentinel"><span class="mark-core"></span><span class="mark-orbit"></span></div>
-      <div class="side-brand"><strong>SENTINEL</strong><small>AUDIT CONSOLE</small></div>
+      <div class="side-brand"><img src="/sentinel-logo.svg" alt="Sentinel"><span><strong>SENTINEL</strong><small>AUDIT</small></span></div>
+      <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Ocultar navegación" title="Ocultar navegación">‹</button>
       <div class="side-section">WORKSPACE</div>
       <nav id="navigation" aria-label="Navegación principal">
-        <button class="nav-item active" data-view="overview"><span class="nav-icon">01</span> Escáner</button>
-        <button class="nav-item" data-view="evidence"><span class="nav-icon">02</span> Evidencia</button>
-        <button class="nav-item" data-view="database"><span class="nav-icon">03</span> Base de datos</button>
-        <button class="nav-item" data-view="analytics"><span class="nav-icon">04</span> Analítica</button>
-        <button class="nav-item" data-view="tools"><span class="nav-icon">05</span> Herramientas</button>
-        <button class="nav-item" data-view="policies"><span class="nav-icon">06</span> Políticas y guía</button>
-        <button class="nav-item" data-view="keys"><span class="nav-icon">07</span> Claves API</button>
+        <button class="nav-item active" data-view="overview" title="Escáner"><span class="nav-icon">01</span><span class="nav-label">Escáner</span></button>
+        <button class="nav-item" data-view="evidence" title="Evidencia"><span class="nav-icon">02</span><span class="nav-label">Evidencia</span></button>
+        <button class="nav-item" data-view="database" title="Base de datos"><span class="nav-icon">03</span><span class="nav-label">Base de datos</span></button>
+        <button class="nav-item" data-view="analytics" title="Analítica"><span class="nav-icon">04</span><span class="nav-label">Analítica</span></button>
+        <button class="nav-item" data-view="tools" title="Herramientas"><span class="nav-icon">05</span><span class="nav-label">Herramientas</span></button>
+        <button class="nav-item" data-view="policies" title="Políticas y guía"><span class="nav-icon">06</span><span class="nav-label">Políticas y guía</span></button>
+        <button class="nav-item" data-view="keys" title="Claves API"><span class="nav-icon">07</span><span class="nav-label">Claves API</span></button>
       </nav>
       <div class="sidebar-footer"><span class="live-dot"></span><span id="server-status">Consola local</span><small>SOLO ESTE DISPOSITIVO</small></div>
     </aside>
     <main class="main-area">
       <header class="topbar">
-        <div class="top-context"><span class="eyebrow">SECURITY OPERATIONS / LOCAL</span><span id="current-view-label">PR SCANNER</span></div>
+        <div class="topbar-left"><button class="mobile-nav-toggle" id="mobile-nav-toggle" type="button" aria-label="Abrir navegación">☰</button><div class="top-context"><span class="eyebrow">SECURITY OPERATIONS / LOCAL</span><span id="current-view-label">PR SCANNER</span></div></div>
         <div class="account-chip"><span class="account-avatar">GH</span><span><small>GITHUB SESSION</small><strong id="github-account">Comprobando cuenta…</strong></span><i id="github-dot" class="status-dot"></i></div>
       </header>
       <section class="hero">
-        <div class="hero-brand"><div class="hero-logo"><span></span></div><div><p class="eyebrow">EVIDENCE-DRIVEN SECURITY</p><h1>Sentinel <em>Audit</em></h1></div></div>
+        <div class="hero-brand"><img class="hero-logo" src="/sentinel-logo.svg" alt=""><div><p class="eyebrow">EVIDENCE-DRIVEN SECURITY</p><h1>Sentinel <em>Audit</em></h1></div></div>
         <p class="hero-copy">Una consola local para fijar cambios, enrutar evidencia y revisar cada etapa del análisis.</p>
       </section>
       <section class="status-grid" id="status-grid"></section>
