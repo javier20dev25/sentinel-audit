@@ -1,6 +1,8 @@
 'use strict';
 const $ = (id) => document.getElementById(id);
 const state = { repos: [], selectedRepo: null, selectedScan: null };
+const installableTools = new Set(['codeql','semgrep','trivy','osv','bandit','shellcheck']);
+const toolSources={codeql:'https://github.com/github/codeql-cli-binaries/releases',semgrep:'https://pypi.org/project/semgrep/',trivy:'https://github.com/aquasecurity/trivy/releases',osv:'https://github.com/google/osv-scanner/releases',bandit:'https://pypi.org/project/bandit/',shellcheck:'https://github.com/koalaman/shellcheck/releases'};
 const headers = { 'content-type': 'application/json', 'x-sentinel-audit-request': 'ui' };
 
 async function api(url, options = {}) {
@@ -48,7 +50,8 @@ async function loadState() {
       card('SENTINEL CLOUD', cloud, data.cloud.enabled ? `${data.cloud.keys.length} clave(s) local(es)` : data.cloud.reasons.join(' ')),
       card('AUDIT DATABASE', 'Conectada', 'Expedientes y etapas en SQLite local')
     ].join('');
-    $('tool-list').innerHTML = data.tools.map((tool) => { const label=tool.blockedByHost?'ENCONTRADO · BLOQUEADO POR GUARD':tool.available?'ENCONTRADO · LISTO':tool.installed?'ENCONTRADO · NO DISPONIBLE':'NO LOCALIZADO EN PATH'; return `<div class="tool-row"><div class="recent-main"><strong>${esc(tool.name)}</strong><small>${esc(tool.reason || tool.state || 'Sin información')}</small>${tool.path?`<code>${esc(tool.path)}</code>`:''}</div><span class="badge ${tool.available?'':'warn'}">${label}</span></div>`; }).join('');
+    $('tool-list').innerHTML = data.tools.map((tool) => { const name=tool.name.toLowerCase();const label=tool.blockedByHost?'ENCONTRADO · BLOQUEADO POR GUARD':tool.available?'ENCONTRADO · LISTO':tool.installed?'ENCONTRADO · NO DISPONIBLE':'NO LOCALIZADO EN PATH'; const canInstall=installableTools.has(name)&&!tool.installed&&!tool.available; const installButton=canInstall?`<button class="button subtle" data-install-tool="${esc(name)}">Descargar e instalar</button>`:''; const source=toolSources[name]?`<a class="tool-source" href="${toolSources[name]}" target="_blank" rel="noreferrer">Fuente oficial</a>`:''; return `<div class="tool-row"><div class="recent-main"><strong>${esc(tool.name)}</strong><small>${esc(tool.reason || tool.state || 'Sin información')}</small>${tool.path?`<code>${esc(tool.path)}</code>`:''}${source}</div><span class="badge ${tool.available?'':'warn'}">${label}</span>${installButton}</div>`; }).join('');
+    document.querySelectorAll('[data-install-tool]').forEach((button)=>button.addEventListener('click',()=>beginToolInstall(button.dataset.installTool)));
   } catch (error) { toast(`No se pudo consultar el estado local: ${error.message}`); }
 }
 function card(label, value, detail) { return `<article class="status-card"><small>${esc(label)}</small><strong>${esc(value)}</strong><span class="sub">${esc(detail)}</span></article>`; }
@@ -87,7 +90,7 @@ async function launchScan(repo, prNumber, mode) {
   try {
     const created = await api('/api/scans', { method: 'POST', body: JSON.stringify({ repo, prNumber, mode, keyId }) });
     go('evidence'); $('evidence-selection').textContent = `${repo} / PR #${prNumber} / ${mode.toUpperCase()}`;
-    $('evidence-content').innerHTML = `<div class="empty-state scan-running"><span class="live-dot"></span> Preparando escaneo fijado. El tablero se actualizará conforme avance la ruta.</div><div id="live-route" class="finding-list"></div>`;
+    $('evidence-content').innerHTML = `<article class="scan-progress"><div class="scan-progress-head"><span class="live-dot"></span><strong>Analizando ${esc(repo)} · PR #${prNumber}</strong><span id="scan-stage-count">0 etapas</span></div><div class="scan-progress-track"><i></i></div><p>La ruta se construye con las etapas que el servidor confirma; no se estima un porcentaje de finalización.</p></article><div id="live-route" class="live-route" aria-live="polite"></div>`;
     pollScan(created.id);
   } catch (error) { toast(`No se pudo iniciar el escaneo: ${error.message}`); }
 }
@@ -96,12 +99,25 @@ async function pollScan(id) {
     try {
       const data = await api(`/api/scans/${encodeURIComponent(id)}`);
       const live = $('live-route');
-      if (live) live.innerHTML = (data.events || []).map((event) => `<div class="finding-card"><h4>${esc(event.stage)} <span class="badge">${esc(event.state)}</span></h4><p>${esc(typeof event.detail === 'string' ? event.detail : JSON.stringify(event.detail || ''))}</p></div>`).join('');
+      if (live) {
+        const events=data.events||[]; const count=$('scan-stage-count'); if(count)count.textContent=`${events.length} ${events.length===1?'etapa':'etapas'} registradas`;
+        live.innerHTML = events.map((event,index) => {const stateName=String(event.state||'').toLowerCase();const cls=/complete|clean|success/.test(stateName)?'complete':/fail|error/.test(stateName)?'failed':/running|started/.test(stateName)?'running':'partial';const detail=typeof event.detail==='string'?event.detail:JSON.stringify(event.detail||'');return `<article class="live-route-node ${cls}" style="--route-index:${index}"><span class="route-node-index">${String(index+1).padStart(2,'0')}</span><div><h3>${esc(event.stage)}</h3><p>${esc(detail)}</p></div><span class="route-state">${esc(event.state)}</span></article>`;}).join('');
+      }
       if (data.status === 'COMPLETE' && data.result) { state.selectedScan = id; renderEvidence(data.result); loadRecent(); return; }
       if (data.status === 'FAILED') { $('evidence-content').innerHTML += `<div class="finding-card sev-high"><h4>Escaneo incompleto</h4><p>${esc(data.error)}</p></div>`; return; }
       await new Promise((resolve) => setTimeout(resolve, 1100));
     } catch (error) { toast(`Se perdió la consulta de progreso: ${error.message}`); return; }
   }
+}
+async function beginToolInstall(tool) {
+  const terms=tool==='codeql';
+  const body=`<div class="install-confirm"><p>Se instalará en <code>%USERPROFILE%\\.sentinel-audit\\tools</code>, separado de otras aplicaciones. No requiere privilegios de administrador.</p><p>El instalador obtiene versiones oficiales y verifica SHA-256 cuando el proveedor publica un digest. Las herramientas Python usan un entorno virtual aislado y solo ruedas binarias.</p>${terms?'<label class="check-row"><input id="codeql-terms" type="checkbox"> Confirmo que el uso de CodeQL se limita a código abierto elegible o investigación académica, según sus términos.</label><p><a href="https://github.com/github/codeql-cli-binaries#terms-and-conditions" target="_blank" rel="noreferrer">Términos oficiales de CodeQL</a></p>':''}<div class="install-job" id="install-job"></div><div class="form-actions"><button type="button" class="button subtle" data-close-modal>Cerrar</button><button type="button" class="button primary" id="install-confirm" ${terms?'disabled':''}>Iniciar instalación</button></div></div>`;
+  showModal(`Instalar ${tool}`,body);
+  if(terms)$('codeql-terms').addEventListener('change',(event)=>{$('install-confirm').disabled=!event.target.checked;});
+  $('install-confirm').addEventListener('click',async(event)=>{const button=event.currentTarget;button.disabled=true;try{const job=await api('/api/tools/install',{method:'POST',body:JSON.stringify({tool,acceptLicenseTerms:terms&&$('codeql-terms').checked})});await pollToolInstall(job.id);}catch(error){$('install-job').innerHTML=`<p class="install-error">${esc(error.message)}</p>`;button.disabled=false;}});
+}
+async function pollToolInstall(id) {
+  for(;;){try{const job=await api(`/api/tools/jobs/${encodeURIComponent(id)}`);const box=$('install-job');if(!box)return;box.innerHTML=`<div class="install-status"><strong>${esc(job.state)}</strong><span>${esc(job.message||'')}</span><progress max="100" value="${Number(job.percent)||0}"></progress><small>${Number(job.percent)||0}%</small>${job.error?`<p class="install-error">${esc(job.error)}</p>`:''}</div>`;if(['AVAILABLE','FAILED'].includes(job.state)){if(job.state==='AVAILABLE'){await loadState();toast(job.message);}const action=$('install-confirm');if(action)action.disabled=false;return;}await new Promise(resolve=>setTimeout(resolve,700));}catch(error){const box=$('install-job');if(box)box.innerHTML=`<p class="install-error">${esc(error.message)}</p>`;return;}}
 }
 function renderEvidence(body) {
   const audit = body.audit || {}; const stages = audit.stages || {}; const tools = audit.tools || {};

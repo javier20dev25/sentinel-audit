@@ -16,11 +16,13 @@ test('running the executable without a command opens the interactive menu', () =
 });
 
 test('interactive menu shows the GitHub identity and keeps the disclaimer opt-in', async () => {
-  const io = scriptedIO(['8']);
+  const io = scriptedIO(['9']);
   assert.equal(await interactiveArgs(io), null);
   assert.match(io.output.text, /SENTINEL AUDIT/);
   assert.match(io.output.text, /Cuenta GitHub/);
   assert.match(io.output.text, /OPERACIONES/);
+  assert.match(io.output.text, /CONSOLA WEB.*127\.0\.0\.1:4317/);
+  assert.match(io.output.text, /08  LOGS DE SESION/);
   assert.match(io.output.text, /RESPONSABILIDAD/);
   assert.match(io.output.text, /╭─ SENTINEL AUDIT/);
   assert.doesNotMatch(io.output.text, /El usuario es el único responsable/);
@@ -33,7 +35,7 @@ test('terminal output strips control sequences from repository evidence', () => 
 });
 
 test('key management returns to the main menu without terminating the CLI', async () => {
-  const io = scriptedIO(['2', '0', '8']);
+  const io = scriptedIO(['2', '0', '9']);
   assert.equal(await interactiveArgs(io), null);
   assert.match(io.output.text, /CLAVES SENTINEL CLOUD/);
   assert.match(io.output.text, /00  Volver al menu principal/);
@@ -43,14 +45,21 @@ test('key management returns to the main menu without terminating the CLI', asyn
 test('empty menu input exits cleanly instead of throwing or re-entering a broken form', async () => {
   const io = scriptedIO(['']);
   assert.equal(await interactiveArgs(io), null);
-  assert.match(io.output.text, /08  SALIR/);
+  assert.match(io.output.text, /09  SALIR/);
 });
 
 test('pinned workflow options advertise GitHub repo and commit pickers', async () => {
-  const io = scriptedIO(['8']);
+  const io = scriptedIO(['9']);
   await interactiveArgs(io);
   assert.match(io.output.text, /AUDITAR COMMIT/);
   assert.match(io.output.text, /PREFLIGHT/);
   assert.doesNotMatch(io.output.text, /Ruta del repositorio:/);
   assert.doesNotMatch(io.output.text, /SHA completo de 40 caracteres:/);
+});
+
+test('session log viewer shows bounded current-session activity and returns to the menu', async () => {
+  const io = scriptedIO(['8', '', '9']);
+  assert.equal(await interactiveArgs(io), null);
+  assert.match(io.output.text, /LOGS DE ESTA SESION/);
+  assert.equal((io.output.text.match(/OPERACIONES/g) || []).length, 3);
 });

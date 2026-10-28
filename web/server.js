@@ -16,6 +16,7 @@ const { checkGitHubSession } = require('../workflow/interactive');
 const { loadConfig } = require('../lib/core');
 const { checkToolHealth } = require('../workflow/preflight');
 const { resolveClient } = require('../adapters/hosted');
+const toolInstaller = require('./tool-installer');
 
 const PUBLIC = path.join(__dirname, 'public');
 const DATA = path.join(os.homedir(), '.sentinel-audit');
@@ -202,6 +203,13 @@ function handle(req, res, db) {
   const method = req.method;
   const route = url.pathname;
   if (method === 'GET' && route === '/api/state') return json(res, 200, state());
+  if (method === 'GET' && route === '/api/tools/jobs') return json(res, 200, { jobs: toolInstaller.listJobs() });
+  if (method === 'POST' && route === '/api/tools/install') return readBody(req).then((body) => json(res, 202, toolInstaller.startInstall(String(body.tool || ''), { acceptLicenseTerms: body.acceptLicenseTerms === true })));
+  const toolJobMatch = route.match(/^\/api\/tools\/jobs\/([\w-]+)$/);
+  if (method === 'GET' && toolJobMatch) {
+    const job = toolInstaller.getJob(toolJobMatch[1]);
+    return job ? json(res, 200, job) : json(res, 404, { error: 'Trabajo de instalación no encontrado.' });
+  }
   if (method === 'GET' && route === '/api/repos') {
     const ghState = checkGitHubSession();
     if (!ghState.authenticated || ghState.account === 'Environment Token') return json(res, 200, { repositories: [], reason: 'La sesión gh CLI no está disponible para enumerar repositorios.' });

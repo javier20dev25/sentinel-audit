@@ -7,6 +7,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 const cloudKeys = require('../lib/cloud-keys');
+const sessionLogs = require('../lib/session-logs');
 const liteScanner = require('../lib/lite-scanner');
 const { runAuditV1 } = require('./pipeline-v1');
 const { createTerminalProgress } = require('./terminal-progress');
@@ -554,12 +555,16 @@ async function chooseSavedExecution(io) {
 async function interactiveArgs(io) {
   const ownsInterface = !io;
   io = io || readline.createInterface({ input: stdin, output: stdout });
+  sessionLogs.beginSession();
+  const restoreOutput = sessionLogs.captureStream(io.output);
+  const restoreError = io.output === process.stderr ? () => {} : sessionLogs.captureStream(process.stderr);
   try {
    while (true) {
     const github = checkGitHubSession();
     panel(io, 'SENTINEL AUDIT  /  SECURITY WORKBENCH', [
       `Cuenta GitHub  ${github.authenticated ? good(github.account) : warn('sin sesion detectada')}  ${github.authenticated ? `(${github.method})` : ''}`,
       'Analisis local, auditoria especializada y evidencia verificable.',
+      `CONSOLA WEB  http://127.0.0.1:${Number(process.env.SENTINEL_AUDIT_WEB_PORT) || 4317}  ·  iniciar con: sentinel-audit web`,
     ], '36');
     panel(io, 'OPERACIONES', [
       menuRow(1, 'PULL REQUESTS', 'Enumerar y analizar cambios propuestos'),
@@ -569,10 +574,11 @@ async function interactiveArgs(io) {
       menuRow(5, 'PREFLIGHT', 'Comprobar cobertura antes de auditar'),
       menuRow(6, 'REPORTES', 'Abrir un expediente guardado'),
       menuRow(7, 'RESPONSABILIDAD', 'Leer alcance y limites del analisis'),
-      menuRow(8, 'SALIR', 'Cerrar Sentinel Audit'),
+      menuRow(8, 'LOGS DE SESION', 'Consultar actividad de esta ejecucion'),
+      menuRow(9, 'SALIR', 'Cerrar Sentinel Audit'),
     ], '35');
 
-    const choice = (await io.question(`\n${accent('>')} Selecciona una operacion [1-8] (${paint('90', 'Enter = salir')}): `)).trim();
+    const choice = (await io.question(`\n${accent('>')} Selecciona una operacion [1-9] (${paint('90', 'Enter = salir')}): `)).trim();
     if (!choice || choice === '0') return null;
 
     if (choice === '1') {
@@ -588,7 +594,15 @@ async function interactiveArgs(io) {
       io.output.write(`\n${cloudKeys.DISCLAIMER_TEXT}\n`);
       continue;
     }
-    if (choice === '8') return null;
+    if (choice === '8') {
+      const entries = sessionLogs.getSessionLogs(40);
+      panel(io, 'LOGS DE ESTA SESION', entries.length
+        ? entries.map((entry) => `${entry.at.slice(11, 19)}  ${entry.text}`)
+        : ['Todavia no hay actividad registrada.'].concat('00  Volver al menu principal'), '36');
+      await io.question(`${accent('>')} Presiona Enter para volver al menu principal: `);
+      continue;
+    }
+    if (choice === '9') return null;
 
     if (choice === '4' || choice === '5') {
       await handlePinnedWorkflow(io, choice === '5' ? 'preflight' : 'run');
@@ -603,6 +617,8 @@ async function interactiveArgs(io) {
     io.output.write(warn('Opción no reconocida; el menú sigue disponible.') + '\n');
    }
   } finally {
+    sessionLogs.endSession();
+    restoreOutput(); restoreError();
     if (ownsInterface) io.close();
   }
 }

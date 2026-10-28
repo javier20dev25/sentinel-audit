@@ -148,3 +148,34 @@ td { color:#383732; }
   .donut-layout { gap:17px; }
 }
 @media(prefers-reduced-motion:reduce) { *,*:before,*:after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+
+/* Scan route: confirmed stages enter as connected evidence nodes. */
+.scan-progress { border:1px solid #d8d6cf; background:#fffefa; padding:17px 19px; margin:12px 0 18px; }
+.scan-progress-head { display:flex; align-items:center; gap:12px; }
+.scan-progress-head strong { flex:1; }
+.scan-progress-track { height:4px; background:#e8e6df; overflow:hidden; margin:15px 0 8px; }
+.scan-progress-track i { display:block; height:100%; width:30%; background:#e3402b; animation:scanSweep 1.8s ease-in-out infinite alternate; }
+.scan-progress p { margin:0; color:#716f68; font-size:12px; }
+.live-route { position:relative; display:grid; gap:0; padding-left:15px; }
+.live-route:before { content:""; position:absolute; left:30px; top:18px; bottom:18px; border-left:1px solid #d7d5ce; }
+.live-route-node { position:relative; display:grid; grid-template-columns:30px minmax(0,1fr) auto; gap:13px; align-items:start; padding:14px 16px 14px 0; border-bottom:1px solid #e8e6df; background:#fffefa; animation:routeEnter .35s ease both; animation-delay:calc(var(--route-index,0) * 35ms); }
+.route-node-index { z-index:1; display:grid; place-items:center; width:30px; height:30px; background:#fffefa; border:1px solid #aaa79e; font:700 11px ui-monospace,monospace; }
+.live-route-node.complete .route-node-index { color:#18774a; border-color:#18774a; }
+.live-route-node.failed .route-node-index { color:#bf3027; border-color:#bf3027; }
+.live-route-node.running .route-node-index { color:#b77600; border-color:#d3971e; animation:nodePulse 1s ease-in-out infinite alternate; }
+.live-route-node h3 { font-size:13px; margin:1px 0 5px; }
+.live-route-node p { margin:0; color:#69675f; font-size:12px; overflow-wrap:anywhere; }
+.route-state { color:#77746c; font:10px ui-monospace,monospace; letter-spacing:.08em; }
+.tool-row { grid-template-columns:minmax(0,1fr) auto auto; align-items:center; }
+.tool-row .button { white-space:nowrap; }
+.tool-source { display:inline-block; margin-top:5px; font:11px ui-monospace,monospace; color:#55534d; text-decoration:underline; text-underline-offset:2px; }
+.install-confirm { display:grid; gap:12px; }
+.install-confirm p { margin:0; }
+.check-row { display:flex; gap:9px; align-items:flex-start; }
+.install-status { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:8px 12px; padding:13px; background:#f2f1ec; }
+.install-status progress { grid-column:1 / -1; width:100%; height:9px; accent-color:#df402c; }
+.install-error { color:#a6221c; overflow-wrap:anywhere; }
+@keyframes scanSweep { from { transform:translateX(-8%); width:24%; } to { transform:translateX(330%); width:36%; } }
+@keyframes routeEnter { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes nodePulse { from { box-shadow:0 0 0 0 #d3971e22; } to { box-shadow:0 0 0 5px #d3971e22; } }
+@media(max-width:760px) { .tool-row { grid-template-columns:1fr auto; } .tool-row .recent-main { grid-column:1 / -1; } .live-route-node { grid-template-columns:30px minmax(0,1fr); } .route-state { grid-column:2; } }

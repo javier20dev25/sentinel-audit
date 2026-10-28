@@ -63,7 +63,10 @@ repository and recent commit from GitHub, then run an audit or preflight on an
 isolated temporary checkout. Option 6 lists saved local executions so reports
 can be rendered without typing filesystem paths. After key management or an
 audit, the CLI returns to the main menu. The responsibility notice is available
-from option 7.
+from option 7. Option 8 shows a bounded, token-redacted log of the current CLI
+session; it is discarded when the process exits. Option 9 exits. The startup
+banner also shows the local dashboard URL and its start command; the dashboard
+starts only when requested with `sentinel-audit web`.
 
 The guided PR workflow labels the deterministic diff scan as **Sentinel Audit
 Lite**. It then pins the PR head SHA, creates a temporary checkout, passes the
@@ -380,3 +383,11 @@ tools/determinism.js   the determinism assertion
 tools/verdict-matrix.js  which dispositions may claim clean
 out/                   run output, gitignored
 ```
+
+### Requirements and optional tool installation
+
+The interactive CLI needs Node.js 20 or newer and GitHub CLI (`gh`) for GitHub account and repository selection. The local web dashboard needs Node.js 22.5 or newer for built-in SQLite. Specialist tools are optional: Sentinel Audit can run its own Lite analysis without them, and each unavailable or unrouted specialist remains explicit in the evidence route.
+
+On Windows, the dashboard can install CodeQL CLI, Semgrep, Trivy, OSV-Scanner, Bandit, and ShellCheck into `%USERPROFILE%\\.sentinel-audit\\tools` without administrator privileges or modifying system PATH. GitHub release binaries are accepted only from allowlisted official release assets with a published SHA-256 digest; if that digest is missing or does not match, installation stops and the file is removed. Semgrep and Bandit use isolated Python virtual environments and binary wheels from PyPI, requiring Python 3 and the Windows `py` launcher. Their package manager resolves transitive dependencies from the configured official index; use your organization's package policy if stricter dependency pinning is required. Installed executable paths are recorded in `%USERPROFILE%\\.sentinel-audit\\tool-paths.json` and discovered on the next state refresh. The UI shows download/install progress and confirms when the tool is registered. It does not execute a downloaded installer binary during download.
+
+CodeQL requires checking its usage terms in the UI before downloading. Its CLI is restricted by GitHub's terms to eligible open-source codebases or academic research; review the linked current terms before use. The integrated installer is Windows-only. On other systems, install from the upstream projects and configure executable paths in `config/tools.json` or the documented `SPECIALIST_*_PATH` environment variables. A tool reported as not found means it was not resolved from PATH/configuration, not proof it is absent elsewhere.

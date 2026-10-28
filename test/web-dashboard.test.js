@@ -21,7 +21,9 @@ test('local web dashboard serves UI, reports GitHub identity, and rejects unauth
   assert.match(page.headers.get('content-security-policy'), /style-src 'self' 'unsafe-inline'/);
   const [theme, logo] = await Promise.all([fetch(`${base}/theme.css`), fetch(`${base}/sentinel-logo.svg`)]);
   assert.equal(theme.status, 200);
-  assert.match(await theme.text(), /color-scheme:\s*light/);
+  const themeText = await theme.text();
+  assert.match(themeText, /color-scheme:\s*light/);
+  assert.match(themeText, /@keyframes scanSweep/);
   assert.equal(logo.headers.get('content-type'), 'image/svg+xml');
   assert.match(await logo.text(), /#e6432b/);
 
@@ -31,6 +33,12 @@ test('local web dashboard serves UI, reports GitHub identity, and rejects unauth
   assert.ok(Array.isArray(state.tools));
   assert.ok(state.tools.every((tool) => typeof tool.installed === 'boolean'));
   assert.ok(state.database.endsWith('audit.sqlite'));
+  const jobs = await fetch(`${base}/api/tools/jobs`).then((response) => response.json());
+  assert.deepEqual(jobs.jobs, []);
+  const script = await fetch(`${base}/app.js`).then((response) => response.text());
+  assert.match(script, /Descargar e instalar/);
+  assert.match(script, /live-route-node/);
+  assert.match(themeText, /@keyframes routeEnter/);
 
   const rejected = await fetch(`${base}/api/scans`, {
     method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://attacker.example', 'x-sentinel-audit-request': 'ui' },
