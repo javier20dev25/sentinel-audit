@@ -8,6 +8,7 @@
       "semgrep": 15,
       "trivy": 10,
       "osv": 10,
+      "zizmor": 5,
       "bandit": 5,
       "shellcheck": 5,
       "sentinel": 10

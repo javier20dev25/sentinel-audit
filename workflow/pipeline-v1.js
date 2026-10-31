@@ -24,7 +24,7 @@ const { installCancellation } = require('./cancellation');
 const { abs: resolveTarget, relTarget } = require('./paths');
 const { triageCandidatesHybrid } = require('./hybrid-triage');
 
-const ALL_SPECIALISTS = ['codeql', 'semgrep', 'trivy', 'osv'];
+const ALL_SPECIALISTS = ['codeql', 'semgrep', 'trivy', 'osv', 'zizmor'];
 const HEAVY = new Set(['codeql']);
 
 function hash(value) { return crypto.createHash('sha256').update(String(value)).digest('hex'); }
@@ -97,6 +97,24 @@ function routeWithTargets(sentinel, root, pre, opts) {
   if (!policies.routing.supportedModes.includes(mode)) throw new Error(`invalid routing mode: ${mode}`);
   const actionable = (sentinel.findings || []).filter((finding) => finding.signalClass === 'ACTIONABLE_SIGNAL');
   const plan = buildRoutePlan(actionable, sentinel.status, mode, root, sentinel.coverage || {}, policies.routing.signalToolMap);
+  // Workflow and local-action files have a dedicated static security analyzer.
+  // Route it from the checked-in CI surface itself, independently of application
+  // code signals; lack of a Sentinel engine signal must not mask unsafe CI YAML.
+  const ciFiles = (pre.trackedFiles || []).filter((file) => {
+    const normalized = String(file).replace(/\\/g, '/');
+    return /^\.github\/workflows\/.+\.ya?ml$/i.test(normalized)
+      || /^\.github\/actions\/.+\/action\.ya?ml$/i.test(normalized)
+      || /^action\.ya?ml$/i.test(normalized)
+      || /^\.github\/dependabot\.ya?ml$/i.test(normalized);
+  });
+  plan.ciFiles = ciFiles;
+  plan.independentChecks = [];
+  if (ciFiles.length) {
+    if (!plan.tools.includes('zizmor')) plan.tools.push('zizmor');
+    plan.independentChecks.push({ tool: 'zizmor', files: ciFiles, reason: 'checked-in GitHub Actions, local actions, or Dependabot definitions are audited independently of application-code signals', offline: true });
+    if (plan.decision === 'NO_ACTIONABLE_SENTINEL_FINDINGS') plan.decision = 'INDEPENDENT_SECURITY_CHECKS';
+    plan.reason += `; zizmor is independently routed for ${ciFiles.length} CI definition file(s)`;
+  }
   // Targets are persisted relative to the repository, so every comparison below
   // has to go through the root of this execution.  path.resolve() on its own
   // resolves against the process cwd and would match no tracked file at all,
@@ -156,7 +174,7 @@ function enrichSpecialistResult(result, tool, job, route, root) {
   // *routing mode* is a different thing: Semgrep there is still running against
   // a promoted target, and conflating the two dropped the attribution of every
   // finding in repo mode.
-  const scopeMode = ['codeql', 'trivy', 'osv'].includes(tool) ? 'REPOSITORY' : route.mode;
+  const scopeMode = ['codeql', 'trivy', 'osv', 'zizmor'].includes(tool) ? 'REPOSITORY' : route.mode;
   const findings = (result.findings || []).map((finding, index) => {
     const promotionIds = promotionIdsForFinding(finding, route, scopeMode, root);
     return Object.assign({}, finding, {
@@ -204,6 +222,7 @@ async function runSpecialistStage(root, ctx, route, opts, executionIdValue) {
           language: ctx.inv.mainLanguage,
           ram: ctx.pre.cost.requiredRamMB,
           targets: route.targets,
+          ciFiles: route.ciFiles || [],
         });
         return { state: result.job && result.job.state || 'SUCCEEDED', result };
       },

@@ -76,13 +76,16 @@ map. The execution directory contains the full evidence and report. Missing
 specialists, unrouted signals, failed stages, and unknown coverage are shown as
 gaps with reasons; they are never represented as a clean scan.
 
-Saved Sentinel Cloud keys do not mean a pulse was used. The guided PR menu
-offers a hosted pulse only when hosted policy is enabled, the cloud client and
-`SENTINEL_CLOUD_URL` are configured, and a key is available. Selecting that
-option explicitly sends the pinned PR checkout to Sentinel Cloud; the local
-Lite diff result remains labeled separately. Otherwise, the menu lists the
-missing prerequisites and uses the local path. The responsibility notice is
-available from menu option 7 rather than printed on every startup.
+Saved Sentinel Cloud keys do not mean a pulse was used. A saved key enables the
+**Activar Pulse** action: it opens the local Pulse settings, prefilled with the
+public production endpoint (`https://sentinel-psi-nine.vercel.app`) unless
+`SENTINEL_CLOUD_URL` or a saved endpoint overrides it, and starts the selected
+PR scan after activation. A hosted pulse is offered only when the cloud client,
+an endpoint, hosted policy, and a key are available. Selecting that option
+explicitly sends the pinned PR checkout to Sentinel Cloud; the local Lite diff
+result remains labeled separately. Otherwise, the menu lists the missing
+prerequisites and uses the local path. The responsibility notice is available
+from menu option 7 rather than printed on every startup.
 
 ### Windows launcher
 
@@ -115,14 +118,19 @@ SQLite module; the terminal commands continue to support Node.js 20 or newer.
 Set `SENTINEL_AUDIT_WEB_PORT` to change the local port.
 
 The dashboard enumerates repositories and open PRs through the active GitHub
-CLI session. Each PR offers a local Lite scan and, only when hosted policy,
-client, URL, and a saved key are ready, an explicit Sentinel Cloud Pulse. Both
-paths pin the PR head to its full SHA and run Sentinel Audit's own pipeline;
-Pulse sends the pinned checkout to the configured Sentinel Cloud endpoint.
-Specialists and their coverage states appear independently. The local evidence
-map distinguishes completed, partial, failed, unavailable, and unrun stages.
-An optional retry is limited to specialists already justified by the saved
-signal route; tools that the route did not select are not silently forced.
+CLI session. Repository cards show the open PR count when it can be read, and
+the PR inventory summarizes severity composition in a donut chart with counts
+and percentages. Each PR offers a local Lite scan and, when the cloud client,
+endpoint, hosted policy, and a saved key are ready, an explicit Sentinel Cloud
+Pulse; with a key but no activation, **Activar Pulse** opens the prefilled
+settings and chains the scan after activation. Both paths pin the PR head to
+its full SHA and run Sentinel Audit's own pipeline; Pulse sends the pinned
+checkout to the configured Sentinel Cloud endpoint (the public production
+endpoint by default). Specialists and their coverage states appear
+independently. The local evidence map distinguishes completed, partial, failed,
+unavailable, and unrun stages. An optional retry is limited to specialists
+already justified by the saved signal route; tools that the route did not
+select are not silently forced.
 
 Each completed scan is stored in the Audit-only SQLite database at
 `~/.sentinel-audit/audit.sqlite` (on Windows, under the user's home directory).
@@ -146,6 +154,19 @@ paths. “Not found” is not a claim that the package cannot exist in an unsear
 location. Analytics use a donut for severity composition, ranked horizontal bars
 for engine/source counts, a ranked list for affected files, tiles for categories,
 and an SVG timeline for scan dates.
+
+Every finding and observation keeps its evidence reachable: cards link to the
+pinned file and line on GitHub when the path is safe, and observations that were
+not promoted to candidates still expose their signals and normalized JSON.
+When a scan produces no findings, the dashboard shows an explicit zero state
+that names the engines that ran and any coverage still missing instead of
+implying the change is clean.
+
+The evidence view separates **indicadores de comportamiento malicioso** from
+**defectos de seguridad** with a heuristic over the finding text and category,
+and labels anything else as unclassified. This is a triage aid, not an intent
+judgment: it never claims that a developer acted deliberately, and the
+limitation is stated next to the counts.
 
 Coding agents can follow the optional [`sentinel-audit` skill](./skills/sentinel-audit/SKILL.md)
 for health checks, pinned scope, coverage reporting and human-led adjudication.

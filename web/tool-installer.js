@@ -18,6 +18,7 @@ const SPECS = Object.freeze({
   codeql: { kind: 'github-zip', repo: 'github/codeql-cli-binaries', asset: /^codeql-win64\.zip$/, executable: /(?:^|\/)codeql\/codeql\.exe$/i, licenseRequired: true },
   trivy: { kind: 'github-zip', repo: 'aquasecurity/trivy', asset: /^trivy_[\d.]+_windows-64bit\.zip$/i, executable: /(?:^|\/)trivy\.exe$/i },
   osv: { kind: 'github-binary', repo: 'google/osv-scanner', asset: /^osv-scanner_windows_amd64\.exe$/i, executable: /osv-scanner\.exe$/i },
+  zizmor: { kind: 'pypi', package: 'zizmor', executableName: 'zizmor.exe' },
   shellcheck: { kind: 'github-zip', repo: 'koalaman/shellcheck', asset: /^shellcheck-v[\d.]+\.zip$/i, executable: /(?:^|\/)shellcheck\.exe$/i },
   semgrep: { kind: 'pypi', package: 'semgrep', executableName: 'semgrep.exe' },
   bandit: { kind: 'pypi', package: 'bandit', executableName: 'bandit.exe' },
@@ -136,7 +137,10 @@ async function installGithubRelease(job, spec, target) {
   } else binary = archive;
   if (!binary || !fs.existsSync(binary)) throw new Error('El archivo pasó SHA-256, pero no contiene el ejecutable esperado.');
   if (path.extname(binary).toLowerCase() !== '.exe' || fs.statSync(binary).size < 1024) throw new Error('El ejecutable extraído no pasó la verificación estructural.');
-  try { fs.rmSync(archive, { force: true }); } catch (_) {}
+  // github-binary downloads are themselves the installed executable. Removing
+  // the archive here left the returned OSV path dangling, so registration
+  // failed at 94% even though SHA-256 validation had passed.
+  if (spec.kind === 'github-zip') try { fs.rmSync(archive, { force: true }); } catch (_) {}
   return binary;
 }
 
@@ -170,11 +174,13 @@ async function install(job) {
   fs.mkdirSync(STORE, { recursive: true, mode: 0o700 });
   try {
     const binary = spec.kind === 'pypi' ? await installPythonTool(job, spec, target) : await installGithubRelease(job, spec, target);
+    const resolved = configToolAvailable(job.tool, binary);
+    if (!resolved.available && !resolved.blockedByHost) throw new Error(`El archivo se descargó, pero Sentinel Audit no pudo resolverlo: ${resolved.reason || 'ruta inválida'}.`);
     progress(job, 'REGISTERING', 99, 'Registrando la ruta aislada para Sentinel Audit');
     writeToolPath(job.tool, binary);
-    const resolved = configToolAvailable(job.tool, binary);
     job.path = binary; job.blockedByHost = !!resolved.blockedByHost;
-    progress(job, 'AVAILABLE', 100, job.blockedByHost ? 'Instalado y registrado; la política del host bloquea ejecutarlo en esta sesión.' : `Instalado, registrado y detectado (${job.version}).`);
+    if (job.blockedByHost) progress(job, 'BLOCKED', 100, 'Descargado y registrado; runtime guard impide ejecutarlo en esta sesión.');
+    else progress(job, 'AVAILABLE', 100, `Instalado, registrado y detectado (${job.version}).`);
   } catch (error) {
     try { fs.rmSync(target, { recursive: true, force: true }); } catch (_) {}
     throw error;

@@ -152,7 +152,7 @@ function detectLicense(root, tracked) {
 
 function checkToolHealth(tools, opts = {}) {
   const health = {};
-  for (const key of ['codeql', 'semgrep', 'trivy', 'osv', 'bandit', 'shellcheck']) {
+  for (const key of ['codeql', 'semgrep', 'trivy', 'osv', 'zizmor', 'bandit', 'shellcheck']) {
     const t = tools[key];
     health[key] = t
       ? resolveTool(key, t, { overrides: opts.toolOverrides })
@@ -213,7 +213,7 @@ function checkHostedHealth(tools, policies, opts = {}, env = process.env) {
   const memberKeyEnv = hosted.memberKeyEnv || 'SENTINEL_MEMBER_KEY';
   const repositoryIdEnv = hosted.repositoryIdEnv || 'SENTINEL_GROUP_REPOSITORY_ID';
   const clientModule = hosted.clientModule || '@sentinel/cloud-client';
-  const baseUrl = opts.apiUrl || env[baseUrlEnv] || null;
+  const baseUrl = opts.apiUrl || hosted.baseUrl || env[baseUrlEnv] || null;
   // An explicitly selected, locally stored key is passed in memory by the
   // interactive workflow. It is never written to artifacts or environment.
   const token = opts.apiToken || env[tokenEnv] || null;

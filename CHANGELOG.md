@@ -3,6 +3,28 @@
 All notable changes to the audit runner. Every entry is a freeze tag; nothing
 in this repository is released without one.
 
+## v1.4.0 — Evidence dashboard and Pulse activation
+
+The local dashboard now makes a saved Cloud key actionable: **Activar Pulse**
+opens the Pulse settings prefilled with the public production endpoint
+(`https://sentinel-psi-nine.vercel.app`), enables the local policy, and chains
+the selected PR scan. An explicit endpoint or `SENTINEL_CLOUD_URL` still wins;
+the default is only a fallback and is stored locally on activation. The cloud
+settings endpoint reports whether the URL came from local settings, the
+environment, or the default.
+
+Repository cards show the open PR count when GitHub returns it, and the PR
+inventory includes a severity donut with counts and percentages. Findings and
+non-candidate observations expose GitHub file/line links when the path is safe,
+and observations keep their source signals and normalized JSON. A scan with no
+findings renders an explicit zero state that names executed engines and any
+remaining coverage gaps instead of implying a clean repository.
+
+The evidence view adds a heuristic separation between malicious-behavior
+indicators and security defects, with an unclassified bucket and a visible
+caveat. It is a triage aid, not an intent attribution. Zizmor joins the curated
+specialist list for CI/CD workflow analysis.
+
 ## v1.3.1 — Agent workflow guide
 
 Added an optional `skills/sentinel-audit/SKILL.md` for coding agents. It

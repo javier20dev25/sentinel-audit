@@ -9,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { fileURLToPath } = require('url');
 const { STATUS, envelope, snippet, dirBytes } = require('../lib/core');
 const { resolveTool, probeVersion, executeProcess, JOB_STATE } = require('./tooling');
 const { contained, writeJson } = require('./artifacts');
@@ -139,20 +140,37 @@ function standardJob(job, tool, state, process) {
   };
 }
 
-function parseSarif(root, sarif) {
+function sarifArtifact(root, uri) {
+  if (typeof uri !== 'string' || !uri) return null;
+  let candidate = uri;
+  if (/^file:/i.test(candidate)) {
+    try { candidate = fileURLToPath(candidate); } catch (_) { return null; }
+  }
+  if (process.platform === 'win32') candidate = candidate.replace(/^\/([A-Za-z]:\/)/, '$1');
+  if (path.isAbsolute(candidate)) {
+    const relative = path.relative(path.resolve(root), path.resolve(candidate));
+    if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) return null;
+    candidate = relative || '.';
+  }
+  return abs(root, candidate);
+}
+
+function parseSarif(root, sarif, options = {}) {
+  const tool = options.tool || 'codeql';
+  const kind = options.kind || 'dataflow';
   const result = [];
   for (const run of sarif.runs || []) for (const entry of run.results || []) {
     const location = ((entry.locations || [])[0] || {}).physicalLocation || {};
-    const file = abs(root, location.artifactLocation && location.artifactLocation.uri);
+    const file = sarifArtifact(root, location.artifactLocation && location.artifactLocation.uri);
     const line = location.region && location.region.startLine || null;
     result.push({
-      tool: 'codeql', kind: 'dataflow', rule: entry.ruleId || null, level: entry.level || null,
+      tool, kind, rule: entry.ruleId || null, level: entry.level || null,
       file, line, endLine: location.region && location.region.endLine || null,
       detail: String(entry.message && entry.message.text || '').split(/\r?\n/)[0].slice(0, 300),
       snippet: snippet(root, file, line),
       path: Array.isArray(entry.codeFlows) && entry.codeFlows[0] && entry.codeFlows[0].threadFlows
         ? entry.codeFlows[0].threadFlows[0].locations.map((step) => ({
-          file: abs(root, step.location && step.location.physicalLocation && step.location.physicalLocation.artifactLocation && step.location.physicalLocation.artifactLocation.uri),
+          file: sarifArtifact(root, step.location && step.location.physicalLocation && step.location.physicalLocation.artifactLocation && step.location.physicalLocation.artifactLocation.uri),
           line: step.location && step.location.physicalLocation && step.location.physicalLocation.region && step.location.physicalLocation.region.startLine || null,
           message: String(step.location && step.location.message && step.location.message.text || '').split(/\r?\n/)[0].slice(0, 160),
         })) : null,
@@ -412,7 +430,15 @@ async function osv(root, ctx, job) {
   try { parsed = JSON.parse(fs.readFileSync(output, 'utf8')); }
   catch (error) { return envelope('osv', { status: STATUS.ERROR, availability: resolution, error: `invalid OSV JSON: ${error.message}`, coverage: coverageUnknown(['invalid OSV JSON']), rawArtifact: output, job: standardJob(job, 'osv', JOB_STATE.FAILED, result) }); }
   const findings = [];
-  for (const record of parsed.results || []) for (const pkg of record.packages || []) for (const vulnerability of pkg.vulnerabilities || []) findings.push({ tool: 'osv', kind: 'sca', rule: vulnerability.id, level: (vulnerability.severity || []).map((score) => score.score).join(','), file: path.join(root, 'package.json'), detail: `${pkg.package && (pkg.package.name || pkg.package.source) || '?'}@${pkg.package && pkg.package.version || '?'}` });
+  for (const record of parsed.results || []) {
+    // Attribute a dependency signal to the manifest OSV actually parsed. Do not
+    // invent package.json for Maven, Cargo, Go, or any other lockfile result.
+    const reportedPath = record.source && typeof record.source.path === 'string' ? record.source.path : '';
+    const resolvedPath = reportedPath ? path.resolve(root, reportedPath) : null;
+    const relativePath = resolvedPath ? path.relative(path.resolve(root), resolvedPath) : '';
+    const sourceFile = relativePath && relativePath !== '..' && !relativePath.startsWith(`..${path.sep}`) && !path.isAbsolute(relativePath) ? resolvedPath : null;
+    for (const pkg of record.packages || []) for (const vulnerability of pkg.vulnerabilities || []) findings.push({ tool: 'osv', kind: 'sca', rule: vulnerability.id, level: (vulnerability.severity || []).map((score) => score.score).join(','), file: sourceFile, detail: `${pkg.package && (pkg.package.name || pkg.package.source) || '?'}@${pkg.package && pkg.package.version || '?'}` });
+  }
   // A failing OSV still writes its JSON, so the success path has to carry the
   // reason too.  Reporting ERROR with a null reason leaves the operator with a
   // red result and no explanation of what to fix.
@@ -424,12 +450,76 @@ async function osv(root, ctx, job) {
   return envelope('osv', { status: succeeded ? STATUS.PARTIAL : processStatus(result.state), availability: resolution, version: resolution.version, error: failure, findings, rawArtifact: output, coverage: Object.assign(coverageUnknown(['OSV does not expose a parsed-file denominator']), { analysisCompleted: succeeded, errors: failure ? [`OSV scan failed: ${failure}`] : [] }), cost: { wallClockMs: result.durationMs, timedOut: result.timedOut }, job: standardJob(job, 'osv', result.state, result) });
 }
 
+function zizmorInputs(root, files) {
+  const usable = [];
+  const rejected = [];
+  for (const file of files || []) {
+    const normalized = String(file || '').replace(/\\/g, '/');
+    const absolute = abs(root, normalized);
+    if (!absolute) { rejected.push({ file: normalized, reason: 'path is outside the audited repository' }); continue; }
+    const containment = realContained(root, absolute);
+    if (!containment.ok) { rejected.push({ file: normalized, reason: containment.reason }); continue; }
+    try {
+      if (!fs.statSync(containment.real).isFile()) { rejected.push({ file: normalized, reason: 'not a regular file' }); continue; }
+    } catch (error) { rejected.push({ file: normalized, reason: `unreadable: ${error.code || error.message}` }); continue; }
+    usable.push(normalized);
+  }
+  return { usable: [...new Set(usable)], rejected };
+}
+
+async function zizmor(root, ctx, job, opts = {}) {
+  const inputs = zizmorInputs(root, opts.ciFiles || []);
+  if (!inputs.usable.length && !inputs.rejected.length) {
+    return envelope('zizmor', {
+      status: STATUS.SKIPPED, notApplicable: true, findings: [], findingCount: 0,
+      coverage: { filesSeen: 0, filesEligible: 0, filesParsed: 0, analysisCompleted: true, coverageKnown: true, coverageUnknown: false, engineCoverage: 'TRACKED_CI_DEFINITIONS', errors: [] },
+      notes: ['No tracked workflow, local action, root action.yml, or Dependabot definition was in scope.'],
+      job: standardJob(job, 'zizmor', JOB_STATE.SUCCEEDED),
+    });
+  }
+  const resolution = await resolutionFor('zizmor', ctx, job);
+  if (!resolution.available) return jobEnvelope('zizmor', resolution, standardJob(job, 'zizmor', JOB_STATE.UNAVAILABLE));
+  if (!inputs.usable.length) return envelope('zizmor', {
+    status: STATUS.ERROR, availability: resolution, findings: [], findingCount: 0,
+    error: 'No tracked CI definition survived path and containment checks.',
+    coverage: { filesSeen: (opts.ciFiles || []).length, filesEligible: (opts.ciFiles || []).length, filesParsed: 0, analysisCompleted: false, coverageKnown: false, coverageUnknown: true, engineCoverage: 'TRACKED_CI_DEFINITIONS', errors: inputs.rejected.map((entry) => `${entry.file}: ${entry.reason}`) },
+    notes: inputs.rejected, job: standardJob(job, 'zizmor', JOB_STATE.FAILED),
+  });
+
+  const args = ['--format=sarif'];
+  if (ctx.tools.zizmor.offline !== false) args.push('--offline');
+  args.push(...inputs.usable);
+  const result = await execute('zizmor', ctx, job, resolution.path, args, 'scan', root);
+  if (!result.stdout) return envelope('zizmor', { status: processStatus(result.state), availability: resolution, error: result.error || result.stderr || 'zizmor produced no SARIF', findings: [], findingCount: 0, coverage: coverageUnknown(['missing zizmor SARIF']), cost: { wallClockMs: result.durationMs, timedOut: result.timedOut }, rawArtifact: rawDirectory(ctx, 'zizmor'), job: standardJob(job, 'zizmor', result.state, result), notes: inputs.rejected });
+  let parsed;
+  try { parsed = JSON.parse(result.stdout); }
+  catch (error) { return envelope('zizmor', { status: STATUS.ERROR, availability: resolution, error: `invalid zizmor SARIF: ${error.message}`, findings: [], findingCount: 0, coverage: coverageUnknown(['invalid zizmor SARIF']), cost: { wallClockMs: result.durationMs, timedOut: result.timedOut }, rawArtifact: rawDirectory(ctx, 'zizmor'), job: standardJob(job, 'zizmor', JOB_STATE.FAILED, result), notes: inputs.rejected }); }
+  if (!Array.isArray(parsed.runs)) return envelope('zizmor', { status: STATUS.ERROR, availability: resolution, error: 'zizmor output is not a SARIF document', findings: [], findingCount: 0, coverage: coverageUnknown(['invalid zizmor SARIF schema']), cost: { wallClockMs: result.durationMs, timedOut: result.timedOut }, rawArtifact: rawDirectory(ctx, 'zizmor'), job: standardJob(job, 'zizmor', JOB_STATE.FAILED, result), notes: inputs.rejected });
+  const output = contained(ctx.work, 'specialists', 'zizmor', 'raw', 'zizmor.sarif');
+  fs.mkdirSync(path.dirname(output), { recursive: true });
+  fs.writeFileSync(output, result.stdout, { flag: 'wx' });
+  const findings = parseSarif(root, parsed, { tool: 'zizmor', kind: 'ci-cd' });
+  const failed = !result.ok;
+  const errors = [
+    ...(failed ? [result.error || result.stderr || `zizmor exited ${result.status}`] : []),
+    ...inputs.rejected.map((entry) => `${entry.file}: ${entry.reason}`),
+  ];
+  return envelope('zizmor', {
+    status: failed ? processStatus(result.state) : STATUS.PARTIAL,
+    availability: resolution, version: resolution.version, findings, rawArtifact: output,
+    coverage: { filesSeen: (opts.ciFiles || []).length, filesEligible: (opts.ciFiles || []).length, filesParsed: failed ? null : inputs.usable.length, analysisCompleted: !failed, coverageKnown: !failed && !inputs.rejected.length, coverageUnknown: failed || !!inputs.rejected.length, engineCoverage: 'TRACKED_CI_DEFINITIONS', errors },
+    cost: { wallClockMs: result.durationMs, timedOut: result.timedOut },
+    job: standardJob(job, 'zizmor', failed ? result.state : JOB_STATE.SUCCEEDED, result), notes: inputs.rejected,
+  });
+}
+
 async function executeSpecialist(tool, root, ctx, job, opts = {}) {
   if (tool === 'codeql') return codeql(root, ctx, job, opts);
   if (tool === 'semgrep') return semgrep(root, ctx, job, opts);
   if (tool === 'trivy') return trivy(root, ctx, job, opts);
   if (tool === 'osv') return osv(root, ctx, job, opts);
+  if (tool === 'zizmor') return zizmor(root, ctx, job, opts);
   return jobEnvelope(tool, { name: tool, available: false, state: 'UNAVAILABLE', reason: 'adapter is not implemented for this specialist' }, standardJob(job, tool, JOB_STATE.UNAVAILABLE));
 }
 
-module.exports = { executeSpecialist, coverageUnknown, jobEnvelope, parseSarif, abs, normalizeSemgrepRuleId, localSemgrepConfigs, usableTargets, reasonFromStderr, osvExitSucceeded, OUTCOME, specialistOutcome, processStatus };
+module.exports = { executeSpecialist, coverageUnknown, jobEnvelope, parseSarif, sarifArtifact, zizmorInputs, abs, normalizeSemgrepRuleId, localSemgrepConfigs, usableTargets, reasonFromStderr, osvExitSucceeded, OUTCOME, specialistOutcome, processStatus };

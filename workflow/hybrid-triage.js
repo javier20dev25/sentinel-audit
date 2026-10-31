@@ -1,32 +1,16 @@
 'use strict';
 /**
- * Hybrid AI Triage Engine for Sentinel Audit
+ * Local candidate follow-up hints.
  *
- * Implements the validated 4-tier decision architecture:
- *
- *   Deterministic / Cloud Correlation
- *                 │
- *                 ▼
- *          Is Candidate Ambiguous?
- *          ├── NO  (Single-lens clear observation / deterministic corroboration)
- *          │         └── Resolved without AI (no tool calls, no token waste)
- *          │
- *          └── YES (Taint flow / eval / dynamic execution ambiguity)
- *                    └── Sentinel-Assisted AI Triage
- *                              │
- *                         Resolved?
- *                         ├── YES ──> Record Verdict
- *                         └── NO  ──> Selective Agentic Escalation
- *                                       └── Targeted Tools (inspect_dataflow)
- *                                       └── Final Verdict
- *
- * Outputs structured results to `triage-run.jsonl`.
+ * The same-file regex probe is a lightweight review aid. It does not run an
+ * interprocedural analyzer, use an AI model, confirm a vulnerability, or prove
+ * that a candidate is benign. Candidate adjudication remains human-led.
  */
 
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
-const crypto = require('crypto');
+
+
 
 const TRIAGE_STATES = {
   OBSERVATION: 'OBSERVATION',
@@ -42,7 +26,7 @@ const TRIAGE_STATES = {
 };
 
 /**
- * Checks if a candidate possesses semantic/dataflow ambiguity requiring AI investigation.
+ * Checks whether a candidate matches the narrow local heuristic probe patterns.
  */
 function isAmbiguousCandidate(candidate) {
   if (!candidate) return false;
@@ -58,7 +42,7 @@ function isAmbiguousCandidate(candidate) {
 }
 
 /**
- * Executes safe deterministic inspection tools for Agentic escalation.
+ * Runs read-only source inspection inside the pinned workspace.
  */
 function runDeterministicTool(toolName, args, workspaceRoot) {
   const root = path.resolve(workspaceRoot);
@@ -112,7 +96,7 @@ STATUS: NO EXTERNAL TAINT SOURCE DETECTED (CONSTANT EVALUATION / BENIGN)`;
 }
 
 /**
- * Executes Hybrid Triage over Audit candidates.
+ * Records non-adjudicating follow-up hints for Audit candidates.
  */
 async function triageCandidatesHybrid(expediente, workspaceRoot, options = {}) {
   const results = [];
@@ -123,7 +107,7 @@ async function triageCandidatesHybrid(expediente, workspaceRoot, options = {}) {
     const candidateId = candidate.candidateId || candidate.id || 'CAND-UNKNOWN';
     const entry = {
       candidateId,
-      state: TRIAGE_STATES.CANDIDATE,
+      state: TRIAGE_STATES.INSUFFICIENT_EVIDENCE,
       rule: candidate.rule,
       file: candidate.file,
       severity: candidate.severity,
@@ -132,50 +116,42 @@ async function triageCandidatesHybrid(expediente, workspaceRoot, options = {}) {
       toolsUsed: [],
       verdict: TRIAGE_STATES.UNKNOWN,
       reason: '',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      method: 'local heuristic probe; no autonomous adjudication',
     };
 
+    // Severity is useful for ordering work, but it cannot establish that a
+    // vulnerability is real. Keep even a high-severity candidate open for a
+    // reviewer instead of converting its label into a confirmation.
     if (!isAmbiguousCandidate(candidate)) {
-      // Deterministic resolution: no AI reasoning needed
-      entry.state = candidate.severity === 'CRITICAL' || candidate.severity === 'HIGH'
-        ? TRIAGE_STATES.CONFIRMED
-        : TRIAGE_STATES.FALSE_POSITIVE;
-      entry.verdict = entry.state;
-      entry.reason = 'Resolved deterministically by Sentinel static authority lenses.';
+      entry.reason = 'No targeted heuristic probe ran. Severity and tool correlation are prioritization signals, not proof; human verification is required.';
       results.push(entry);
       fs.appendFileSync(triageLog, JSON.stringify(entry) + '\n');
       continue;
     }
 
-    // Ambiguous candidate: Escalate to selective Agentic tool inspection
-    entry.escalated = true;
-    entry.state = TRIAGE_STATES.AI_REVIEW;
-
-    const dataflowAnalysis = runDeterministicTool('inspect_dataflow', [candidate.file], workspaceRoot);
-    entry.toolCalls++;
+    const probe = runDeterministicTool('inspect_dataflow', [candidate.file], workspaceRoot);
+    entry.toolCalls = 1;
     entry.toolsUsed.push('inspect_dataflow');
-
-    if (dataflowAnalysis.includes('EXPLOITABLE')) {
-      entry.verdict = TRIAGE_STATES.CONFIRMED;
-      entry.state = TRIAGE_STATES.CONFIRMED;
-      entry.reason = 'Confirmed via targeted dataflow analysis: untrusted taint reaches sensitive execution sink.';
-    } else if (dataflowAnalysis.includes('BENIGN') || dataflowAnalysis.includes('CLEAN')) {
-      entry.verdict = TRIAGE_STATES.FALSE_POSITIVE;
-      entry.state = TRIAGE_STATES.FALSE_POSITIVE;
-      entry.reason = 'Dismissed as false positive: dataflow analysis proved input sink is static/closed.';
-    } else {
-      entry.verdict = TRIAGE_STATES.UNKNOWN;
-      entry.state = TRIAGE_STATES.INSUFFICIENT_EVIDENCE;
-      entry.reason = 'Insufficient evidence from automated dataflow analysis; flagged for human adjudication.';
-    }
-
+    const outcome = probe.includes('UNCONTAMINATED TAINT REACHES SINK')
+      ? 'POSSIBLE_SOURCE_AND_SINK_CO_OCCURRENCE'
+      : probe.includes('NO EXTERNAL TAINT SOURCE DETECTED')
+        ? 'NO_EXTERNAL_SOURCE_MATCH_IN_SIMPLE_PATTERN'
+        : 'NO_CONCLUSION';
+    entry.heuristicProbe = {
+      name: 'same-file regex source/sink probe',
+      outcome,
+      summary: probe,
+      verdict: 'UNKNOWN',
+      limitation: 'This heuristic does not build an interprocedural dataflow graph and cannot confirm exploitability or prove a candidate benign.',
+    };
+    entry.reason = `Heuristic probe: ${outcome}. Preserve the candidate for human review; this result is not a confirmation or a false-positive dismissal.`;
     results.push(entry);
     fs.appendFileSync(triageLog, JSON.stringify(entry) + '\n');
   }
 
   return results;
 }
-
 module.exports = {
   TRIAGE_STATES,
   isAmbiguousCandidate,

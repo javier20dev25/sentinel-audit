@@ -28,7 +28,7 @@ function buildIdentity({ executionId, repo, preflight, tools, startedAt, sourceR
   const engineFiles = preflight && preflight.health && preflight.health.sentinelFiles || {};
   const hashes = {};
   for (const rel of [
-    'audit-runner.js', 'workflow/preflight.js', 'workflow/audit.js', 'workflow/identity.js',
+    'audit-runner.js', 'workflow/preflight.js', 'workflow/audit.js', 'workflow/pipeline-v1.js', 'workflow/specialist-runtime.js', 'workflow/identity.js',
     'adapters/index.js', 'correlate/index.js', 'lib/core.js', 'reports/expediente.js',
     'config/tools.json', 'config/policies.json',
   ]) hashes[rel] = sha256(path.join(projectRoot, rel));

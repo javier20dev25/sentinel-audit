@@ -28,6 +28,7 @@
     "configs": ["rules/semgrep"],
     "allowRemoteRules": false
   },
+  "zizmor": { "bin": "zizmor", "envVar": "SPECIALIST_ZIZMOR_PATH", "offline": true },
   "bandit": { "bin": "bandit", "envVar": "SPECIALIST_BANDIT_PATH" },
   "shellcheck": { "bin": "shellcheck", "envVar": "SPECIALIST_SHELLCHECK_PATH", "severity": "warning" },
   "trivy": { "bin": "trivy", "envVar": "SPECIALIST_TRIVY_PATH", "scanners": "vuln,secret,misconfig", "offline": false },

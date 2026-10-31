@@ -109,7 +109,7 @@ async function runHostedCloud(root, ctx, opts = {}) {
   const repositoryIdEnv = hostedCfg.repositoryIdEnv || 'SENTINEL_GROUP_REPOSITORY_ID';
   let baseUrl;
   try {
-    baseUrl = client.getResolvedBaseUrl(opts.apiUrl || env[baseUrlEnv] || undefined, env);
+    baseUrl = client.getResolvedBaseUrl(opts.apiUrl || hostedCfg.baseUrl || env[baseUrlEnv] || undefined, env);
   } catch (error) {
     return failure(startedAt, 'INVALID_REQUEST', scrub(null, error && error.message || error));
   }

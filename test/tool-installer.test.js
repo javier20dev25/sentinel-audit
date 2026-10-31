@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const installer = require('../web/tool-installer');
 
 test('installer only accepts the curated specialist list', () => {
-  assert.deepEqual(new Set(installer.supportedTools()), new Set(['codeql','semgrep','trivy','osv','bandit','shellcheck']));
+  assert.deepEqual(new Set(installer.supportedTools()), new Set(['codeql','semgrep','trivy','osv','zizmor','bandit','shellcheck']));
   assert.throws(() => installer.startInstall('unknown'), /no permitida/);
 });
 
