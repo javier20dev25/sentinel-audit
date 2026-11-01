@@ -168,6 +168,23 @@ and labels anything else as unclassified. This is a triage aid, not an intent
 judgment: it never claims that a developer acted deliberately, and the
 limitation is stated next to the counts.
 
+#### Sentinel Audit Web Interface Tour
+
+The local web console provides complete transparency over evidence, specialist execution, and repository inventory:
+
+| Vista | Captura | Descripción Operativa |
+|---|---|---|
+| **01. Escáner de Repositorios** | ![01 - Escáner de Repositorios](./docs/images/01-sentinel-audit-web-repos-scanner.png) | Inventario automático de repositorios sincronizados mediante sesión activa de `gh` CLI (`javier20dev25`). Muestra estado de especialistas detectados (7/7), base de datos SQLite conectada y panel de escaneo directo de Pull Requests. |
+| **02. Veredicto y Clasificación** | ![02 - Veredicto y Clasificación](./docs/images/02-sentinel-audit-web-veredicto-senales.png) | Separación heurística transparente entre indicadores de comportamiento malicioso, defectos de seguridad convencionales y señales sin clasificar, con cálculo explícito de riesgo de entrada. |
+| **03. Evidencia y Hashes SHA-256** | ![03 - Evidencia y Hashes SHA-256](./docs/images/03-sentinel-audit-web-evidencia-sha256.png) | Referencias inmutables: SHA-256 del cuerpo normalizado (`RESULT BODY SHA-256`), SHA-256 del diff fijado y commit pinned de 40 caracteres con exportación en JSON y SARIF. |
+| **04. Cadena de Custodia por Etapas** | ![04 - Cadena de Custodia](./docs/images/04-sentinel-audit-web-cadena-custodia.png) | Traza secuencial auditable paso a paso: Preflight, Checkout fijado, Motor principal Lite, Enrutamiento selectivo por señales, Especialistas y Adjudicación final. |
+| **05. Hallazgos Semgrep y Señales** | ![05 - Hallazgos y Señales](./docs/images/05-sentinel-audit-web-hallazgos-semgrep.png) | Desglose forense de hallazgos corroborados (CWE-78 Command Injection, Lifecycle execution) con vínculo directo al código en GitHub y visualización de carga útil. |
+| **06. Búsqueda Forense** | ![06 - Búsqueda Forense](./docs/images/06-sentinel-audit-web-busqueda-forense.png) | Motor de búsqueda forense sobre expedientes históricos: filtros por texto de regla, prefijo de commit SHA, repositorio, PR, motor analítico y severidad. |
+| **07. Base de Datos SQLite** | ![07 - Base de Datos SQLite](./docs/images/07-sentinel-audit-web-base-datos-sqlite.png) | Almacén persistente local en `~/.sentinel-audit/audit.sqlite` con tabla de auditorías, estados de ejecución, puntajes de riesgo y firma de diff. |
+| **08. Analítica y Métricas** | ![08 - Analítica y Métricas](./docs/images/08-sentinel-audit-web-analitica-metricas.png) | Dashboard gráfico con dona de severidad, ranking de hallazgos por motor (Sentinel Lite, Semgrep, Trivy, Zizmor), superficie más tocada y taxonomía de señales. |
+| **09. Matriz de Especialistas** | ![09 - Matriz de Especialistas](./docs/images/09-sentinel-audit-web-matriz-herramientas.png) | Estado operativo y rutas de ejecución de los 7 analizadores locales: CodeQL CLI, Semgrep, Trivy, OSV-Scanner, Zizmor CI/CD, Bandit y ShellCheck. |
+| **10. Claves Cloud y Pulse** | ![10 - Claves Cloud y Pulse](./docs/images/10-sentinel-audit-web-claves-cloud-pulse.png) | Gestión segura de claves API con enmascaramiento local, política de activación de Sentinel Cloud Pulse y configuración de endpoints oficiales. |
+
 Coding agents can follow the optional [`sentinel-audit` skill](./skills/sentinel-audit/SKILL.md)
 for health checks, pinned scope, coverage reporting and human-led adjudication.
 
