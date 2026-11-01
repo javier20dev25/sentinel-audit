@@ -254,19 +254,42 @@ that distinction an untouched backlog is indistinguishable from a triaged one.
 
 | Tool | Role | Authority |
 |---|---|---|
-| Sentinel Cloud worker engine | primary behavioral signals | signal only; coverage currently unmeasured |
-| CodeQL | dataflow / reachability | corroborating |
-| Semgrep | pattern semantics | corroborating |
-| Bandit | Python sink semantics | corroborating |
-| ShellCheck | shell lint | lint only, never a taint claim |
-| Trivy | SCA + secrets | contextual |
-| OSV | SCA | contextual |
+| [Sentinel Cloud worker engine](https://github.com/javier20dev25/sentinel-cloud) | primary behavioral signals | signal only; coverage currently unmeasured |
+| [CodeQL](https://github.com/github/codeql) | dataflow / reachability | corroborating |
+| [Semgrep](https://github.com/semgrep/semgrep) | pattern semantics | corroborating |
+| [Bandit](https://github.com/PyCQA/bandit) | Python sink semantics | corroborating |
+| [ShellCheck](https://github.com/koalaman/shellcheck) | shell lint | lint only, never a taint claim |
+| [Trivy](https://github.com/aquasecurity/trivy) | SCA + secrets | contextual |
+| [OSV-Scanner](https://github.com/google/osv-scanner) | SCA | contextual |
+| [Zizmor](https://github.com/zizmorcore/zizmor) | GitHub Actions hardening | corroborating for CI/CD workflows |
 
 A tool is one of three things, and the distinction is load-bearing:
 
 - **corroborating** — can promote a signal to a candidate
 - **signal only** — can never promote anything on its own
 - **contextual** — informs a human, promotes nothing
+
+## Credits and upstream projects
+
+Sentinel Audit orchestrates these projects; it does not vendor, fork, or
+relicense them. Each remains under its own license and terms, and credit for
+the analysis belongs to its maintainers.
+
+| Project | Upstream | License / terms |
+|---|---|---|
+| CodeQL | https://github.com/github/codeql | Queries MIT; CLI subject to GitHub CodeQL Terms |
+| Semgrep | https://github.com/semgrep/semgrep | LGPL-2.1 |
+| Bandit | https://github.com/PyCQA/bandit | Apache-2.0 |
+| ShellCheck | https://github.com/koalaman/shellcheck | GPL-3.0 |
+| Trivy | https://github.com/aquasecurity/trivy | Apache-2.0 |
+| OSV-Scanner | https://github.com/google/osv-scanner | Apache-2.0 |
+| Zizmor | https://github.com/zizmorcore/zizmor | MIT |
+| GitHub Actions | https://github.com/features/actions | GitHub Terms of Service |
+| GitHub CLI | https://github.com/cli/cli | MIT |
+| Node.js | https://github.com/nodejs/node | MIT |
+
+Sentinel Cloud and the rest of the Sentinel platform are maintained in the
+[Sentinel repositories](https://github.com/javier20dev25?tab=repositories).
 
 ## Invariants
 
@@ -409,6 +432,6 @@ out/                   run output, gitignored
 
 The interactive CLI needs Node.js 20 or newer and GitHub CLI (`gh`) for GitHub account and repository selection. The local web dashboard needs Node.js 22.5 or newer for built-in SQLite. Specialist tools are optional: Sentinel Audit can run its own Lite analysis without them, and each unavailable or unrouted specialist remains explicit in the evidence route.
 
-On Windows, the dashboard can install CodeQL CLI, Semgrep, Trivy, OSV-Scanner, Bandit, and ShellCheck into `%USERPROFILE%\\.sentinel-audit\\tools` without administrator privileges or modifying system PATH. GitHub release binaries are accepted only from allowlisted official release assets with a published SHA-256 digest; if that digest is missing or does not match, installation stops and the file is removed. Semgrep and Bandit use isolated Python virtual environments and binary wheels from PyPI, requiring Python 3 and the Windows `py` launcher. Their package manager resolves transitive dependencies from the configured official index; use your organization's package policy if stricter dependency pinning is required. Installed executable paths are recorded in `%USERPROFILE%\\.sentinel-audit\\tool-paths.json` and discovered on the next state refresh. The UI shows download/install progress and confirms when the tool is registered. It does not execute a downloaded installer binary during download.
+On Windows, the dashboard can install CodeQL CLI, Semgrep, Trivy, OSV-Scanner, Zizmor, Bandit, and ShellCheck into `%USERPROFILE%\\.sentinel-audit\\tools` without administrator privileges or modifying system PATH. GitHub release binaries are accepted only from allowlisted official release assets with a published SHA-256 digest; if that digest is missing or does not match, installation stops and the file is removed. Semgrep, Zizmor, and Bandit use isolated Python virtual environments and binary wheels from PyPI, requiring Python 3 and the Windows `py` launcher. Their package manager resolves transitive dependencies from the configured official index; use your organization's package policy if stricter dependency pinning is required. Installed executable paths are recorded in `%USERPROFILE%\\.sentinel-audit\\tool-paths.json` and discovered on the next state refresh. The UI shows download/install progress and confirms when the tool is registered. It does not execute a downloaded installer binary during download.
 
 CodeQL requires checking its usage terms in the UI before downloading. Its CLI is restricted by GitHub's terms to eligible open-source codebases or academic research; review the linked current terms before use. The integrated installer is Windows-only. On other systems, install from the upstream projects and configure executable paths in `config/tools.json` or the documented `SPECIALIST_*_PATH` environment variables. A tool reported as not found means it was not resolved from PATH/configuration, not proof it is absent elsewhere.
