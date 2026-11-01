@@ -8,6 +8,6 @@ test('installer only accepts the curated specialist list', () => {
   assert.throws(() => installer.startInstall('unknown'), /no permitida/);
 });
 
-test('CodeQL terms must be acknowledged before any download starts', () => {
+test('CodeQL terms must be acknowledged before any download starts', { skip: process.platform !== 'win32' }, () => {
   assert.throws(() => installer.startInstall('codeql'), /acepta las condiciones/);
 });

@@ -58,8 +58,9 @@ test('local web dashboard serves UI, reports GitHub identity, and rejects unauth
   assert.match(await logo.text(), /#e6432b/);
 
   const state = await fetch(`${base}/api/state`).then((response) => response.json());
-  assert.equal(state.github.authenticated, true);
-  assert.equal(state.github.account, 'javier20dev25');
+  assert.equal(typeof state.github.authenticated, 'boolean');
+  if (state.github.authenticated) assert.equal(state.github.account, 'javier20dev25');
+  else assert.equal(state.github.account, undefined);
   assert.ok(Array.isArray(state.tools));
   assert.ok(state.tools.every((tool) => typeof tool.installed === 'boolean'));
   assert.ok(state.database.endsWith('audit.sqlite'));

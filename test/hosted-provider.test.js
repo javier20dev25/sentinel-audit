@@ -276,11 +276,21 @@ test('checkHostedHealth lists every missing prerequisite without touching the ne
   assert.ok(disabled.reasons.some((reason) => /base URL/.test(reason)));
   assert.ok(disabled.reasons.some((reason) => /API token/.test(reason)));
 
-  const enabled = checkHostedHealth(tools, { hosted: { enabled: true } }, { apiUrl: 'https://cloud.example' }, { SENTINEL_CLOUD_API_TOKEN: 'x' });
+  const stubTools = {
+    ...tools,
+    sentinelCloud: {
+      ...(tools.sentinelCloud || {}),
+      hosted: {
+        ...((tools.sentinelCloud && tools.sentinelCloud.hosted) || {}),
+        clientModule: path.join(__dirname, 'fixtures', 'cloud-client-stub.js'),
+      },
+    },
+  };
+  const enabled = checkHostedHealth(stubTools, { hosted: { enabled: true } }, { apiUrl: 'https://cloud.example' }, { SENTINEL_CLOUD_API_TOKEN: 'x' });
   assert.equal(enabled.reasons.length, 0);
   assert.equal(enabled.tokenPresent, true);
 
-  const selectedKey = checkHostedHealth(tools, { hosted: { enabled: true } }, { apiUrl: 'https://cloud.example', apiToken: 'selected-in-memory-key' }, {});
+  const selectedKey = checkHostedHealth(stubTools, { hosted: { enabled: true } }, { apiUrl: 'https://cloud.example', apiToken: 'selected-in-memory-key' }, {});
   assert.equal(selectedKey.reasons.length, 0);
   assert.equal(selectedKey.tokenPresent, true);
 });
