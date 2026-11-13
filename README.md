@@ -1,5 +1,7 @@
 # sentinel-audit
 
+[![M8ven Score](https://m8ven.ai/badge/mcp/javier20dev25-sentinel-audit-1uoqei)](https://m8ven.ai/mcp/javier20dev25-sentinel-audit-1uoqei?s=readme)
+
 An audit orchestrator. It runs existing analyzers, records what each one
 actually covered, refuses to report "clean" over checks that never executed,
 and stops for a human before anything is called a vulnerability.
